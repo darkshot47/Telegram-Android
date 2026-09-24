@@ -11,10 +11,22 @@ android {
         applicationId = "com.telefarm"
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.2.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField(
+            "Int",
+            "TELEGRAM_API_ID",
+            (project.findProperty("TELEGRAM_API_ID") ?: "0").toString()
+        )
+
+        buildConfigField(
+            "String",
+            "TELEGRAM_API_HASH",
+            "\"${project.findProperty("TELEGRAM_API_HASH") ?: ""}\""
+        )
     }
 
     buildTypes {
@@ -40,6 +52,10 @@ android {
     kotlinOptions {
         jvmTarget = "17"
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -48,4 +64,9 @@ dependencies {
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.activity:activity-ktx:1.10.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
+
+    implementation("io.github.tdlib-android:core:0.1.1")
+    implementation("io.github.tdlib-android:ktx:0.1.1")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 }
