@@ -2,12 +2,21 @@ package com.telefarm
 
 import android.content.Context
 import io.github.tdlibandroid.ktx.TdClient
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import org.drinkless.tdlib.TdApi
 
 class TelegramClient(context: Context) {
 
     private val tdlibDirectory =
-        context.filesDir.absolutePath + "/tdlib"
+        "${context.filesDir.absolutePath}/tdlib"
+
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO
+    )
 
     val client = TdClient(
         filesDir = tdlibDirectory,
@@ -21,29 +30,31 @@ class TelegramClient(context: Context) {
     }
 
     fun sendPhoneNumber(phoneNumber: String) {
-        client.send(
-            TdApi.SetAuthenticationPhoneNumber(phoneNumber, null)
-        )
+        scope.launch {
+            client.send(
+                TdApi.SetAuthenticationPhoneNumber(phoneNumber, null)
+            )
+        }
     }
 
     fun sendCode(code: String) {
-        client.send(
-            TdApi.CheckAuthenticationCode(code)
-        )
+        scope.launch {
+            client.send(
+                TdApi.CheckAuthenticationCode(code)
+            )
+        }
     }
 
     fun sendPassword(password: String) {
-        client.send(
-            TdApi.CheckAuthenticationPassword(password)
-        )
+        scope.launch {
+            client.send(
+                TdApi.CheckAuthenticationPassword(password)
+            )
+        }
     }
 
-    fun getCurrentUser(
-        callback: (TdApi.User?) -> Unit
-    ) {
-        kotlinx.coroutines.CoroutineScope(
-            kotlinx.coroutines.Dispatchers.IO
-        ).launch {
+    fun getCurrentUser(callback: (TdApi.User?) -> Unit) {
+        scope.launch {
             try {
                 val user = client.send(TdApi.GetMe())
                 callback(user as? TdApi.User)
@@ -54,6 +65,7 @@ class TelegramClient(context: Context) {
     }
 
     fun close() {
+        scope.cancel()
         client.close()
     }
 }
