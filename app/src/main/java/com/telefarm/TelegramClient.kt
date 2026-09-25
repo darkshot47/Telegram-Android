@@ -18,10 +18,13 @@ class TelegramClient(context: Context) {
         SupervisorJob() + Dispatchers.IO
     )
 
+    private val apiId: Int =
+        BuildConfig.TELEGRAM_API_ID
+
     val client = TdClient(
         filesDir = tdlibDirectory,
         verbosityLevel = 1,
-        apiId = BuildConfig.TELEGRAM_API_ID,
+        apiId = apiId,
         apiHash = BuildConfig.TELEGRAM_API_HASH
     )
 
@@ -32,7 +35,10 @@ class TelegramClient(context: Context) {
     fun sendPhoneNumber(phoneNumber: String) {
         scope.launch {
             client.send(
-                TdApi.SetAuthenticationPhoneNumber(phoneNumber, null)
+                TdApi.SetAuthenticationPhoneNumber(
+                    phoneNumber,
+                    null
+                )
             )
         }
     }
@@ -53,10 +59,15 @@ class TelegramClient(context: Context) {
         }
     }
 
-    fun getCurrentUser(callback: (TdApi.User?) -> Unit) {
+    fun getCurrentUser(
+        callback: (TdApi.User?) -> Unit
+    ) {
         scope.launch {
             try {
-                val user = client.send(TdApi.GetMe())
+                val user = client.send(
+                    TdApi.GetMe()
+                )
+
                 callback(user as? TdApi.User)
             } catch (_: Exception) {
                 callback(null)
