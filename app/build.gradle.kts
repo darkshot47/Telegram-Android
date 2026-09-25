@@ -16,16 +16,22 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
+        val telegramApiId =
+            providers.gradleProperty("TELEGRAM_API_ID").orElse("0")
+
+        val telegramApiHash =
+            providers.gradleProperty("TELEGRAM_API_HASH").orElse("")
+
         buildConfigField(
-            "Int",
+            "int",
             "TELEGRAM_API_ID",
-            (project.findProperty("TELEGRAM_API_ID") ?: "0").toString()
+            telegramApiId.get()
         )
 
         buildConfigField(
             "String",
             "TELEGRAM_API_HASH",
-            "\"${project.findProperty("TELEGRAM_API_HASH") ?: ""}\""
+            "\"${telegramApiHash.get()}\""
         )
     }
 
