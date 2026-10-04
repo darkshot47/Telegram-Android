@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:elevation="0dp"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/icon_tint"
+        app:title="@string/profile_title_user"
+        app:titleTextAppearance="@style/TextAppearance.Telefarm.ScreenTitle" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/photoContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingTop="@dimen/spacing_large"
+                android:paddingBottom="@dimen/spacing_medium">
+
+                <FrameLayout
+                    android:layout_width="@dimen/avatar_xlarge"
+                    android:layout_height="@dimen/avatar_xlarge">
+
+                    <TextView
+                        android:id="@+id/profileInitials"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_avatar_circle"
+                        android:gravity="center"
+                        android:textColor="@color/text_on_accent"
+                        android:textSize="44sp" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/profilePhoto"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/profile_photo"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Telefarm.Circle" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/profileName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_medium"
+                    android:gravity="center"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle"
+                    android:textSize="20sp" />
+
+                <TextView
+                    android:id="@+id/profileStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_tiny"
+                    android:gravity="center"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider" />
+
+            <TextView
+                android:id="@+id/phoneRow"
+                style="@style/Widget.Telefarm.InfoRow"
+                android:drawableStart="@drawable/ic_person"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/usernameRow"
+                style="@style/Widget.Telefarm.InfoRow"
+                android:drawableStart="@drawable/ic_link"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/bioRow"
+                style="@style/Widget.Telefarm.InfoRow"
+                android:drawableStart="@drawable/ic_info"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle"
+                android:visibility="gone" />
+
+            <TextView
+                android:id="@+id/membersRow"
+                style="@style/Widget.Telefarm.InfoRow"
+                android:drawableStart="@drawable/ic_group"
+                android:minHeight="@dimen/touch_target"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle"
+                android:visibility="gone" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divider" />
+
+            <LinearLayout
+                android:id="@+id/actionContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingTop="@dimen/spacing_small"
+                android:paddingBottom="@dimen/spacing_small" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <LinearLayout
+        android:id="@+id/stateContainer"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:orientation="vertical"
+        android:padding="@dimen/screen_padding"
+        android:visibility="gone">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:id="@+id/stateProgress"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true" />
+
+        <TextView
+            android:id="@+id/stateTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle"
+            android:visibility="gone" />
+
+        <TextView
+            android:id="@+id/stateMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:gravity="center"
+            android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle"
+            android:visibility="gone" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -1,0 +1,404 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/app_background"
+    android:orientation="vertical">
+
+    <com.google.android.material.appbar.MaterialToolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:elevation="0dp"
+        app:navigationContentDescription="@string/cd_back"
+        app:navigationIcon="@drawable/ic_arrow_back"
+        app:navigationIconTint="@color/icon_tint"
+        app:title="@string/settings_title"
+        app:titleTextAppearance="@style/TextAppearance.Telefarm.ScreenTitle" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divider" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/spacing_large">
+
+            <!-- Account -->
+            <TextView
+                style="@style/Widget.Telefarm.SectionHeader"
+                android:text="@string/settings_section_account" />
+
+            <LinearLayout
+                android:id="@+id/accountRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:layout_width="@dimen/avatar_small"
+                    android:layout_height="@dimen/avatar_small">
+
+                    <TextView
+                        android:id="@+id/accountInitials"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_avatar_circle"
+                        android:gravity="center"
+                        android:textColor="@color/text_on_accent"
+                        android:textSize="16sp" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/accountPhoto"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/cd_avatar"
+                        android:scaleType="centerCrop"
+                        android:visibility="gone"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.Telefarm.Circle" />
+
+                </FrameLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/accountName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                    <TextView
+                        android:id="@+id/accountPhone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:ellipsize="end"
+                        android:maxLines="1"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+                </LinearLayout>
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/icon_tint_muted" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/accountUsername"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:drawableStart="@drawable/ic_link"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+            <TextView
+                android:id="@+id/accountBio"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:drawableStart="@drawable/ic_info"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+            <!-- Appearance -->
+            <TextView
+                style="@style/Widget.Telefarm.SectionHeader"
+                android:text="@string/settings_section_appearance" />
+
+            <LinearLayout
+                android:id="@+id/themeRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_palette"
+                    app:tint="@color/icon_tint" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:text="@string/settings_theme"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                <TextView
+                    android:id="@+id/themeValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_message"
+                    app:tint="@color/icon_tint" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="@string/settings_language"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                    <TextView
+                        android:text="@string/settings_language_english"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Privacy, local to this device -->
+            <TextView
+                style="@style/Widget.Telefarm.SectionHeader"
+                android:text="@string/settings_section_privacy" />
+
+            <LinearLayout
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_shield"
+                    app:tint="@color/icon_tint" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="@string/settings_hide_phone_numbers"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                    <TextView
+                        android:text="@string/settings_hide_phone_numbers_summary"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/hidePhoneSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="@dimen/touch_target" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_lock"
+                    app:tint="@color/icon_tint" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="@string/settings_hide_online_status"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                    <TextView
+                        android:text="@string/settings_hide_online_status_summary"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/hideOnlineSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="@dimen/touch_target" />
+
+            </LinearLayout>
+
+            <!-- Notifications -->
+            <TextView
+                style="@style/Widget.Telefarm.SectionHeader"
+                android:text="@string/settings_section_notifications" />
+
+            <LinearLayout
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_notifications"
+                    app:tint="@color/icon_tint" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:text="@string/settings_notifications_enabled"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                    <TextView
+                        android:text="@string/settings_notifications_enabled_summary"
+                        android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+                </LinearLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/notificationsSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="@dimen/touch_target" />
+
+            </LinearLayout>
+
+            <!-- Storage -->
+            <TextView
+                style="@style/Widget.Telefarm.SectionHeader"
+                android:text="@string/settings_section_storage" />
+
+            <TextView
+                android:id="@+id/storageDatabaseRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:drawableStart="@drawable/ic_storage"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+            <TextView
+                android:id="@+id/storageFilesRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:drawableStart="@drawable/ic_file"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+            <TextView
+                android:id="@+id/storageTotalRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:drawableStart="@drawable/ic_info"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/clearCacheButton"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_medium"
+                android:layout_marginTop="@dimen/spacing_small"
+                android:layout_marginEnd="@dimen/spacing_medium"
+                android:minHeight="@dimen/touch_target"
+                android:text="@string/settings_storage_clear_cache" />
+
+            <!-- About -->
+            <TextView
+                style="@style/Widget.Telefarm.SectionHeader"
+                android:text="@string/settings_section_about" />
+
+            <LinearLayout
+                android:id="@+id/aboutRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_telefarm_logo"
+                    app:tint="@color/icon_tint" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:text="@string/about_title"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_chevron_right"
+                    app:tint="@color/icon_tint_muted" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/versionRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:drawableStart="@drawable/ic_info"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/logoutButton"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_medium"
+                android:layout_marginTop="@dimen/spacing_medium"
+                android:layout_marginEnd="@dimen/spacing_medium"
+                android:minHeight="@dimen/touch_target"
+                android:text="@string/settings_logout"
+                android:textColor="@color/error_red" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

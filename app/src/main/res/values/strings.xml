@@ -1,4 +1,369 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+
+    <!-- Application -->
     <string name="app_name">Telefarm</string>
+    <string name="app_tagline">Personal Telegram client</string>
+    <string name="app_local_only_note">Telefarm connects directly to Telegram from this device. No Telefarm server is involved and your session stays on this device.</string>
+
+    <!-- Authentication -->
+    <string name="auth_welcome_title">Sign in to Telegram</string>
+    <string name="auth_welcome_subtitle">Enter your phone number to receive a verification code.</string>
+    <string name="auth_phone_label">Phone number</string>
+    <string name="auth_phone_hint">+1 555 000 1234</string>
+    <string name="auth_phone_helper">Use the international format, starting with the country code.</string>
+    <string name="auth_continue">Continue</string>
+    <string name="auth_code_title">Enter the code</string>
+    <string name="auth_code_subtitle">We sent a code to %1$s</string>
+    <string name="auth_code_label">Verification code</string>
+    <string name="auth_code_hint">12345</string>
+    <string name="auth_code_sms_hint">You will receive the code by SMS.</string>
+    <string name="auth_code_telegram_hint">Telegram will send the code in another signed-in application.</string>
+    <string name="auth_code_call_hint">Telegram will call you with the code.</string>
+    <string name="auth_code_flash_hint">Telegram will call you and hang up. The last digits of the calling number are the code.</string>
+    <string name="auth_code_fragment_hint">Use the code provided by Fragment.</string>
+    <string name="auth_code_other_hint">The code was sent through another application.</string>
+    <string name="auth_verify">Verify</string>
+    <string name="auth_resend_code">Resend code</string>
+    <string name="auth_resend_in">Resend in %1$d s</string>
+    <string name="auth_email_title">Confirm your email</string>
+    <string name="auth_email_subtitle">Telegram asked for an email address to finish signing in on this device.</string>
+    <string name="auth_email_label">Email address</string>
+    <string name="auth_email_hint">name@example.com</string>
+    <string name="auth_password_title">Two-step verification</string>
+    <string name="auth_password_subtitle">Your account is protected with an additional password.</string>
+    <string name="auth_password_label">Password</string>
+    <string name="auth_password_hint">Enter your password</string>
+    <string name="auth_password_submit">Sign in</string>
+    <string name="auth_password_hint_label">Hint: %1$s</string>
+    <string name="auth_password_recovery">You can also restore access through your recovery email address.</string>
+    <string name="auth_other_device_title">Confirm on another device</string>
+    <string name="auth_other_device_subtitle">Open Telegram on another signed-in device to approve this login.</string>
+    <string name="auth_other_device_open_link">Open confirmation link</string>
+    <string name="auth_registration_title">Create your profile</string>
+    <string name="auth_registration_subtitle">Telegram requires a first name before the account can be used.</string>
+    <string name="auth_first_name_label">First name</string>
+    <string name="auth_last_name_label">Last name (optional)</string>
+    <string name="auth_register">Create account</string>
+    <string name="auth_terms_title">Terms of service</string>
+    <string name="auth_terms_prefix">By continuing you accept the Telegram Terms of Service.</string>
+    <string name="auth_error_phone_invalid">This phone number is not valid. Check the country code and try again.</string>
+    <string name="auth_error_phone_banned">This phone number is banned from Telegram.</string>
+    <string name="auth_error_code_invalid">The verification code is incorrect.</string>
+    <string name="auth_error_code_expired">The verification code has expired. Request a new one.</string>
+    <string name="auth_error_password_invalid">The password is incorrect.</string>
+    <string name="auth_error_flood">Too many attempts. Try again in %1$d seconds.</string>
+    <string name="auth_error_network">Could not reach Telegram. Check your internet connection.</string>
+    <string name="auth_error_credentials_missing">Telegram API credentials are not configured in this build. Add TELEGRAM_API_ID and TELEGRAM_API_HASH and rebuild the application.</string>
+    <string name="auth_error_generic">Sign-in failed. Please try again.</string>
+    <string name="auth_error_restart">Telegram rejected the request. Restart the application and try again.</string>
+    <string name="auth_signing_in">Signing in</string>
+    <string name="auth_initializing">Starting Telefarm</string>
+
+    <!-- Chat list / main screen -->
+    <string name="menu_search">Search</string>
+    <string name="menu_settings">Settings</string>
+    <string name="menu_saved_messages">Saved Messages</string>
+    <string name="menu_contacts">Contacts</string>
+    <string name="menu_about">About Telefarm</string>
+    <string name="menu_logout">Log out</string>
+    <string name="title_saved_messages">Saved Messages</string>
+    <string name="chat_list_loading">Loading chats</string>
+    <string name="chat_list_empty_title">No chats yet</string>
+    <string name="chat_list_empty_message">Start a conversation from Contacts to see it here.</string>
+    <string name="chat_list_error_title">Could not load chats</string>
+    <string name="chat_list_retry">Retry</string>
+    <string name="chat_list_refresh">Refresh</string>
+    <string name="state_offline">No connection. Waiting for the network.</string>
+    <string name="state_connecting">Connecting to Telegram</string>
+    <string name="state_updating">Updating</string>
+    <string name="chat_action_typing">typing</string>
+    <string name="chat_action_uploading_photo">sending a photo</string>
+    <string name="chat_action_recording_voice">recording a voice message</string>
+    <string name="chat_action_uploading_document">sending a file</string>
+    <string name="chat_action_choosing_sticker">choosing a sticker</string>
+    <string name="chat_action_playing_game">playing a game</string>
+    <string name="chat_action_recording_video">recording a video</string>
+    <string name="chat_action_uploading_video">sending a video</string>
+    <string name="chat_action_active">recently active</string>
+    <string name="chat_no_messages">No messages here yet</string>
+    <string name="chat_you_prefix">You: %1$s</string>
+    <string name="chat_draft_prefix">Draft: %1$s</string>
+    <string name="chat_photo">Chat photo</string>
+    <string name="chat_pinned">Pinned</string>
+    <string name="chat_muted">Muted</string>
+
+    <!-- Chat context menu -->
+    <string name="chat_action_pin">Pin to top</string>
+    <string name="chat_action_unpin">Unpin</string>
+    <string name="chat_action_mark_read">Mark as read</string>
+    <string name="chat_action_mark_unread">Mark as unread</string>
+    <string name="chat_action_mute">Mute notifications</string>
+    <string name="chat_action_unmute">Unmute notifications</string>
+    <string name="chat_action_delete_chat">Delete chat</string>
+    <string name="dialog_delete_chat_title">Delete chat</string>
+    <string name="dialog_delete_chat_message">Delete this chat with %1$s? The chat is removed from your chat list.</string>
+    <string name="dialog_delete_confirm">Delete</string>
+    <string name="dialog_logout_title">Log out</string>
+    <string name="dialog_logout_message">Log out of Telegram on this device? The local session and cached data are removed from the device. To use Telefarm again you must sign in again.</string>
+    <string name="dialog_logout_confirm">Log out</string>
+    <string name="dialog_cancel">Cancel</string>
+    <string name="chat_deleted">Chat deleted</string>
+
+    <!-- Search -->
+    <string name="search_hint">Search chats and messages</string>
+    <string name="search_section_chats">Chats</string>
+    <string name="search_section_messages">Messages</string>
+    <string name="search_empty_query">Enter at least two characters to search.</string>
+    <string name="search_no_results">Nothing found for "%1$s"</string>
+    <string name="search_error">Search failed. Please try again.</string>
+    <string name="search_loading">Searching</string>
+    <string name="search_close">Close search</string>
+    <string name="search_clear">Clear query</string>
+    <string name="search_in_chat_hint">Search in this chat</string>
+    <string name="search_no_messages">No messages found</string>
+
+    <!-- Chat screen -->
+    <string name="chat_hint">Message</string>
+    <string name="chat_send">Send</string>
+    <string name="chat_back">Back</string>
+    <string name="chat_info">Chat info</string>
+    <string name="chat_loading_messages">Loading messages</string>
+    <string name="chat_load_error">Could not load messages</string>
+    <string name="chat_no_older_messages">Beginning of the conversation</string>
+    <string name="chat_send_failed">Message not sent</string>
+    <string name="chat_send_retry">Retry</string>
+    <string name="chat_message_deleted">Message deleted</string>
+    <string name="chat_edited">edited</string>
+    <string name="chat_read_only">You cannot write in this chat</string>
+    <string name="chat_too_long">The message is too long (maximum %1$d characters)</string>
+    <string name="chat_characters_left">%1$d characters left</string>
+    <string name="chat_retry_send">Retry sending</string>
+    <string name="chat_delete_message">Delete message</string>
+    <string name="chat_copy_message">Copy text</string>
+    <string name="chat_copied">Copied to clipboard</string>
+    <string name="chat_message_actions">Message actions</string>
+
+    <!-- Message content labels -->
+    <string name="message_photo">Photo</string>
+    <string name="message_video">Video</string>
+    <string name="message_document">Document</string>
+    <string name="message_voice">Voice message</string>
+    <string name="message_audio">Audio</string>
+    <string name="message_sticker">Sticker</string>
+    <string name="message_animated_sticker">Animated sticker</string>
+    <string name="message_video_note">Video message</string>
+    <string name="message_animation">Animation</string>
+    <string name="message_unsupported">This message type is not supported yet</string>
+    <string name="message_service">Service message</string>
+    <string name="message_location">Location</string>
+    <string name="message_contact">Contact</string>
+    <string name="message_poll">Poll</string>
+    <string name="message_call">Call</string>
+    <string name="message_duration_unknown">--:--</string>
+    <string name="message_file_size">%1$s</string>
+    <string name="message_download">Download</string>
+    <string name="message_downloading">Downloading %1$d%%</string>
+    <string name="message_open">Open</string>
+    <string name="message_download_failed">Download failed</string>
+    <string name="message_play">Play</string>
+    <string name="message_pause">Pause</string>
+    <string name="message_today">Today</string>
+    <string name="message_yesterday">Yesterday</string>
+
+    <!-- Profile -->
+    <string name="profile_title_user">Profile</string>
+    <string name="profile_title_group">Group info</string>
+    <string name="profile_title_channel">Channel info</string>
+    <string name="profile_title_self">My profile</string>
+    <string name="profile_send_message">Send message</string>
+    <string name="profile_edit">Edit profile</string>
+    <string name="profile_phone">Phone</string>
+    <string name="profile_username">Username</string>
+    <string name="profile_bio">Bio</string>
+    <string name="profile_members">Members</string>
+    <string name="profile_members_count">%1$s members</string>
+    <string name="profile_subscribers_count">%1$s subscribers</string>
+    <string name="profile_view_members">View members</string>
+    <string name="profile_leave_chat">Leave chat</string>
+    <string name="dialog_leave_chat_title">Leave chat</string>
+    <string name="dialog_leave_chat_message">Leave "%1$s"? You will no longer receive messages from this chat.</string>
+    <string name="dialog_leave_confirm">Leave</string>
+    <string name="profile_leave_success">You left the chat</string>
+    <string name="profile_status_online">online</string>
+    <string name="profile_status_last_seen">last seen %1$s</string>
+    <string name="profile_status_recently">last seen recently</string>
+    <string name="profile_status_last_week">last seen within a week</string>
+    <string name="profile_status_last_month">last seen within a month</string>
+    <string name="profile_status_long_ago">last seen a long time ago</string>
+    <string name="profile_status_hidden">last seen hidden</string>
+    <string name="profile_status_self">your account</string>
+    <string name="profile_loading">Loading profile</string>
+    <string name="profile_error">Could not load this profile</string>
+    <string name="profile_saved">Profile updated</string>
+    <string name="profile_something_wrong">Something went wrong</string>
+    <string name="profile_first_name">First name</string>
+    <string name="profile_last_name">Last name</string>
+    <string name="profile_save">Save</string>
+    <string name="profile_no_bio">No bio</string>
+    <string name="profile_no_username">No username</string>
+    <string name="profile_copy_username">Copy username</string>
+    <string name="profile_photo">Profile photo</string>
+
+    <!-- Member list -->
+    <string name="members_title">Members</string>
+    <string name="members_loading">Loading members</string>
+    <string name="members_empty">No members to display</string>
+    <string name="members_error">Could not load members</string>
+    <string name="member_owner">owner</string>
+    <string name="member_admin">admin</string>
+    <string name="member_bot">bot</string>
+
+    <!-- Contacts -->
+    <string name="contacts_title">Contacts</string>
+    <string name="contacts_loading">Loading contacts</string>
+    <string name="contacts_empty_title">No contacts</string>
+    <string name="contacts_empty_message">Contacts you add on Telegram appear here.</string>
+    <string name="contacts_error">Could not load contacts</string>
+    <string name="contacts_search_hint">Search contacts</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_section_account">Account</string>
+    <string name="settings_section_appearance">Appearance</string>
+    <string name="settings_section_privacy">Privacy</string>
+    <string name="settings_section_notifications">Notifications</string>
+    <string name="settings_section_storage">Storage</string>
+    <string name="settings_section_about">About</string>
+    <string name="settings_account_name">Name</string>
+    <string name="settings_account_username">Username</string>
+    <string name="settings_account_phone">Phone number</string>
+    <string name="settings_account_bio">Bio</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">Follow system</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_theme_dialog_title">Choose theme</string>
+    <string name="settings_hide_phone_numbers">Hide phone numbers</string>
+    <string name="settings_hide_phone_numbers_summary">Mask phone numbers on profile screens</string>
+    <string name="settings_hide_online_status">Hide online status</string>
+    <string name="settings_hide_online_status_summary">Do not show online and last seen information</string>
+    <string name="settings_notifications_enabled">Incoming message notifications</string>
+    <string name="settings_notifications_enabled_summary">Show notifications while Telefarm runs in the background</string>
+    <string name="settings_notifications_unsupported">Notifications require the permission to post notifications.</string>
+    <string name="settings_storage_database">Database: %1$s</string>
+    <string name="settings_storage_files">Downloads: %1$s (%2$d files)</string>
+    <string name="settings_storage_total">Total on this device: %1$s</string>
+    <string name="settings_storage_calculating">Calculating</string>
+    <string name="settings_storage_clear_cache">Clear downloaded files</string>
+    <string name="settings_storage_clear_cache_summary">Delete cached media from this device</string>
+    <string name="settings_storage_clear_cache_done">Cache cleared</string>
+    <string name="settings_storage_clear_cache_confirm">Delete all cached media files from this device?</string>
+    <string name="settings_logout">Log out</string>
+    <string name="settings_logout_summary">Remove the session from this device</string>
+    <string name="settings_about_version">Telefarm %1$s</string>
+    <string name="settings_language">Interface language</string>
+    <string name="settings_language_english">English</string>
+
+    <!-- About -->
+    <string name="about_title">About Telefarm</string>
+    <string name="about_description">Telefarm is an independent, personal Telegram client for Android. It speaks to Telegram directly through TDLib, the official Telegram Database Library, without any intermediate server.</string>
+    <string name="about_privacy_title">Privacy</string>
+    <string name="about_privacy_text">Your phone number, verification codes and session data never leave this device. Sessions are stored in private application storage and are encrypted with a key held by the Android keystore. Telefarm does not operate a server and does not upload your chats anywhere.</string>
+    <string name="about_disclaimer_title">Disclaimer</string>
+    <string name="about_disclaimer_text">Telefarm is not affiliated with, endorsed by, or sponsored by Telegram. Telegram and related trademarks belong to their respective owners.</string>
+    <string name="about_source_title">Source code</string>
+    <string name="about_source_text">github.com/darkshot47/Telegram-Android</string>
+    <string name="about_libraries">Built with TDLib, the Telegram Database Library, and AndroidX.</string>
+    <string name="about_close">Close</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_messages">Messages</string>
+    <string name="notification_channel_messages_description">New messages received while Telefarm is running</string>
+    <string name="notification_title_group">%1$s in %2$s</string>
+
+    <!-- Errors / generic states -->
+    <string name="error_generic">Something went wrong</string>
+    <string name="error_network">Network unavailable</string>
+    <string name="error_telegram">Telegram returned an error: %1$s</string>
+    <string name="error_permission">Permission denied</string>
+    <string name="error_file_missing">The file is not available on this device</string>
+    <string name="error_no_app_for_file">No application can open this file</string>
+    <string name="error_not_implemented">This action is not available yet</string>
+    <string name="error_credentials">Telegram API credentials are missing in this build</string>
+    <string name="error_flood_wait">Telegram asked to wait %1$d seconds before retrying</string>
+    <string name="error_chat_forbidden">You do not have permission to do this in this chat</string>
+
+    <!-- Accessibility -->
+    <string name="cd_avatar">Profile photo</string>
+    <string name="cd_send_message">Send message</string>
+    <string name="cd_back">Back</string>
+    <string name="cd_open_menu">More options</string>
+    <string name="cd_open_search">Search</string>
+    <string name="cd_open_chat">Open chat</string>
+    <string name="cd_chat_icon">Chat type</string>
+    <string name="cd_message_status">Message status</string>
+    <string name="cd_play_voice">Play voice message</string>
+    <string name="cd_pause_voice">Pause voice message</string>
+    <string name="cd_download_file">Download file</string>
+    <string name="cd_open_profile">Open profile</string>
+    <string name="cd_clear_query">Clear search query</string>
+    <string name="cd_retry">Retry</string>
+
+    <!-- Relative time -->
+    <string name="time_yesterday">Yesterday</string>
+    <string name="time_today_at">today at %1$s</string>
+    <string name="time_yesterday_at">yesterday at %1$s</string>
+    <string name="time_on_date">%1$s</string>
+    <string name="time_on_date_at">%1$s at %2$s</string>
+    <string name="time_now">just now</string>
+    <string name="time_minutes_ago">%1$d min ago</string>
+    <string name="time_hours_ago">%1$d h ago</string>
+
+    <!-- Plurals -->
+    <plurals name="unread_messages">
+        <item quantity="one">%1$d unread message</item>
+        <item quantity="other">%1$d unread messages</item>
+    </plurals>
+
+    <plurals name="unread_mentions">
+        <item quantity="one">%1$d mention</item>
+        <item quantity="other">%1$d mentions</item>
+    </plurals>
+
+    <string name="chat_action_info">Chat info</string>
+    <string name="chat_action_clear_history">Clear history</string>
+    <string name="chat_cannot_send">You cannot send messages in this chat</string>
+    <string name="chat_message_hint">Message</string>
+    <string name="dialog_clear_history_title">Clear history</string>
+    <string name="dialog_clear_history_message">Delete every message in this conversation for you?</string>
+    <string name="dialog_clear_history_confirm">Clear</string>
+    <string name="chat_history_cleared">History cleared</string>
+    <string name="chat_action_reply">Reply</string>
+    <string name="chat_message_copied">Message copied</string>
+    <string name="chat_delete_failed">The message could not be deleted</string>
+    <string name="chat_clear_failed">The history could not be cleared</string>
+    <string name="state_connecting">Connecting to Telegram</string>
+    <plurals name="members_count">
+        <item quantity="one">%d member</item>
+        <item quantity="other">%d members</item>
+    </plurals>
+    <plurals name="subscribers_count">
+        <item quantity="one">%d subscriber</item>
+        <item quantity="other">%d subscribers</item>
+    </plurals>
+    <string name="dialog_close">Close</string>
+    <string name="settings_storage_clear_cache_message">Delete downloaded media and cached files from this device? Telegram keeps the copies in the cloud.</string>
+    <string name="settings_account_edit">Edit profile</string>
+    <string name="profile_username_copied">Username copied</string>
+    <string name="photo_viewer_error">The picture could not be loaded</string>
+    <string name="contacts_status_offline">Offline</string>
+    <string name="members_count_label">Members</string>
+    <string name="search_result_message_from">From %1$s</string>
+    <string name="auth_profile_name_required">Enter your first name</string>
+    <string name="member_role_owner">Owner</string>
+    <string name="member_role_admin">Admin</string>
+    <string name="member_role_restricted">Restricted</string>
+    <string name="member_role_banned">Banned</string>
+    <string name="contact_bot">Bot</string>
 </resources>

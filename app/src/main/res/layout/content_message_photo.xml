@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:layout_width="@dimen/message_photo_max_width"
+        android:layout_height="@dimen/message_photo_max_height">
+
+        <ImageView
+            android:id="@+id/mediaImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_message_media_placeholder"
+            android:contentDescription="@string/message_photo"
+            android:scaleType="centerCrop" />
+
+        <ProgressBar
+            android:id="@+id/mediaProgress"
+            style="?android:attr/progressBarStyleHorizontal"
+            android:layout_width="match_parent"
+            android:layout_height="4dp"
+            android:layout_gravity="bottom"
+            android:max="100"
+            android:progressDrawable="@drawable/bg_progress_track"
+            android:visibility="gone" />
+
+        <ImageView
+            android:id="@+id/mediaOverlay"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:layout_gravity="center"
+            android:contentDescription="@string/cd_download_file"
+            android:src="@drawable/ic_download"
+            android:visibility="gone"
+            app:tint="@color/text_on_accent" />
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/mediaCaption"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:maxWidth="@dimen/message_photo_max_width"
+        android:textColor="@color/text_primary"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
+</LinearLayout>
