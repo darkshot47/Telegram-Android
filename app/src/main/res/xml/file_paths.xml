@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Directories that may be shared with other applications through content URIs. -->
+<paths>
+    <!-- TDLib downloaded files (documents, photos, videos, voice notes). -->
+    <files-path
+        name="telefarm_downloads"
+        path="tdlib/files/" />
+</paths>

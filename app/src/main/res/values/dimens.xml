@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Touch targets -->
+    <dimen name="touch_target">48dp</dimen>
+
+    <!-- Chat list -->
+    <dimen name="chat_row_height">72dp</dimen>
+    <dimen name="chat_avatar_size">54dp</dimen>
+
+    <!-- Messages -->
+    <dimen name="message_avatar_size">34dp</dimen>
+    <dimen name="message_bubble_radius">14dp</dimen>
+    <dimen name="message_bubble_radius_small">5dp</dimen>
+    <dimen name="message_bubble_max_width_percent">78</dimen>
+    <dimen name="message_photo_max_width">240dp</dimen>
+    <dimen name="message_photo_max_height">280dp</dimen>
+    <dimen name="message_sticker_size">140dp</dimen>
+    <dimen name="message_thumbnail_corner">10dp</dimen>
+
+    <!-- Avatar sizes -->
+    <dimen name="avatar_small">40dp</dimen>
+    <dimen name="avatar_medium">54dp</dimen>
+    <dimen name="avatar_large">88dp</dimen>
+    <dimen name="avatar_xlarge">112dp</dimen>
+
+    <!-- Profile -->
+    <dimen name="profile_photo_height">220dp</dimen>
+
+    <!-- Generic spacing -->
+    <dimen name="spacing_tiny">4dp</dimen>
+    <dimen name="spacing_small">8dp</dimen>
+    <dimen name="spacing_medium">16dp</dimen>
+    <dimen name="spacing_large">24dp</dimen>
+    <dimen name="spacing_xlarge">32dp</dimen>
+
+    <!-- Screens -->
+    <dimen name="screen_padding">20dp</dimen>
+    <dimen name="message_list_padding">8dp</dimen>
+</resources>
+
+

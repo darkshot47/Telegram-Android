@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Application icon foreground.
+
+  Original vector artwork: a paper plane inside a circle, drawn from scratch for Telefarm.
+  No Telegram artwork is used.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M78.5,32.2 L31.8,51.3 C29.4,52.3 29.4,53.7 31.3,54.3 L42.9,57.9 L69.6,41.1 C70.9,40.3 72,40.8 71,41.7 L49.4,61.2 L49.4,72 C49.4,73 49.9,73.4 50.5,73.4 C51.1,73.4 51.4,73.1 51.8,72.7 L57.4,67.2 L69.3,75.9 C71.5,77.1 73.1,76.5 73.6,74.7 L81.9,34.8 C82.6,32.5 80.9,31.3 78.5,32.2 Z" />
+
+</vector>
