@@ -17,6 +17,18 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+/** What the chat list screen has to do about the authorization state. */
+enum class SignInRequirement {
+    /** TDLib has not reported a usable state yet: the screen shows a loading state only. */
+    UNKNOWN,
+
+    /** The session is not authorized: the sign in screen takes over. */
+    REQUIRED,
+
+    /** A session is authorized and the chat list is the right screen. */
+    NOT_REQUIRED
+}
+
 /** Everything the chat list screen renders. */
 data class MainState(
     val isLoading: Boolean = true,
@@ -25,7 +37,7 @@ data class MainState(
     val error: UiMessage? = null,
     val isRefreshing: Boolean = false,
     val connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING,
-    val requiresSignIn: Boolean = false
+    val signIn: SignInRequirement = SignInRequirement.UNKNOWN
 )
 
 /**
@@ -56,7 +68,7 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
             error = (chatListState as? ChatListState.Failed)?.message,
             isRefreshing = refreshing,
             connectionStatus = connection,
-            requiresSignIn = authState.requiresSignIn()
+            signIn = authState.signInRequirement()
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), MainState())
 
@@ -136,12 +148,18 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
     }
 }
 
-/** True when the current authorization state has to be handled by the sign in screen. */
-private fun AuthState.requiresSignIn(): Boolean = when (this) {
-    AuthState.WaitPhoneNumber, AuthState.Closed -> true
-    is AuthState.Failed -> true
+/**
+ * Sorts the authorization state into the three cases the chat list has to tell apart.
+ *
+ * `Initializing` and `LoggingOut` mean "not decided yet" and must not be read as "signed in":
+ * that was the bug that opened the chat list on a fresh install before the sign in screen.
+ */
+private fun AuthState.signInRequirement(): SignInRequirement = when (this) {
+    AuthState.Ready -> SignInRequirement.NOT_REQUIRED
+    AuthState.Initializing, AuthState.LoggingOut -> SignInRequirement.UNKNOWN
+    AuthState.WaitPhoneNumber, AuthState.Closed -> SignInRequirement.REQUIRED
+    is AuthState.Failed -> SignInRequirement.REQUIRED
     is AuthState.WaitCode, is AuthState.WaitPassword, is AuthState.WaitEmailAddress,
     is AuthState.WaitEmailCode, is AuthState.WaitRegistration,
-    is AuthState.WaitOtherDeviceConfirmation -> true
-    AuthState.Initializing, AuthState.LoggingOut, AuthState.Ready -> false
+    is AuthState.WaitOtherDeviceConfirmation -> SignInRequirement.REQUIRED
 }

@@ -65,6 +65,12 @@ class AuthActivity : AppCompatActivity() {
             viewModel.submitPhoneNumber(binding.authPhone.phoneInput.text?.toString().orEmpty())
         }
 
+        binding.authPhone.sessionToggle.setOnClickListener { viewModel.toggleSessionLogin() }
+        binding.authPhone.sessionButton.setOnClickListener {
+            binding.authPhone.sessionInput.hideKeyboard()
+            viewModel.submitSession(binding.authPhone.sessionInput.text?.toString().orEmpty())
+        }
+
         binding.authCode.codeButton.setOnClickListener {
             binding.authCode.codeInput.hideKeyboard()
             viewModel.submitCode(binding.authCode.codeInput.text?.toString().orEmpty())
@@ -112,6 +118,13 @@ class AuthActivity : AppCompatActivity() {
         binding.authEmail.root.setVisible(state.step == AuthStep.EMAIL_ADDRESS || state.step == AuthStep.EMAIL_CODE)
         binding.authOtherDevice.root.setVisible(state.step == AuthStep.OTHER_DEVICE)
         binding.authRegister.root.setVisible(state.step == AuthStep.REGISTRATION)
+
+        binding.authPhone.sessionGroup.setVisible(state.showsSessionLogin)
+        binding.authPhone.sessionToggle.setText(
+            if (state.showsSessionLogin) R.string.auth_session_hide else R.string.auth_session_show
+        )
+        binding.authPhone.sessionSummary.setVisible(state.sessionSummary != null)
+        binding.authPhone.sessionSummary.text = state.sessionSummary
 
         when (state.step) {
             AuthStep.CODE -> renderCodeStep(state)

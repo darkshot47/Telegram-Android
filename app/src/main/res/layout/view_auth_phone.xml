@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -42,5 +43,79 @@
         android:layout_marginTop="@dimen/spacing_medium"
         android:minHeight="@dimen/touch_target"
         android:text="@string/auth_continue" />
+
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/sessionToggle"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:minHeight="@dimen/touch_target"
+        android:text="@string/auth_session_show" />
+
+    <LinearLayout
+        android:id="@+id/sessionGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/auth_session_title"
+            android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:text="@string/auth_session_description"
+            android:textAppearance="@style/TextAppearance.Telefarm.Caption" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/sessionField"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:hint="@string/auth_session_label"
+            app:helperText="@string/auth_session_helper">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/sessionInput"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="top|start"
+                android:inputType="textMultiLine|textNoSuggestions"
+                android:maxLines="6"
+                android:minLines="3"
+                android:minHeight="@dimen/touch_target" />
+
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <TextView
+            android:id="@+id/sessionSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle"
+            android:visibility="gone"
+            tools:text="149.154.167.51:443 · telethon"
+            tools:visibility="visible" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/sessionButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_small"
+            android:minHeight="@dimen/touch_target"
+            android:text="@string/auth_session_submit" />
+
+    </LinearLayout>
 
 </LinearLayout>

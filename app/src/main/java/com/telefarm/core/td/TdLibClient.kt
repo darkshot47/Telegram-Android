@@ -147,6 +147,22 @@ class TdLibClient(private val config: TdLibConfig) {
         }
     }
 
+    /**
+     * Creates a fresh native client in place of the current one.
+     *
+     * `TdApi.LogOut` ends with `AuthorizationStateClosed`, and a closed instance is destroyed by
+     * TDLib: it accepts no request any more and answers none either, so a request sent to it would
+     * never come back. Signing in again therefore needs a new instance. The update stream and the
+     * request bookkeeping belong to this wrapper, not to the instance, so subscribers stay wired.
+     */
+    fun restart() {
+        pending.clear()
+        client = null
+        closed = false
+        lastError = null
+        start()
+    }
+
     /** Closes the native client and releases its threads. */
     fun stop() {
         if (closed) return
