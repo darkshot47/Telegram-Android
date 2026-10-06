@@ -1,7 +1,13 @@
 package com.telefarm.data
 
 import com.telefarm.R
+import com.telefarm.core.mtproto.MtProtoClient
+import com.telefarm.core.mtproto.MtProtoClientInfo
+import com.telefarm.core.mtproto.MtProtoResponse
 import com.telefarm.core.security.SecureStore
+import com.telefarm.core.session.ImportedSession
+import com.telefarm.core.session.LoginToken
+import com.telefarm.core.session.SessionLoginException
 import com.telefarm.core.td.TdLibClient
 import com.telefarm.core.td.TelefarmLog
 import com.telefarm.data.map.TdMappers
@@ -11,11 +17,13 @@ import com.telefarm.data.model.TelegramCredentials
 import com.telefarm.data.model.UiMessage
 import com.telefarm.data.model.UserUi
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import org.drinkless.tdlib.TdApi
 import java.io.File
@@ -126,6 +134,46 @@ class TdSessionController(
             }
         )
     }
+
+    /**
+     * Asks Telegram for a login token through TDLib.
+     *
+     * TDLib answers with `authorizationStateWaitOtherDeviceConfirmation`, and the link of that
+     * state carries the token. Works while the sign in screen waits for a phone number.
+     */
+    suspend fun requestSessionLogin(): Result<Unit> = request {
+        client.send(TdApi.RequestQrCodeAuthentication().apply { otherUserIds = longArrayOf() })
+    }
+
+    /**
+     * Approves the login token of [link] with the authorization key of [session].
+     *
+     * TDLib cannot import an authorization key, so the pasted session is used the way an already
+     * signed in client approves a login: it signs the token on the MTProto connection of its own
+     * data center. TDLib then finishes the login on its own and reports the ready state.
+     */
+    suspend fun acceptLoginToken(session: ImportedSession, link: String): Result<Unit> =
+        withContext(Dispatchers.IO) {
+            request {
+                val token = LoginToken.fromLink(link)
+                val error = (mtProtoClient().acceptLoginToken(session, token) as? MtProtoResponse.Error)
+                if (error != null) {
+                    throw SessionLoginException(error.code, error.message)
+                }
+            }
+        }
+
+    /** The client that signs the login token; it carries no secret of its own. */
+    private fun mtProtoClient(): MtProtoClient = MtProtoClient(
+        MtProtoClientInfo(
+            apiId = credentials.apiId,
+            deviceModel = android.os.Build.MODEL.ifBlank { DEVICE_MODEL_FALLBACK },
+            systemVersion = android.os.Build.VERSION.RELEASE.ifBlank { SYSTEM_VERSION_FALLBACK },
+            appVersion = applicationVersion,
+            systemLanguageCode = "en",
+            languageCode = java.util.Locale.getDefault().language.takeIf { it.isNotBlank() } ?: "en"
+        )
+    )
 
     /** Signs out and removes every local trace of the session. */
     suspend fun logOut() {

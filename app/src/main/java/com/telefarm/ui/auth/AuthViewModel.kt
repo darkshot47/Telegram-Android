@@ -3,7 +3,14 @@ package com.telefarm.ui.auth
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.telefarm.R
+import androidx.annotation.StringRes
 import com.telefarm.core.AppGraph
+import com.telefarm.core.session.ImportedSession
+import com.telefarm.core.session.LoginToken
+import com.telefarm.core.session.SessionLoginException
+import com.telefarm.core.session.SessionString
+import com.telefarm.core.session.SessionStringException
+import com.telefarm.core.session.SessionStringReason
 import com.telefarm.core.td.TdLibException
 import com.telefarm.data.map.toAuthMessage
 import com.telefarm.data.model.AuthState
@@ -43,7 +50,9 @@ data class AuthFormState(
     val emailPattern: String? = null,
     val confirmationLink: String? = null,
     val termsOfService: String? = null,
-    val credentialsConfigured: Boolean = true
+    val credentialsConfigured: Boolean = true,
+    val showsSessionLogin: Boolean = false,
+    val sessionSummary: String? = null
 ) {
     val canSubmit: Boolean get() = !isBusy
 }
@@ -67,6 +76,9 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
     private var resendJob: Job? = null
     private var submittedPhone: String = ""
 
+    /** Session that was pasted and still waits for the login token of TDLib, if any. */
+    private var pendingSession: ImportedSession? = null
+
     init {
         viewModelScope.launch {
             graph.session.authState.collect { authState -> render(authState) }
@@ -84,6 +96,29 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
         perform {
             graph.session.submitPhoneNumber(normalized)
         }
+    }
+
+    /** Shows or hides the session login of the phone number step. */
+    fun toggleSessionLogin() {
+        _state.value = _state.value.copy(showsSessionLogin = !_state.value.showsSessionLogin, error = null)
+    }
+
+    /**
+     * Signs in with a session string instead of a phone number.
+     *
+     * The session is only read here: the sign in itself happens once TDLib reports the login token
+     * that the session has to approve.
+     */
+    fun submitSession(raw: String) {
+        val session = try {
+            SessionString.parse(raw)
+        } catch (error: SessionStringException) {
+            _state.value = _state.value.copy(error = UiMessage.Res(sessionMessage(error.reason)))
+            return
+        }
+        pendingSession = session
+        _state.value = _state.value.copy(sessionSummary = session.describe(), error = null)
+        perform { graph.session.requestSessionLogin() }
     }
 
     fun submitCode(code: String) {
@@ -148,9 +183,11 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
     }
 
     /** Maps a failure reported by the session to the text the sign in screen shows. */
-    private fun authMessage(error: Throwable): UiMessage =
-        if (error is TdLibException) error.toAuthMessage()
-        else UiMessage.Res(R.string.auth_error_network)
+    private fun authMessage(error: Throwable): UiMessage = when (error) {
+        is TdLibException -> error.toAuthMessage()
+        is SessionLoginException -> UiMessage.Res(R.string.auth_session_rejected)
+        else -> UiMessage.Res(R.string.auth_error_network)
+    }
 
     private fun render(authState: AuthState) {
         _state.value = when (authState) {
@@ -204,13 +241,21 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
                 termsOfService = authState.termsOfService
             )
 
-            is AuthState.WaitOtherDeviceConfirmation -> _state.value.copy(
-                step = AuthStep.OTHER_DEVICE,
-                isBusy = false,
-                confirmationLink = authState.link
-            )
+            is AuthState.WaitOtherDeviceConfirmation -> {
+                // A pasted session approves the token of this login on its own: that is the whole
+                // point of the session login, so the user does not have to open anything.
+                acceptPendingSession(authState.link)
+                _state.value.copy(
+                    step = AuthStep.OTHER_DEVICE,
+                    isBusy = false,
+                    confirmationLink = authState.link
+                )
+            }
 
-            AuthState.Ready -> _state.value.copy(step = AuthStep.READY, isBusy = false, error = null)
+            AuthState.Ready -> {
+                pendingSession = null
+                _state.value.copy(step = AuthStep.READY, isBusy = false, error = null)
+            }
 
             AuthState.LoggingOut -> _state.value.copy(step = AuthStep.CHECKING, isBusy = true, error = null)
 
@@ -229,6 +274,40 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
                 error = authState.message
             )
         }
+    }
+
+    /** Approves the login token of TDLib with the pasted session; only ever runs once per paste. */
+    private fun acceptPendingSession(link: String) {
+        val session = pendingSession ?: return
+        pendingSession = null
+        if (!LoginToken.matches(link)) {
+            _state.value = _state.value.copy(error = UiMessage.Res(R.string.auth_session_failed))
+            return
+        }
+        _state.value = _state.value.copy(isBusy = true, error = null)
+        viewModelScope.launch {
+            val result = graph.session.acceptLoginToken(session, link)
+            val error = result.exceptionOrNull()
+            if (error != null) {
+                // The session did not work, so the sign in goes back to the phone number step
+                // instead of leaving the user on a screen that only offers to open a link.
+                _state.value = _state.value.copy(
+                    step = AuthStep.PHONE_NUMBER,
+                    isBusy = false,
+                    error = authMessage(error)
+                )
+            }
+        }
+    }
+
+    /** Text that explains why a session string was not accepted. */
+    @StringRes
+    private fun sessionMessage(reason: SessionStringReason): Int = when (reason) {
+        SessionStringReason.EMPTY -> R.string.auth_session_empty
+        SessionStringReason.NOT_BASE64, SessionStringReason.UNKNOWN_FORMAT -> R.string.auth_session_invalid
+        SessionStringReason.INVALID_DATA_CENTER -> R.string.auth_session_data_center
+        SessionStringReason.INVALID_KEY -> R.string.auth_session_invalid_key
+        SessionStringReason.TEST_MODE -> R.string.auth_session_test_mode
     }
 
     /** Counts the seconds Telegram asks the client to wait before a new code can be sent. */
