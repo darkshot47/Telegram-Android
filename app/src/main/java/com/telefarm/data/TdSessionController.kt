@@ -302,11 +302,13 @@ class TdSessionController(
         _profile.value = TdMappers.user(me)
     }
 
-    private suspend fun waitForClosed(attempts: Int) {
+    /** Waits until TDLib reports the closed state; false when it does not arrive in time. */
+    private suspend fun waitForClosed(attempts: Int): Boolean {
         repeat(attempts) {
-            if (_authState.value is AuthState.Closed) return
+            if (_authState.value is AuthState.Closed) return true
             delay(CLOSE_POLL_INTERVAL_MS)
         }
+        return false
     }
 
     private fun deleteSessionDirectory() {
