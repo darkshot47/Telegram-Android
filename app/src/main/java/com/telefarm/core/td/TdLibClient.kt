@@ -154,7 +154,18 @@ class TdLibClient(private val config: TdLibConfig) {
         pending.clear()
         val nativeClient = client
         client = null
-        runCatching { nativeClient?.close() }
+        if (nativeClient != null) {
+            // This TDLib Java binding has no close() method: the client is shut down by sending
+            // TdApi.Close, after which TDLib flushes and closes its databases and reports
+            // AuthorizationStateClosed. The handlers are no-ops because the client is gone.
+            runCatching {
+                nativeClient.send(
+                    TdApi.Close(),
+                    Client.ResultHandler { },
+                    Client.ExceptionHandler { }
+                )
+            }
+        }
     }
 
     private companion object {

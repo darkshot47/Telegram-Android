@@ -12,9 +12,11 @@ import com.telefarm.data.model.DownloadState
 import com.telefarm.data.model.FileRef
 import com.telefarm.data.model.MessageContentUi
 import com.telefarm.data.model.MessageUi
+import com.telefarm.data.model.StickerKind
 import com.telefarm.media.FileManager
 import com.telefarm.media.ThumbnailLoader
 import com.telefarm.media.VoicePlayer
+import com.telefarm.ui.common.PreviewText
 import com.telefarm.ui.common.Sizes
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Job
@@ -106,7 +108,7 @@ class MessageContentBinder(
         action.setOnClickListener { open() }
         root.setOnClickListener { open() }
         jobs += scope.launch {
-            fileManager.download(target, FileManager.PRIORITY_DOCUMENT).collect { state ->
+            fileManager.download(target, FileManager.PRIORITY_DEFAULT).collect { state ->
                 when (state) {
                     is DownloadState.Completed -> {
                         progress.isVisible = false
@@ -149,12 +151,12 @@ class MessageContentBinder(
             if (file == null) {
                 Unit
             } else {
-                val local = localPathOf(file)
+                val local = file.availablePath
                 if (local != null) {
                     voicePlayer.toggle(file.id, local)
                 } else {
                     jobs += scope.launch {
-                        fileManager.download(file, FileManager.PRIORITY_AUDIO).collect { state ->
+                        fileManager.download(file, FileManager.PRIORITY_DEFAULT).collect { state ->
                             when (state) {
                                 is DownloadState.Completed -> voicePlayer.toggle(file.id, state.path)
                                 is DownloadState.Progress -> progress.progress = state.percent
@@ -193,12 +195,12 @@ class MessageContentBinder(
         }
 
         val play: () -> Unit = {
-            val local = localPathOf(file)
+            val local = file.availablePath
             if (local != null) {
                 voicePlayer.toggle(file.id, local)
             } else {
                 jobs += scope.launch {
-                    fileManager.download(file, FileManager.PRIORITY_AUDIO).collect { state ->
+                    fileManager.download(file, FileManager.PRIORITY_DEFAULT).collect { state ->
                         if (state is DownloadState.Completed) voicePlayer.toggle(file.id, state.path)
                     }
                 }
@@ -213,8 +215,8 @@ class MessageContentBinder(
         val image = root.findViewById<ImageView>(R.id.stickerImage)
         val placeholder = root.findViewById<TextView>(R.id.stickerPlaceholder)
 
-        if (content.isAnimated || content.file == null) {
-            // Animated stickers need a player, so a label is shown instead of a frozen frame.
+        if (content.kind != StickerKind.STATIC || content.file == null) {
+            // Animated and video stickers need a player, so a label is shown instead of a frame.
             placeholder.isVisible = true
             image.isVisible = false
             return
@@ -235,7 +237,7 @@ class MessageContentBinder(
 
     private fun bindOther(container: FrameLayout, content: MessageContentUi.Other) {
         val view = inflate(container, R.layout.content_message_other) as TextView
-        view.text = content.label
+        view.text = PreviewText.of(container.context, content.kind)
         view.maxWidth = maxBubbleWidth(container)
     }
 
@@ -262,12 +264,12 @@ class MessageContentBinder(
 
     /** Downloads [reference] and hands the finished file to the system. */
     private fun openAfterDownload(reference: FileRef, mimeType: String?, progress: ProgressBar) {
-        localPathOf(reference)?.let { path ->
+        reference.availablePath?.let { path ->
             onOpenFile(path, mimeType)
             return
         }
         scope.launch {
-            fileManager.download(reference, FileManager.PRIORITY_DOCUMENT).collect { state ->
+            fileManager.download(reference, FileManager.PRIORITY_DEFAULT).collect { state ->
                 when (state) {
                     is DownloadState.Completed -> {
                         progress.isVisible = false
@@ -298,3 +300,6 @@ class MessageContentBinder(
     }
 
 }
+
+/** Telegram video messages are MPEG-4 files; the container is what the system player opens. */
+private const val VIDEO_MIME_TYPE = "video/mp4"

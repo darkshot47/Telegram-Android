@@ -211,7 +211,8 @@ class MessageStore(
                     options = null
                     replyMarkup = null
                     inputMessageContent = TdApi.InputMessageText().apply {
-                        text = TdApi.FormattedText().apply {
+                        // `this` is required: the enclosing function also has a `text` parameter.
+                        this.text = TdApi.FormattedText().apply {
                             this.text = trimmed
                             entities = emptyArray()
                         }
@@ -381,12 +382,19 @@ class MessageStore(
                 markDirty()
             }
 
-            is TdApi.UpdateChatReadOutbox, is TdApi.UpdateChatReadInbox -> if (update.chatId == chatId) {
+            is TdApi.UpdateChatReadOutbox -> if (update.chatId == chatId) {
                 markDirty()
             }
 
-            is TdApi.UpdateChatTitle, is TdApi.UpdateChatPhoto, is TdApi.UpdateChatLastMessage ->
-                if (update.chatId == chatId) scope.launch { refreshHeader() }
+            is TdApi.UpdateChatReadInbox -> if (update.chatId == chatId) {
+                markDirty()
+            }
+
+            is TdApi.UpdateChatTitle -> if (update.chatId == chatId) scope.launch { refreshHeader() }
+
+            is TdApi.UpdateChatPhoto -> if (update.chatId == chatId) scope.launch { refreshHeader() }
+
+            is TdApi.UpdateChatLastMessage -> if (update.chatId == chatId) scope.launch { refreshHeader() }
 
             is TdApi.UpdateChatAction -> if (update.chatId == chatId) onTyping(chatAction(update))
 

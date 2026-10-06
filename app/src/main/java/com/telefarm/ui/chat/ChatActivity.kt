@@ -210,7 +210,7 @@ class ChatActivity : AppCompatActivity() {
         binding.headerTitle.text = header.title
         val subtitle = subtitleOf(this, header)
         binding.headerSubtitle.isVisible = !subtitle.isNullOrBlank()
-        binding.headerSubtitle.text = subtitle.orEmpty()
+        binding.headerSubtitle.text = subtitle ?: ""
 
         val canSend = header.canSendMessages
         binding.composer.isVisible = canSend

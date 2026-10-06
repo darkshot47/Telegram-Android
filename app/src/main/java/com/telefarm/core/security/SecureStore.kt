@@ -1,8 +1,11 @@
 package com.telefarm.core.security
 
 import android.content.Context
+import android.security.keystore.KeyGenParameterSpec
+import android.security.keystore.KeyProperties
 import android.util.Base64
 import java.io.File
+import java.security.KeyStore
 import javax.crypto.Cipher
 import javax.crypto.KeyGenerator
 import javax.crypto.SecretKey
@@ -15,7 +18,9 @@ class SecureStore(
     companion object {
         private const val FILE_NAME = "telefarm_secure_store"
         private const val KEY_ALIAS = "telefarm_secure_key"
+        private const val KEYSTORE_PROVIDER = "AndroidKeyStore"
         private const val TRANSFORMATION = "AES/GCM/NoPadding"
+        private const val KEY_SIZE_BITS = 256
         private const val IV_LENGTH = 12
         private const val TAG_LENGTH = 128
         private const val SEPARATOR = '\n'
@@ -63,10 +68,36 @@ class SecureStore(
         return values.containsKey(key)
     }
 
-    private fun loadOrCreateKey(): SecretKey {
+    /**
+     * Key used to encrypt the store.
+     *
+     * The key lives in the Android keystore, so it survives process restarts: without that the
+     * store could be written but never read back. If the keystore is unavailable the store keeps
+     * working with a key that only exists in memory.
+     */
+    private fun loadOrCreateKey(): SecretKey = try {
+        val keyStore = KeyStore.getInstance(KEYSTORE_PROVIDER).apply { load(null) }
+        val existing = keyStore.getKey(KEY_ALIAS, null) as? SecretKey
+        if (existing != null) {
+            existing
+        } else {
+            val generator = KeyGenerator.getInstance(KeyProperties.KEY_ALGORITHM_AES, KEYSTORE_PROVIDER)
+            generator.init(
+                KeyGenParameterSpec.Builder(
+                    KEY_ALIAS,
+                    KeyProperties.PURPOSE_ENCRYPT or KeyProperties.PURPOSE_DECRYPT
+                )
+                    .setBlockModes(KeyProperties.BLOCK_MODE_GCM)
+                    .setEncryptionPaddings(KeyProperties.ENCRYPTION_PADDING_NONE)
+                    .setKeySize(KEY_SIZE_BITS)
+                    .build()
+            )
+            generator.generateKey()
+        }
+    } catch (_: Throwable) {
         val keyGenerator = KeyGenerator.getInstance("AES")
-        keyGenerator.init(256)
-        return keyGenerator.generateKey()
+        keyGenerator.init(KEY_SIZE_BITS)
+        keyGenerator.generateKey()
     }
 
     private fun encrypt(data: ByteArray): ByteArray {

@@ -23,7 +23,6 @@ object PreviewText {
         val body = when (preview) {
             is MessagePreview.Text -> preview.text
             is MessagePreview.Kind -> of(context, preview.kind)
-            MessagePreview.Service -> context.getString(R.string.message_service)
         }
         if (body.isEmpty()) return ""
         return when {
@@ -48,7 +47,8 @@ object PreviewText {
             PreviewKind.CONTACT -> R.string.message_contact
             PreviewKind.POLL -> R.string.message_poll
             PreviewKind.CALL -> R.string.message_call
-            PreviewKind.GAME, PreviewKind.UNSUPPORTED -> R.string.message_unsupported
+            PreviewKind.SERVICE -> R.string.message_service
+            PreviewKind.UNSUPPORTED -> R.string.message_unsupported
         }
     )
 }

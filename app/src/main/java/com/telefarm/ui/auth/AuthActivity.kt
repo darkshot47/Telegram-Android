@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.text.InputFilter
 import androidx.activity.viewModels
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.Lifecycle
@@ -14,6 +15,7 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.telefarm.R
 import com.telefarm.appGraph
+import com.telefarm.data.model.AuthState
 import com.telefarm.databinding.ActivityAuthBinding
 import com.telefarm.ui.common.hideKeyboard
 import com.telefarm.ui.common.resolve
@@ -124,17 +126,31 @@ class AuthActivity : AppCompatActivity() {
 
     private fun renderCodeStep(state: AuthFormState) {
         binding.authCode.codeSubtitle.text = getString(R.string.auth_code_subtitle, state.phoneNumber)
-        binding.authCode.codeHint.setVisible(state.codeHint != null)
-        binding.authCode.codeHint.text = state.codeHint?.resolve(this)
+        val hintRes = state.codeType?.let(::codeHintRes)
+        binding.authCode.codeHint.setVisible(hintRes != null)
+        if (hintRes != null) {
+            binding.authCode.codeHint.setText(hintRes)
+        }
         state.codeLength?.let { length ->
             binding.authCode.codeInput.filters = arrayOf(InputFilter.LengthFilter(length.coerceAtLeast(1)))
         }
-        binding.authCode.resendButton.isEnabled = state.canResendCode
-        binding.authCode.resendButton.text = if (state.resendSecondsRemaining > 0) {
-            getString(R.string.auth_resend_in, state.resendSecondsRemaining)
+        // Telegram reports the waiting time it wants the client to respect before a new code.
+        binding.authCode.resendButton.isEnabled = state.canSubmit && state.resendInSeconds <= 0
+        binding.authCode.resendButton.text = if (state.resendInSeconds > 0) {
+            getString(R.string.auth_resend_in, state.resendInSeconds)
         } else {
             getString(R.string.auth_resend_code)
         }
+    }
+
+    /** Explanation of how Telegram delivered the login code, when the type carries one. */
+    @StringRes
+    private fun codeHintRes(type: AuthState.CodeType): Int? = when (type) {
+        AuthState.CodeType.SMS -> R.string.auth_code_sms_hint
+        AuthState.CodeType.CALL -> R.string.auth_code_call_hint
+        AuthState.CodeType.FLASH_CALL -> R.string.auth_code_flash_hint
+        AuthState.CodeType.OTHER -> R.string.auth_code_other_hint
+        AuthState.CodeType.UNKNOWN -> null
     }
 
     private fun renderPasswordStep(state: AuthFormState) {

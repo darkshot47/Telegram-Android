@@ -25,6 +25,7 @@ enum class AuthStep {
     EMAIL_CODE,
     OTHER_DEVICE,
     REGISTRATION,
+    READY,
     FAILED
 }
 
@@ -35,6 +36,7 @@ data class AuthFormState(
     val error: UiMessage? = null,
     val phoneNumber: String = "",
     val codeLength: Int? = null,
+    val codeType: AuthState.CodeType? = null,
     val resendInSeconds: Int = 0,
     val passwordHint: String? = null,
     val hasRecoveryEmail: Boolean = false,
@@ -74,7 +76,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
     /** Sends the phone number; the number is kept only to label the next screen. */
     fun submitPhoneNumber(rawNumber: String) {
         val normalized = PhoneNumberFormatter.normalize(rawNumber)
-        if (!PhoneNumberFormatter.isValid(normalized)) {
+        if (normalized == null || !PhoneNumberFormatter.isValid(normalized)) {
             _state.value = _state.value.copy(error = UiMessage.Res(R.string.auth_error_phone_invalid))
             return
         }
@@ -139,11 +141,16 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
         viewModelScope.launch {
             val result = block()
             result.exceptionOrNull()?.let { error ->
-                _state.value = _state.value.copy(error = error.toAuthMessage())
+                _state.value = _state.value.copy(error = authMessage(error))
             }
             _state.value = _state.value.copy(isBusy = false)
         }
     }
+
+    /** Maps a failure reported by the session to the text the sign in screen shows. */
+    private fun authMessage(error: Throwable): UiMessage =
+        if (error is TdLibException) error.toAuthMessage()
+        else UiMessage.Res(R.string.auth_error_network)
 
     private fun render(authState: AuthState) {
         _state.value = when (authState) {
@@ -153,6 +160,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
                 step = AuthStep.PHONE_NUMBER,
                 isBusy = false,
                 codeLength = null,
+                codeType = null,
                 resendInSeconds = 0
             )
 
@@ -163,6 +171,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
                     isBusy = false,
                     phoneNumber = submittedPhone,
                     codeLength = authState.codeLength,
+                    codeType = authState.codeType,
                     resendInSeconds = authState.resendInSeconds
                 )
             }
@@ -198,7 +207,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
                 confirmationLink = authState.link
             )
 
-            AuthState.Ready -> _state.value.copy(step = AuthStep.PHONE_NUMBER, isBusy = false, error = null)
+            AuthState.Ready -> _state.value.copy(step = AuthStep.READY, isBusy = false, error = null)
 
             AuthState.LoggingOut -> _state.value.copy(step = AuthStep.CHECKING, isBusy = true, error = null)
 
@@ -236,9 +245,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
 
     /** Shows a failure reported by the network layer. */
     fun reportFailure(error: Throwable) {
-        val message = if (error is TdLibException) error.toAuthMessage()
-        else UiMessage.Res(R.string.auth_error_network)
-        _state.value = _state.value.copy(isBusy = false, error = message)
+        _state.value = _state.value.copy(isBusy = false, error = authMessage(error))
     }
 
     private companion object {
