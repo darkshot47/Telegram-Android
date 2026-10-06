@@ -9,7 +9,9 @@ on:
   pull_request:
 
 permissions:
-  contents: read
+  # Temporary: `contents: write` lets a failing test run publish its output to the branch,
+  # because the run logs of this repository are not reachable from outside.
+  contents: write
 
 jobs:
   build:
@@ -51,6 +53,19 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew test --stacktrace 2>&1 | tee ci-logs/test.log
+
+      # Temporary step: publish the unit test output to the branch so it can be read while the
+      # run logs are not reachable. It is removed again once the build is green.
+      - name: Publish unit test output
+        if: failure()
+        continue-on-error: true
+        run: |
+          tail -c 30000 ci-logs/test.log > ci-test-failure.txt
+          git config user.email "actions@github.com"
+          git config user.name "github-actions"
+          git add ci-test-failure.txt
+          git commit -m "ci: unit test output [skip ci]" || true
+          git push || true
 
       - name: Build debug APK
         run: |
