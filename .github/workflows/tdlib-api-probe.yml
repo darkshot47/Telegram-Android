@@ -29,8 +29,12 @@ jobs:
           java-version: "17"
 
       - name: Download artifact and dump API
+        continue-on-error: true
         run: |
+          set +e
           exec > /tmp/diag.txt 2>&1
+          echo "script started"
+          trap 'echo "script exited with $?"' EXIT
           mkdir -p probe && cd probe
           BASE=https://repo1.maven.org/maven2/io/github/tdlib-android/core/0.1.1
           echo "===== directory listing ====="
@@ -85,8 +89,9 @@ jobs:
           echo "===== done ====="
 
       - name: Publish diagnostics to the branch
+        if: always()
         run: |
-          cp /tmp/diag.txt diag-tdlib-api.txt
+          cp /tmp/diag.txt diag-tdlib-api.txt || echo "no diagnostics were produced" > diag-tdlib-api.txt
           git config user.email "actions@github.com"
           git config user.name "github-actions"
           git add diag-tdlib-api.txt
