@@ -140,55 +140,60 @@ jobs:
             echo "########## $(basename "$f") ##########" >> diag/log.txt
             cat "$f" >> diag/log.txt
           done
-          tail -c 24000 diag/log.txt > diag/log-tail.txt
-          grep -E "^e: |^w: .*deprecat|error:|Unresolved|FAILURE|What went wrong|Execution failed|> Task" diag/log.txt | tail -n 400 > diag/log-grep.txt
+          grep -E "^e: |Unresolved|Unresolved reference|Assignment type mismatch|no longer supported|error:" diag/log.txt | tail -n 300 > diag/log-grep.txt
+          tail -c 8000 diag/log.txt > diag/log-tail.txt
 
           TDLIB_ROOT=/home/runner/.gradle/caches/modules-2/files-2.1/io.github.tdlib-android
+          AAR=$(find "$TDLIB_ROOT" -name '*.aar' 2>/dev/null | head -1)
+          POM=$(find "$TDLIB_ROOT" -name '*.pom' 2>/dev/null | head -1)
+          MOD=$(find "$TDLIB_ROOT" -name '*.module' 2>/dev/null | head -1)
           {
-            echo "== resolved artifacts =="
-            find "$TDLIB_ROOT" -type f 2>/dev/null | head -20
-            echo
-            echo "== gradle dependency report =="
-            sed -n '/^+--- /,$p' diag/log.txt | head -5
+            echo "== pom =="; cat "$POM" 2>/dev/null
+            echo "== module =="; cat "$MOD" 2>/dev/null
           } > diag/meta.txt 2>&1
 
-          JAR=$(find "$TDLIB_ROOT" -name '*.jar' 2>/dev/null | head -1)
-          AAR=$(find "$TDLIB_ROOT" -name '*.aar' 2>/dev/null | head -1)
-          CLASSPATH=""
-          if [ -n "$JAR" ]; then
-            CLASSPATH="$JAR"
-            unzip -l "$JAR" 2>/dev/null | head -30 > diag/jar-contents.txt
-          fi
-          if [ -n "$AAR" ]; then
-            (cd /tmp && rm -rf aar && mkdir aar && cd aar && unzip -o -q "$AAR" && ls -la . && ls -la jni/* 2>/dev/null) > diag/aar-contents.txt 2>&1
-            (cd /tmp/aar 2>/dev/null && unzip -o -q classes.jar -d classes 2>/dev/null)
-            [ -d /tmp/aar/classes ] && CLASSPATH="/tmp/aar/classes:$CLASSPATH"
-          fi
-          if [ -n "$CLASSPATH" ]; then
-            javap -classpath "$CLASSPATH" \
+          rm -rf /tmp/aar && mkdir -p /tmp/aar && cd /tmp/aar
+          unzip -o -q "$AAR" > diag/aar-list.txt 2>&1
+          echo "== top level ==" >> diag/aar-list.txt
+          ls -la >> diag/aar-list.txt
+          echo "== libs ==" >> diag/aar-list.txt
+          find . -name '*.jar' -exec ls -la {} \; >> diag/aar-list.txt 2>&1
+          echo "== jar entries (first 40) ==" >> diag/aar-list.txt
+          for j in $(find . -name '*.jar'); do
+            echo "--- $j" >> diag/aar-list.txt
+            unzip -l "$j" 2>/dev/null | head -40 >> diag/aar-list.txt
+          done
+
+          rm -rf /tmp/x && mkdir -p /tmp/x
+          for j in $(find /tmp/aar -name '*.jar'); do
+            d=/tmp/x/$(echo "$j" | tr '/' '_')
+            mkdir -p "$d" && (cd "$d" && unzip -o -q "$j")
+          done
+          CLASSPATH=$(find /tmp/x -type d -name tdlib | head -1)
+          TDLIB_CLASS=$(find /tmp/x -name 'TdApi.class' | head -1)
+          echo "tdlib class root: $TDLIB_CLASS" > diag/tdlib-api.txt
+          if [ -n "$TDLIB_CLASS" ]; then
+            ROOTDIR=${TDLIB_CLASS%%/org/drinkless/tdlib/*}
+            javap -classpath "$ROOTDIR" \
               'org.drinkless.tdlib.Client' \
+              'org.drinkless.tdlib.TdApi' \
               'org.drinkless.tdlib.TdApi$InputMessageText' \
               'org.drinkless.tdlib.TdApi$SendMessage' \
               'org.drinkless.tdlib.TdApi$Chat' \
               'org.drinkless.tdlib.TdApi$DraftMessage' \
+              'org.drinkless.tdlib.TdApi$DraftMessageContentText' \
               'org.drinkless.tdlib.TdApi$Sticker' \
               'org.drinkless.tdlib.TdApi$FormattedText' \
               'org.drinkless.tdlib.TdApi$File' \
               'org.drinkless.tdlib.TdApi$LocalFile' \
               'org.drinkless.tdlib.TdApi$Message' \
-              'org.drinkless.tdlib.TdApi$ChatPosition' \
-              'org.drinkless.tdlib.TdApi$GetChatHistory' \
               'org.drinkless.tdlib.TdApi$SetTdlibParameters' \
-              'org.drinkless.tdlib.TdApi$MessageSendingStateFailed' \
-              > diag/tdlib-api.txt 2>&1
-          else
-            echo "no tdlib classpath found" > diag/tdlib-api.txt
+              >> diag/tdlib-api.txt 2>&1
           fi
 
-          cat diag/log-grep.txt diag/meta.txt diag/jar-contents.txt diag/aar-contents.txt diag/tdlib-api.txt > diag/summary.txt
+          cat diag/log-grep.txt diag/meta.txt diag/aar-list.txt diag/tdlib-api.txt > diag/summary.txt
           jq -n --rawfile summary diag/summary.txt --rawfile tail diag/log-tail.txt --arg sha "$SHA" \
             '{name:"gradle-diagnostics", head_sha:$sha, status:"completed", conclusion:"neutral",
               output:{title:"Gradle diagnostics", summary: (($summary + "\n\n===== LOG TAIL =====\n" + $tail)[0:64000])}}' > diag/payload.json
-          wc -c diag/payload.json
           gh api --method POST "/repos/$REPO/check-runs" --input diag/payload.json > diag/response.json 2>&1 || cat diag/response.json
       # END TEMPORARY DIAGNOSTICS --------------------------------------------------------
