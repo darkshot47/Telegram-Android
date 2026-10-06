@@ -10,9 +10,6 @@ on:
 
 permissions:
   contents: read
-  # TEMPORARY: lets the diagnostics step publish the Gradle error log through the
-  # checks API so the failure text can be retrieved without the (firewalled) log archive.
-  checks: write
 
 jobs:
   build:
@@ -53,52 +50,44 @@ jobs:
       - name: Run unit tests
         run: |
           set -o pipefail
-          ./gradlew testDebugUnitTest --stacktrace 2>&1 | tee ci-logs/testDebugUnitTest.log
+          ./gradlew test --stacktrace 2>&1 | tee ci-logs/test.log
 
       - name: Build debug APK
         run: |
           set -o pipefail
           ./gradlew assembleDebug --stacktrace 2>&1 | tee ci-logs/assembleDebug.log
 
-      - name: Verify debug APK exists
+      # The upload below can only pass when a real APK is on disk, so the workflow can never
+      # report success without a downloadable artifact.
+      - name: Verify debug APK
         run: |
-          APK=app/build/outputs/apk/debug/app-debug.apk
-          if [ ! -f "$APK" ]; then
-            echo "::error::$APK was not produced by assembleDebug"
-            find app/build/outputs -type f 2>/dev/null || true
-            exit 1
-          fi
-          ls -lh "$APK"
+          ls -lah app/build/outputs/apk/debug/
+          test -n "$(find app/build/outputs/apk/debug -name '*.apk' -type f -print -quit)"
 
-      # The APK is uploaded on its own, straight from the Gradle output directory. The artifact is
-      # served as a single ZIP that contains app-debug.apk (no logs, no nested archives).
       - name: Upload debug APK
         uses: actions/upload-artifact@v4
         with:
           name: Telefarm-debug-apk
-          path: app/build/outputs/apk/debug/app-debug.apk
+          path: app/build/outputs/apk/debug/*.apk
           if-no-files-found: error
 
+      # The release build reuses the debug signing configuration defined in app/build.gradle.kts,
+      # so no signing secrets are required. It runs after the debug artifact was uploaded.
       - name: Build release APK
         run: |
           set -o pipefail
           ./gradlew assembleRelease --stacktrace 2>&1 | tee ci-logs/assembleRelease.log
 
-      - name: Verify release APK exists
+      - name: Verify release APK
         run: |
-          APK=app/build/outputs/apk/release/app-release.apk
-          if [ ! -f "$APK" ]; then
-            echo "::error::$APK was not produced by assembleRelease"
-            find app/build/outputs -type f 2>/dev/null || true
-            exit 1
-          fi
-          ls -lh "$APK"
+          ls -lah app/build/outputs/apk/release/
+          test -n "$(find app/build/outputs/apk/release -name '*.apk' -type f -print -quit)"
 
       - name: Upload release APK
         uses: actions/upload-artifact@v4
         with:
           name: Telefarm-release-apk
-          path: app/build/outputs/apk/release/app-release.apk
+          path: app/build/outputs/apk/release/*.apk
           if-no-files-found: error
 
       - name: Upload test reports
@@ -121,82 +110,3 @@ jobs:
         with:
           name: Telefarm-build-reports
           path: app/build/reports/
-
-      # TEMPORARY DIAGNOSTICS ------------------------------------------------------------
-      # Publishes the Gradle error output and the resolved TDLib API surface as a check
-      # run, because the raw logs/artifacts are not reachable from the development sandbox.
-      - name: Publish CI diagnostics
-        if: always()
-        continue-on-error: true
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          REPO: ${{ github.repository }}
-          SHA: ${{ github.sha }}
-        run: |
-          set +e
-          DIAG="$GITHUB_WORKSPACE/diag"
-          mkdir -p "$DIAG"
-          : > $DIAG/log.txt
-          for f in ci-logs/*.log; do
-            [ -f "$f" ] || continue
-            echo "########## $(basename "$f") ##########" >> $DIAG/log.txt
-            cat "$f" >> $DIAG/log.txt
-          done
-          grep -E "^e: |Unresolved|Unresolved reference|Assignment type mismatch|no longer supported|error:" $DIAG/log.txt | tail -n 300 > $DIAG/log-grep.txt
-          tail -c 8000 $DIAG/log.txt > $DIAG/log-tail.txt
-
-          TDLIB_ROOT=/home/runner/.gradle/caches/modules-2/files-2.1/io.github.tdlib-android
-          AAR=$(find "$TDLIB_ROOT" -name '*.aar' 2>/dev/null | head -1)
-          POM=$(find "$TDLIB_ROOT" -name '*.pom' 2>/dev/null | head -1)
-          MOD=$(find "$TDLIB_ROOT" -name '*.module' 2>/dev/null | head -1)
-          {
-            echo "== pom =="; cat "$POM" 2>/dev/null
-            echo "== module =="; cat "$MOD" 2>/dev/null
-          } > $DIAG/meta.txt 2>&1
-
-          rm -rf /tmp/aar && mkdir -p /tmp/aar && cd /tmp/aar
-          JARDIR=$GITHUB_WORKSPACE/diag
-          unzip -o -q "$AAR" > $DIAG/aar-list.txt 2>&1
-          echo "== top level ==" >> $DIAG/aar-list.txt
-          ls -la >> $DIAG/aar-list.txt
-          echo "== libs ==" >> $DIAG/aar-list.txt
-          find . -name '*.jar' -exec ls -la {} \; >> $DIAG/aar-list.txt 2>&1
-          echo "== jar entries (first 40) ==" >> $DIAG/aar-list.txt
-          for j in $(find . -name '*.jar'); do
-            echo "--- $j" >> $DIAG/aar-list.txt
-            unzip -l "$j" 2>/dev/null | head -40 >> $DIAG/aar-list.txt
-          done
-
-          rm -rf /tmp/x && mkdir -p /tmp/x
-          for j in $(find /tmp/aar -name '*.jar'); do
-            d=/tmp/x/$(echo "$j" | tr '/' '_')
-            mkdir -p "$d" && (cd "$d" && unzip -o -q "$j")
-          done
-          CLASSPATH=$(find /tmp/x -type d -name tdlib | head -1)
-          TDLIB_CLASS=$(find /tmp/x -name 'TdApi.class' | head -1)
-          echo "tdlib class root: $TDLIB_CLASS" > $DIAG/tdlib-api.txt
-          if [ -n "$TDLIB_CLASS" ]; then
-            ROOTDIR=${TDLIB_CLASS%%/org/drinkless/tdlib/*}
-            javap -classpath "$ROOTDIR" \
-              'org.drinkless.tdlib.Client' \
-              'org.drinkless.tdlib.TdApi' \
-              'org.drinkless.tdlib.TdApi$InputMessageText' \
-              'org.drinkless.tdlib.TdApi$SendMessage' \
-              'org.drinkless.tdlib.TdApi$Chat' \
-              'org.drinkless.tdlib.TdApi$DraftMessage' \
-              'org.drinkless.tdlib.TdApi$DraftMessageContentText' \
-              'org.drinkless.tdlib.TdApi$Sticker' \
-              'org.drinkless.tdlib.TdApi$FormattedText' \
-              'org.drinkless.tdlib.TdApi$File' \
-              'org.drinkless.tdlib.TdApi$LocalFile' \
-              'org.drinkless.tdlib.TdApi$Message' \
-              'org.drinkless.tdlib.TdApi$SetTdlibParameters' \
-              >> $DIAG/tdlib-api.txt 2>&1
-          fi
-
-          cat $DIAG/log-grep.txt $DIAG/meta.txt $DIAG/aar-list.txt $DIAG/tdlib-api.txt > $DIAG/summary.txt
-          jq -n --rawfile summary $DIAG/summary.txt --rawfile tail $DIAG/log-tail.txt --arg sha "$SHA" \
-            '{name:"gradle-diagnostics", head_sha:$sha, status:"completed", conclusion:"neutral",
-              output:{title:"Gradle diagnostics", summary: (($summary + "\n\n===== LOG TAIL =====\n" + $tail)[0:64000])}}' > $DIAG/payload.json
-          gh api --method POST "/repos/$REPO/check-runs" --input $DIAG/payload.json > $DIAG/response.json 2>&1 || cat $DIAG/response.json
-      # END TEMPORARY DIAGNOSTICS --------------------------------------------------------
