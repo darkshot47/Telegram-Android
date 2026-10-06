@@ -57,7 +57,7 @@ class SecureStore(context: Context) {
         if (!file.exists() || file.length() == 0L) return mutableMapOf()
         return try {
             val raw = Base64.decode(file.readBytes(), Base64.NO_WRAP)
-            val plain = decrypt(raw)
+            val plain = String(decrypt(raw), Charsets.UTF_8)
             val result = mutableMapOf<String, String>()
             plain.split(SEPARATOR).filter { it.isNotEmpty() }.forEach { entry ->
                 val index = entry.indexOf('=')
@@ -142,6 +142,6 @@ class SecureStore(context: Context) {
         const val TRANSFORMATION = "AES/GCM/NoPadding"
         const val IV_LENGTH = 12
         const val TAG_BITS = 128
-        const val SEPARATOR = "\n"
+        const val SEPARATOR = '\n'
     }
 }
