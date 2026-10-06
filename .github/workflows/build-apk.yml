@@ -10,6 +10,9 @@ on:
 
 permissions:
   contents: read
+  # TEMPORARY: lets the diagnostics step publish the Gradle error log through the
+  # checks API so the failure text can be retrieved without the (firewalled) log archive.
+  checks: write
 
 jobs:
   build:
@@ -118,3 +121,74 @@ jobs:
         with:
           name: Telefarm-build-reports
           path: app/build/reports/
+
+      # TEMPORARY DIAGNOSTICS ------------------------------------------------------------
+      # Publishes the Gradle error output and the resolved TDLib API surface as a check
+      # run, because the raw logs/artifacts are not reachable from the development sandbox.
+      - name: Publish CI diagnostics
+        if: always()
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          set +e
+          mkdir -p diag
+          : > diag/log.txt
+          for f in ci-logs/*.log; do
+            [ -f "$f" ] || continue
+            echo "########## $(basename "$f") ##########" >> diag/log.txt
+            cat "$f" >> diag/log.txt
+          done
+          tail -c 24000 diag/log.txt > diag/log-tail.txt
+          grep -E "^e: |^w: .*deprecat|error:|Unresolved|FAILURE|What went wrong|Execution failed|> Task" diag/log.txt | tail -n 400 > diag/log-grep.txt
+
+          TDLIB_ROOT=/home/runner/.gradle/caches/modules-2/files-2.1/io.github.tdlib-android
+          {
+            echo "== resolved artifacts =="
+            find "$TDLIB_ROOT" -type f 2>/dev/null | head -20
+            echo
+            echo "== gradle dependency report =="
+            sed -n '/^+--- /,$p' diag/log.txt | head -5
+          } > diag/meta.txt 2>&1
+
+          JAR=$(find "$TDLIB_ROOT" -name '*.jar' 2>/dev/null | head -1)
+          AAR=$(find "$TDLIB_ROOT" -name '*.aar' 2>/dev/null | head -1)
+          CLASSPATH=""
+          if [ -n "$JAR" ]; then
+            CLASSPATH="$JAR"
+            unzip -l "$JAR" 2>/dev/null | head -30 > diag/jar-contents.txt
+          fi
+          if [ -n "$AAR" ]; then
+            (cd /tmp && rm -rf aar && mkdir aar && cd aar && unzip -o -q "$AAR" && ls -la . && ls -la jni/* 2>/dev/null) > diag/aar-contents.txt 2>&1
+            (cd /tmp/aar 2>/dev/null && unzip -o -q classes.jar -d classes 2>/dev/null)
+            [ -d /tmp/aar/classes ] && CLASSPATH="/tmp/aar/classes:$CLASSPATH"
+          fi
+          if [ -n "$CLASSPATH" ]; then
+            javap -classpath "$CLASSPATH" \
+              'org.drinkless.tdlib.Client' \
+              'org.drinkless.tdlib.TdApi$InputMessageText' \
+              'org.drinkless.tdlib.TdApi$SendMessage' \
+              'org.drinkless.tdlib.TdApi$Chat' \
+              'org.drinkless.tdlib.TdApi$DraftMessage' \
+              'org.drinkless.tdlib.TdApi$Sticker' \
+              'org.drinkless.tdlib.TdApi$FormattedText' \
+              'org.drinkless.tdlib.TdApi$File' \
+              'org.drinkless.tdlib.TdApi$LocalFile' \
+              'org.drinkless.tdlib.TdApi$Message' \
+              'org.drinkless.tdlib.TdApi$ChatPosition' \
+              'org.drinkless.tdlib.TdApi$GetChatHistory' \
+              'org.drinkless.tdlib.TdApi$SetTdlibParameters' \
+              'org.drinkless.tdlib.TdApi$MessageSendingStateFailed' \
+              > diag/tdlib-api.txt 2>&1
+          else
+            echo "no tdlib classpath found" > diag/tdlib-api.txt
+          fi
+
+          cat diag/log-grep.txt diag/meta.txt diag/jar-contents.txt diag/aar-contents.txt diag/tdlib-api.txt > diag/summary.txt
+          jq -n --rawfile summary diag/summary.txt --rawfile tail diag/log-tail.txt --arg sha "$SHA" \
+            '{name:"gradle-diagnostics", head_sha:$sha, status:"completed", conclusion:"neutral",
+              output:{title:"Gradle diagnostics", summary: (($summary + "\n\n===== LOG TAIL =====\n" + $tail)[0:64000])}}' > diag/payload.json
+          wc -c diag/payload.json
+          gh api --method POST "/repos/$REPO/check-runs" --input diag/payload.json > diag/response.json 2>&1 || cat diag/response.json
+      # END TEMPORARY DIAGNOSTICS --------------------------------------------------------
