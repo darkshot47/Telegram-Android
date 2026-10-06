@@ -176,14 +176,15 @@ object SessionString {
             return telethonSession(data, telefarmPrefix, addressSize = 4)
         }
         if (data.size == TELETHON_IPV6_SIZE) {
-            // A GramJS session whose address text is 14 bytes long has exactly the same size as a
-            // Telethon session with an IPv6 address, so this interpretation is only used when the
-            // endpoint it describes could be a Telegram data center.
-            val session = telethonSession(data, telefarmPrefix, addressSize = 16)
-            val port = session?.port
-            if (session != null && port != null && port in PLAUSIBLE_PORTS) {
-                return session
+            // A GramJS session whose address text is 14 bytes long decodes to exactly the same
+            // size as a Telethon session with an IPv6 address, so the address decides: the bytes of
+            // a GramJS address are the characters of a host name, while an IPv6 address stored as
+            // bytes contains bytes that cannot be printed.
+            val gramJs = sessionFromGramJsBody(data)
+            if (gramJs != null && isTextAddress(data, GRAM_JS_ADDRESS_FOR_IPV6_SIZE)) {
+                return gramJs
             }
+            return telethonSession(data, telefarmPrefix, addressSize = 16) ?: gramJs
         }
         return sessionFromGramJsBody(data)
     }
@@ -208,6 +209,17 @@ object SessionString {
             testMode = false,
             format = if (telefarmPrefix) SessionFormat.TELEFARM else SessionFormat.TELETHON
         )
+    }
+
+    /** True when the address of a GramJS session of this size is a host name or an address. */
+    private fun isTextAddress(data: ByteArray, addressSize: Int): Boolean {
+        if (addressSize <= 0 || data.size < GRAM_JS_HEADER_SIZE + addressSize) {
+            return false
+        }
+        return (0 until addressSize).all { index ->
+            val value = data[3 + index].toInt() and 0xFF
+            value in PRINTABLE_ASCII
+        }
     }
 
     /** GramJS layout: data center, two byte address length, address, port, key. */
@@ -357,8 +369,10 @@ object SessionString {
     private const val DEFAULT_PORT = 443
     private const val ZERO_BYTE: Byte = 0
 
-    /** Ports the Telegram data centers are reached on; used to tell layouts apart. */
-    private val PLAUSIBLE_PORTS = setOf(443, 80, 5222)
+    /** Number of characters the address of a GramJS session of the IPv6 size has. */
+    private const val GRAM_JS_ADDRESS_FOR_IPV6_SIZE = TELETHON_IPV6_SIZE - GRAM_JS_HEADER_SIZE
+
+    private val PRINTABLE_ASCII = 0x21..0x7E
 
     private val DEFAULT_ADDRESSES = mapOf(
         1 to "149.154.175.53",
