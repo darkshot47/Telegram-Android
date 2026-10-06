@@ -1,40 +1,58 @@
------ tail -----
-.steps.ExecuteWorkBuildOperationFiringStep.execute(ExecuteWorkBuildOperationFiringStep.java:39)
-	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:46)
-	at org.gradle.internal.execution.steps.IdentityCacheStep.execute(IdentityCacheStep.java:34)
-	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:48)
-	at org.gradle.internal.execution.steps.IdentifyStep.execute(IdentifyStep.java:35)
-	at org.gradle.internal.execution.impl.DefaultExecutionEngine$1.execute(DefaultExecutionEngine.java:61)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.executeIfValid(ExecuteActionsTaskExecuter.java:127)
-	at org.gradle.api.internal.tasks.execution.ExecuteActionsTaskExecuter.execute(ExecuteActionsTaskExecuter.java:116)
-	at org.gradle.api.internal.tasks.execution.FinalizePropertiesTaskExecuter.execute(FinalizePropertiesTaskExecuter.java:46)
-	at org.gradle.api.internal.tasks.execution.ResolveTaskExecutionModeExecuter.execute(ResolveTaskExecutionModeExecuter.java:51)
-	at org.gradle.api.internal.tasks.execution.SkipTaskWithNoActionsExecuter.execute(SkipTaskWithNoActionsExecuter.java:57)
-	at org.gradle.api.internal.tasks.execution.SkipOnlyIfTaskExecuter.execute(SkipOnlyIfTaskExecuter.java:74)
-	at org.gradle.api.internal.tasks.execution.CatchExceptionTaskExecuter.execute(CatchExceptionTaskExecuter.java:36)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.executeTask(EventFiringTaskExecuter.java:77)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:55)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter$1.call(EventFiringTaskExecuter.java:52)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:209)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$CallableBuildOperationWorker.execute(DefaultBuildOperationRunner.java:204)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:66)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner$2.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:166)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.execute(DefaultBuildOperationRunner.java:59)
-	at org.gradle.internal.operations.DefaultBuildOperationRunner.call(DefaultBuildOperationRunner.java:53)
-	at org.gradle.api.internal.tasks.execution.EventFiringTaskExecuter.execute(EventFiringTaskExecuter.java:52)
-	at org.gradle.execution.plan.LocalTaskNodeExecutor.execute(LocalTaskNodeExecutor.java:42)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:331)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$InvokeNodeExecutorsAction.execute(DefaultTaskExecutionGraph.java:318)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.lambda$execute$0(DefaultTaskExecutionGraph.java:314)
-	at org.gradle.internal.operations.CurrentBuildOperationRef.with(CurrentBuildOperationRef.java:85)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:314)
-	at org.gradle.execution.taskgraph.DefaultTaskExecutionGraph$BuildOperationAwareExecutionAction.execute(DefaultTaskExecutionGraph.java:303)
-	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.execute(DefaultPlanExecutor.java:459)
-	at org.gradle.execution.plan.DefaultPlanExecutor$ExecutorWorker.run(DefaultPlanExecutor.java:376)
-	at org.gradle.internal.concurrent.ExecutorPolicy$CatchAndRecordFailures.onExecute(ExecutorPolicy.java:64)
-	at org.gradle.internal.concurrent.AbstractManagedExecutor$1.run(AbstractManagedExecutor.java:48)
+===== compiler errors =====
+===== task failures =====
+FAILURE: Build failed with an exception.
+* What went wrong:
+Execution failed for task ':app:testDebugUnitTest'.
+org.gradle.api.tasks.TaskExecutionException: Execution failed for task ':app:testDebugUnitTest'.
+===== failing tests =====
+SessionStringTest > parses a gramjs session string FAILED
+    org.junit.ComparisonFailure at SessionStringTest.kt:41
 
+29 tests completed, 1 failed
 
-BUILD FAILED in 41s
-51 actionable tasks: 23 executed, 28 from cache
+> Task :app:testDebugUnitTest FAILED
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1791273978176.json
+
+FAILURE: Build failed with an exception.
+
+* What went wrong:
+Execution failed for task ':app:testDebugUnitTest'.
+===== test result files =====
+-- app/build/test-results/testDebugUnitTest/TEST-com.telefarm.core.mtproto.TlCodecTest.xml
+<testsuite name="com.telefarm.core.mtproto.TlCodecTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-06T08:07:07" hostname="runnervm8df0l" time="0.018">
+  <testcase name="the reader stops after the bytes it read" classname="com.telefarm.core.mtproto.TlCodecTest" time="0.001"/>
+  <testcase name="byte strings round trip through every length class" classname="com.telefarm.core.mtproto.TlCodecTest" time="0.005"/>
+  <testcase name="the login token is written with a one byte length" classname="com.telefarm.core.mtproto.TlCodecTest" time="0.009"/>
+  <testcase name="the wrapped request matches the reference serialization" classname="com.telefarm.core.mtproto.TlCodecTest" time="0.002"/>
+-- app/build/test-results/testDebugUnitTest/TEST-com.telefarm.core.mtproto.MtProtoMessageStateTest.xml
+<testsuite name="com.telefarm.core.mtproto.MtProtoMessageStateTest" tests="7" skipped="0" failures="0" errors="0" timestamp="2026-10-06T08:07:07" hostname="runnervm8df0l" time="0.029">
+  <testcase name="server message is decrypted" classname="com.telefarm.core.mtproto.MtProtoMessageStateTest" time="0.009"/>
+  <testcase name="authorization key id is the little endian tail of the sha1 digest" classname="com.telefarm.core.mtproto.MtProtoMessageStateTest" time="0.0"/>
+  <testcase name="messages sent with another key are rejected" classname="com.telefarm.core.mtproto.MtProtoMessageStateTest" time="0.0"/>
+  <testcase name="client message matches the reference vector" classname="com.telefarm.core.mtproto.MtProtoMessageStateTest" time="0.001"/>
+  <testcase name="a corrupted message is rejected by its message key" classname="com.telefarm.core.mtproto.MtProtoMessageStateTest" time="0.001"/>
+  <testcase name="message ids grow monotonically" classname="com.telefarm.core.mtproto.MtProtoMessageStateTest" time="0.002"/>
+  <testcase name="padding keeps the plaintext a multiple of the block size" classname="com.telefarm.core.mtproto.MtProtoMessageStateTest" time="0.014"/>
+-- app/build/test-results/testDebugUnitTest/TEST-com.telefarm.core.mtproto.MtProtoAesTest.xml
+<testsuite name="com.telefarm.core.mtproto.MtProtoAesTest" tests="4" skipped="0" failures="0" errors="0" timestamp="2026-10-06T08:07:07" hostname="runnervm8df0l" time="0.071">
+  <testcase name="ige round trips data that does not repeat" classname="com.telefarm.core.mtproto.MtProtoAesTest" time="0.068"/>
+  <testcase name="ige encrypts the reference vector" classname="com.telefarm.core.mtproto.MtProtoAesTest" time="0.0"/>
+  <testcase name="ige decrypts the reference vector" classname="com.telefarm.core.mtproto.MtProtoAesTest" time="0.001"/>
+  <testcase name="counter mode keeps running between chunks" classname="com.telefarm.core.mtproto.MtProtoAesTest" time="0.001"/>
+-- app/build/test-results/testDebugUnitTest/TEST-com.telefarm.core.session.SessionStringTest.xml
+<testsuite name="com.telefarm.core.session.SessionStringTest" tests="14" skipped="0" failures="1" errors="0" timestamp="2026-10-06T08:07:07" hostname="runnervm8df0l" time="0.029">
+  <testcase name="rejects a data center that does not exist" classname="com.telefarm.core.session.SessionStringTest" time="0.004"/>
+  <testcase name="rejects text that is not base64" classname="com.telefarm.core.session.SessionStringTest" time="0.0"/>
+  <testcase name="rejects empty input" classname="com.telefarm.core.session.SessionStringTest" time="0.0"/>
+  <testcase name="parses a gramjs session string" classname="com.telefarm.core.session.SessionStringTest" time="0.008">
+    <failure message="org.junit.ComparisonFailure: expected:&lt;[149.154.167.9]1&gt; but was:&lt;[e:3134:392e:3135:342e:3136:372e:393]1&gt;" type="org.junit.ComparisonFailure">org.junit.ComparisonFailure: expected:&lt;[149.154.167.9]1&gt; but was:&lt;[e:3134:392e:3135:342e:3136:372e:393]1&gt;
+  <testcase name="parses a hydrogram session string" classname="com.telefarm.core.session.SessionStringTest" time="0.002"/>
+  <testcase name="accepts a session string whose padding was lost" classname="com.telefarm.core.session.SessionStringTest" time="0.001"/>
+  <testcase name="parses the older session layout" classname="com.telefarm.core.session.SessionStringTest" time="0.001"/>
+  <testcase name="parses a telethon session string" classname="com.telefarm.core.session.SessionStringTest" time="0.0"/>
+  <testcase name="parses a telethon session string with an IPv6 address" classname="com.telefarm.core.session.SessionStringTest" time="0.0"/>
+  <testcase name="rejects a session of the test environment" classname="com.telefarm.core.session.SessionStringTest" time="0.001"/>
+  <testcase name="accepts a prefixed session and surrounding whitespace" classname="com.telefarm.core.session.SessionStringTest" time="0.0"/>
+  <testcase name="parses a gramjs session string with a host name" classname="com.telefarm.core.session.SessionStringTest" time="0.001"/>
+  <testcase name="round trips its own encoding" classname="com.telefarm.core.session.SessionStringTest" time="0.0"/>
+  <testcase name="description names the data center but never a secret" classname="com.telefarm.core.session.SessionStringTest" time="0.009"/>
