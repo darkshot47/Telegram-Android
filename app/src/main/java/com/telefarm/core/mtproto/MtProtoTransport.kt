@@ -138,15 +138,31 @@ internal class MtProtoTransport(
     private fun newHeader(): ByteArray {
         while (true) {
             val candidate = random(HEADER_SIZE)
-            val firstByte = candidate[0].toInt() and 0xFF
-            val firstWord = String(candidate, 0, 4, Charsets.ISO_8859_1)
-            val fifthToEighthZero = (candidate[4].toInt() or candidate[5].toInt() or
-                candidate[6].toInt() or candidate[7].toInt()) == 0
-            if (firstByte == 0xEF || firstWord in FORBIDDEN_PREFIXES || fifthToEighthZero) {
-                continue
+            if (!isForbiddenHeader(candidate)) {
+                return candidate
             }
-            return candidate
         }
+    }
+
+    /**
+     * True when [candidate] would be read as another protocol at the start of the connection:
+     * the abridged tag, the beginning of an HTTP request, or a header whose fifth to eighth bytes
+     * are all zero. Such a header is thrown away and generated again.
+     */
+    internal fun isForbiddenHeader(candidate: ByteArray): Boolean {
+        if (candidate.size < HEADER_SIZE) {
+            return true
+        }
+        if (candidate[0] == ABRIDGED_TAG) {
+            return true
+        }
+        val opening = candidate.copyOfRange(0, FORBIDDEN_PREFIX_SIZE)
+        if (FORBIDDEN_PREFIXES.any { prefix -> opening.contentEquals(prefix) }) {
+            return true
+        }
+        val fifthToEighth = candidate[4].toInt() or candidate[5].toInt() or
+            candidate[6].toInt() or candidate[7].toInt()
+        return fifthToEighth == 0
     }
 
     private fun frameHeader(messageSize: Int): ByteArray {
@@ -176,6 +192,16 @@ internal class MtProtoTransport(
         const val DEFAULT_CONNECT_TIMEOUT_MS = 15_000
         const val DEFAULT_READ_TIMEOUT_MS = 15_000
         val ABRIDGED_TAG = 0xEF.toByte()
-        val FORBIDDEN_PREFIXES = setOf("PVrG", "GET ", "POST", "\u00ee\u00ee\u00ee\u00ee")
+
+        /** The tag of the intermediate transport, which must not open a header either. */
+        val INTERMEDIATE_TAG = 0xEE.toByte()
+
+        const val FORBIDDEN_PREFIX_SIZE = 4
+        val FORBIDDEN_PREFIXES = listOf(
+            "PVrG".toByteArray(Charsets.US_ASCII),
+            "GET ".toByteArray(Charsets.US_ASCII),
+            "POST".toByteArray(Charsets.US_ASCII),
+            byteArrayOf(INTERMEDIATE_TAG, INTERMEDIATE_TAG, INTERMEDIATE_TAG, INTERMEDIATE_TAG)
+        )
     }
 }
