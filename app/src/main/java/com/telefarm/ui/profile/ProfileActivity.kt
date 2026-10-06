@@ -199,21 +199,21 @@ class ProfileActivity : AppCompatActivity() {
         private const val EXTRA_CHAT_ID = "com.telefarm.extra.CHAT_ID"
 
         /** Opens the profile of a user. */
-        fun intent(context: Context, userId: Long, title: String? = null): Intent =
+        fun userIntent(context: Context, userId: Long, title: String? = null): Intent =
             Intent(context, ProfileActivity::class.java)
                 .putExtra(EXTRA_USER_ID, userId)
                 .putExtra(EXTRA_TITLE, title)
 
         /** Opens the profile of a chat; the chat id is the id of the conversation. */
-        fun intent(context: Context, chatId: Long, title: String): Intent =
+        fun chatIntent(context: Context, chatId: Long, title: String): Intent =
             Intent(context, ProfileActivity::class.java)
                 .putExtra(EXTRA_CHAT_ID, chatId)
                 .putExtra(EXTRA_TITLE, title)
 
         /** Opens the profile of a resolved chat or user. */
         fun intent(context: Context, target: ProfileTarget, title: String? = null): Intent = when (target) {
-            is ProfileTarget.User -> intent(context, target.userId, title)
-            is ProfileTarget.ChatInfo -> intent(context, target.chatId, title.orEmpty())
+            is ProfileTarget.User -> userIntent(context, target.userId, title)
+            is ProfileTarget.ChatInfo -> chatIntent(context, target.chatId, title.orEmpty())
         }
 
         private const val EXTRA_TITLE = "com.telefarm.extra.TITLE"

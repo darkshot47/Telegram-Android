@@ -53,7 +53,7 @@ class ContactsActivity : AppCompatActivity() {
         adapter = ContactsAdapter(
             loader = appGraph.thumbnails,
             scope = lifecycleScope,
-            onContactClick = { user -> startActivity(ProfileActivity.intent(this, user.id, user.displayName)) }
+            onContactClick = { user -> startActivity(ProfileActivity.userIntent(this, user.id, user.displayName)) }
         )
         binding.contactList.layoutManager = LinearLayoutManager(this)
         binding.contactList.adapter = adapter

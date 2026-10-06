@@ -61,7 +61,7 @@ class MemberListActivity : AppCompatActivity() {
         adapter = MemberAdapter(
             loader = appGraph.thumbnails,
             scope = lifecycleScope,
-            onMemberClick = { member -> startActivity(ProfileActivity.intent(this, member.userId)) }
+            onMemberClick = { member -> startActivity(ProfileActivity.userIntent(this, member.userId)) }
         )
         binding.memberList.layoutManager = LinearLayoutManager(this)
         binding.memberList.adapter = adapter
