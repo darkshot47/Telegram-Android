@@ -27,20 +27,33 @@ jobs:
 
       - name: Download artifact
         run: |
-          set -e
           mkdir -p probe && cd probe
           BASE=https://repo1.maven.org/maven2/io/github/tdlib-android/core/0.1.1
-          curl -sSf -O $BASE/core-0.1.1.pom
-          curl -sSf -O $BASE/core-0.1.1.aar
-          curl -sSf -O $BASE/core-0.1.1.module || true
-          echo "===== POM ====="
-          cat core-0.1.1.pom
-          echo "===== AAR entries ====="
-          unzip -l core-0.1.1.aar | head -40
-          unzip -o -q core-0.1.1.aar -d aar
-          unzip -o -q aar/classes.jar -d classes
-          echo "===== TdApi class count ====="
-          ls classes/org/drinkless/tdlib | wc -l
+          echo "===== directory listing ====="
+          curl -sS -i "$BASE/" | head -40
+          for f in core-0.1.1.pom core-0.1.1.aar core-0.1.1.jar core-0.1.1.module; do
+            echo "===== $f ====="
+            curl -sS -o "$f" -w "http_code=%{http_code} size=%{size_download}\n" "$BASE/$f" || true
+            head -c 200 "$f" 2>/dev/null; echo
+          done
+          echo "===== search.maven.org ====="
+          curl -sS "https://search.maven.org/solrsearch/select?q=g:io.github.tdlib-android&rows=20&wt=json" | head -c 2000 || true
+          echo
+          ls -la
+          for archive in core-0.1.1.aar core-0.1.1.jar; do
+            [ -s "$archive" ] || continue
+            echo "===== entries of $archive ====="
+            unzip -l "$archive" | head -40
+            unzip -o -q "$archive" -d aar
+          done
+          if [ -f aar/classes.jar ]; then
+            unzip -o -q aar/classes.jar -d classes
+            echo "===== TdApi class count ====="
+            ls classes/org/drinkless/tdlib | wc -l
+          else
+            mkdir -p classes && (cd classes && unzip -o -q ../core-0.1.1.jar) || true
+            ls classes/org/drinkless/tdlib 2>/dev/null | wc -l
+          fi
 
       - name: Dump authentication API
         run: |
@@ -81,4 +94,10 @@ jobs:
           ls classes/org/drinkless/tdlib/ | sed 's/^TdApi//' | grep -E '^[A-Z]' | sort > /tmp/all_names.txt
           wc -l /tmp/all_names.txt
           echo "===== names containing our keywords ====="
-          grep -E "Authentication|Authorization|Session|QrCode|Password|Email|Registration|LogOut|Close" /tmp/all_names.txt | head -80
+          grep -E "Authentication|Authorization|Session|QrCode|LoginToken|Password|Email|Registration|LogOut|Close" /tmp/all_names.txt | head -100
+          echo "===== vector field style (GetMessages) ====="
+          javap -cp classes 'org.drinkless.tdlib.TdApi$GetMessages' 2>&1 | head -12
+          echo "===== version markers in TdApi ====="
+          grep -a -o -E "1\.8\.[0-9]+" classes/org/drinkless/tdlib/TdApi.class 2>/dev/null | sort -u | head -5
+          echo "===== any layer constant ====="
+          javap -cp classes -constants org.drinkless.tdlib.TdApi 2>&1 | grep -iE "layer|version" | head -10
