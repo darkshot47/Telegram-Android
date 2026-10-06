@@ -342,7 +342,7 @@
     <string name="chat_action_reply">Reply</string>
     <string name="chat_message_copied">Message copied</string>
     <string name="chat_delete_failed">The message could not be deleted</string>
-    <string name="state_connecting">Connecting to Telegram</string>
+        <string name="chat_clear_failed">The history could not be cleared</string>
     <plurals name="members_count">
         <item quantity="one">%d member</item>
         <item quantity="other">%d members</item>
