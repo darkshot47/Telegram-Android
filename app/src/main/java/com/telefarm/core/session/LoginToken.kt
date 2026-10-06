@@ -54,4 +54,4 @@ object LoginToken {
 }
 
 /** Raised when the data center refuses the login token that a session tried to approve. */
-class SessionLoginException(val code: Int, val message: String) : Exception("$code: $message")
+class SessionLoginException(val code: Int, override val message: String) : Exception("$code: $message")
