@@ -11,6 +11,7 @@ import com.telefarm.data.model.FileRef
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -152,6 +153,6 @@ class ThumbnailLoader(
 
 /** Waits for the terminal state of a download flow. */
 private suspend fun kotlinx.coroutines.flow.Flow<DownloadState>.awaitCompletion(): DownloadState =
-    kotlinx.coroutines.flow.firstOrNull { state ->
+    firstOrNull { state ->
         state is DownloadState.Completed || state is DownloadState.Failed
     } ?: DownloadState.Failed(null)

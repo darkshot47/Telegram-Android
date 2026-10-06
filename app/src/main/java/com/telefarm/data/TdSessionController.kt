@@ -151,7 +151,7 @@ class TdSessionController(
 
     // region State
 
-    private fun handleUpdate(update: TdApi.Update) {
+    private suspend fun handleUpdate(update: TdApi.Update) {
         when (update) {
             is TdApi.UpdateAuthorizationState -> onAuthorizationState(update.authorizationState)
             is TdApi.UpdateConnectionState -> _connectionStatus.value = when (update.state) {
@@ -272,14 +272,14 @@ class TdSessionController(
      * never derived from the phone number or any other user data.
      */
     private fun databaseKey(): ByteArray {
-        val stored = secureStore.getString(KEY_DATABASE)
+        val stored = secureStore.get(KEY_DATABASE)
         if (stored != null && stored.length >= MIN_KEY_LENGTH) {
             return stored.toByteArray(Charsets.ISO_8859_1)
         }
         val generated = ByteArray(KEY_LENGTH_BYTES)
         java.security.SecureRandom().nextBytes(generated)
         val encoded = String(generated, Charsets.ISO_8859_1)
-        secureStore.putString(KEY_DATABASE, encoded)
+        secureStore.put(KEY_DATABASE, encoded)
         return generated
     }
 
