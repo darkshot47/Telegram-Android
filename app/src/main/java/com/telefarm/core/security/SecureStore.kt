@@ -142,6 +142,6 @@ class SecureStore(context: Context) {
         const val TRANSFORMATION = "AES/GCM/NoPadding"
         const val IV_LENGTH = 12
         const val TAG_BITS = 128
-        const val SEPARATOR = '\n'
+        const val SEPARATOR = "\n"
     }
 }
