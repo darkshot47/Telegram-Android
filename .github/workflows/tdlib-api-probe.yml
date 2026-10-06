@@ -1,0 +1,84 @@
+name: TDLib API probe
+
+# Temporary diagnostics: dumps the API surface of the exact TDLib binding artifact
+# that the app depends on (io.github.tdlib-android:core). Removed once the
+# session-login implementation no longer needs it.
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - "arena/**"
+    paths:
+      - ".github/workflows/tdlib-api-probe.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    name: Dump TdApi surface
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Download artifact
+        run: |
+          set -e
+          mkdir -p probe && cd probe
+          BASE=https://repo1.maven.org/maven2/io/github/tdlib-android/core/0.1.1
+          curl -sSf -O $BASE/core-0.1.1.pom
+          curl -sSf -O $BASE/core-0.1.1.aar
+          curl -sSf -O $BASE/core-0.1.1.module || true
+          echo "===== POM ====="
+          cat core-0.1.1.pom
+          echo "===== AAR entries ====="
+          unzip -l core-0.1.1.aar | head -40
+          unzip -o -q core-0.1.1.aar -d aar
+          unzip -o -q aar/classes.jar -d classes
+          echo "===== TdApi class count ====="
+          ls classes/org/drinkless/tdlib | wc -l
+
+      - name: Dump authentication API
+        run: |
+          cd probe
+          for c in \
+            'org.drinkless.tdlib.TdApi$RequestQrCodeAuthentication' \
+            'org.drinkless.tdlib.TdApi$AuthorizationStateWaitOtherDeviceConfirmation' \
+            'org.drinkless.tdlib.TdApi$AuthorizationStateWaitTdlibParameters' \
+            'org.drinkless.tdlib.TdApi$SetAuthenticationPhoneNumber' \
+            'org.drinkless.tdlib.TdApi$CheckAuthenticationCode' \
+            'org.drinkless.tdlib.TdApi$ConfirmQrCodeAuthentication' \
+            'org.drinkless.tdlib.TdApi$LogOut' \
+            'org.drinkless.tdlib.TdApi$Close' \
+            'org.drinkless.tdlib.TdApi$Destroy' \
+            'org.drinkless.tdlib.TdApi$SetTdlibParameters' \
+            'org.drinkless.tdlib.TdApi$GetAuthorizationState' ; do
+            echo "===== $c ====="
+            javap -cp classes "$c" 2>&1 | head -25 || true
+          done
+
+      - name: Dump client and native version
+        run: |
+          cd probe
+          echo "===== Client ====="
+          javap -cp classes org.drinkless.tdlib.Client 2>&1 | head -40
+          echo "===== Native version ====="
+          for f in aar/jni/*/libtdjson.so aar/jni/*/*.so; do
+            [ -f "$f" ] || continue
+            echo "-- $f"
+            grep -a -o -E "1\.8\.[0-9]+" "$f" | sort -u | head -5 || true
+          done
+          echo "===== TdApi auth names present ====="
+          ls classes/org/drinkless/tdlib/ | grep -iE "QrCode|LoginToken|WebToken|Passkey|Session" | head -30
+
+      - name: Dump every TdApi method class name
+        run: |
+          cd probe
+          ls classes/org/drinkless/tdlib/ | sed 's/^TdApi//' | grep -E '^[A-Z]' | sort > /tmp/all_names.txt
+          wc -l /tmp/all_names.txt
+          echo "===== names containing our keywords ====="
+          grep -E "Authentication|Authorization|Session|QrCode|Password|Email|Registration|LogOut|Close" /tmp/all_names.txt | head -80
