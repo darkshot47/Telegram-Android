@@ -175,7 +175,7 @@ internal class MtProtoTransport(
         const val HEADER_SIZE = 64
         const val DEFAULT_CONNECT_TIMEOUT_MS = 15_000
         const val DEFAULT_READ_TIMEOUT_MS = 15_000
-        const val ABRIDGED_TAG = 0xEF.toByte()
+        val ABRIDGED_TAG = 0xEF.toByte()
         val FORBIDDEN_PREFIXES = setOf("PVrG", "GET ", "POST", "\u00ee\u00ee\u00ee\u00ee")
     }
 }

@@ -96,18 +96,18 @@ internal class TlReader(private val data: ByteArray, private var position: Int =
 /** Serialized requests of the Telegram API that the session import sends. */
 internal object TelegramApi {
 
-    const val CONSTRUCTOR_ACCEPT_LOGIN_TOKEN = 0xE894AD4D.toInt()
-    const val CONSTRUCTOR_INIT_CONNECTION = 0xC1CD5EA9.toInt()
-    const val CONSTRUCTOR_INVOKE_WITH_LAYER = 0xDA9B0D0D.toInt()
+    val CONSTRUCTOR_ACCEPT_LOGIN_TOKEN = 0xE894AD4D.toInt()
+    val CONSTRUCTOR_INIT_CONNECTION = 0xC1CD5EA9.toInt()
+    val CONSTRUCTOR_INVOKE_WITH_LAYER = 0xDA9B0D0D.toInt()
 
-    const val CONSTRUCTOR_RPC_RESULT = 0xF35C6D01.toInt()
-    const val CONSTRUCTOR_RPC_ERROR = 0x2144CA19.toInt()
-    const val CONSTRUCTOR_MSG_CONTAINER = 0x73F1F8DC.toInt()
-    const val CONSTRUCTOR_GZIP_PACKED = 0x3072CFA1.toInt()
-    const val CONSTRUCTOR_NEW_SESSION_CREATED = 0x9EC20908.toInt()
-    const val CONSTRUCTOR_BAD_SERVER_SALT = 0xEDAB447B.toInt()
-    const val CONSTRUCTOR_BAD_MESSAGE = 0xA7EFF811.toInt()
-    const val CONSTRUCTOR_MSGS_ACK = 0x62D6B459.toInt()
+    val CONSTRUCTOR_RPC_RESULT = 0xF35C6D01.toInt()
+    val CONSTRUCTOR_RPC_ERROR = 0x2144CA19.toInt()
+    val CONSTRUCTOR_MSG_CONTAINER = 0x73F1F8DC.toInt()
+    val CONSTRUCTOR_GZIP_PACKED = 0x3072CFA1.toInt()
+    val CONSTRUCTOR_NEW_SESSION_CREATED = 0x9EC20908.toInt()
+    val CONSTRUCTOR_BAD_SERVER_SALT = 0xEDAB447B.toInt()
+    val CONSTRUCTOR_BAD_MESSAGE = 0xA7EFF811.toInt()
+    val CONSTRUCTOR_MSGS_ACK = 0x62D6B459.toInt()
 
     /**
      * Layers that are tried, newest first.

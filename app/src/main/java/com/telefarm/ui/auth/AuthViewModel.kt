@@ -159,6 +159,9 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
             AuthState.WaitPhoneNumber -> _state.value.copy(
                 step = AuthStep.PHONE_NUMBER,
                 isBusy = false,
+                // Reaching this step means Telegram is reachable again: a message left over from
+                // an earlier attempt must not stay on screen.
+                error = null,
                 codeLength = null,
                 codeType = null,
                 resendInSeconds = 0
@@ -211,10 +214,13 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
 
             AuthState.LoggingOut -> _state.value.copy(step = AuthStep.CHECKING, isBusy = true, error = null)
 
+            // Logging out closes the TDLib instance and the session replaces it, which is not a
+            // failure the user has to act on: keep the flow busy until the new instance reports
+            // the phone number step.
             AuthState.Closed -> _state.value.copy(
-                step = AuthStep.PHONE_NUMBER,
-                isBusy = false,
-                error = UiMessage.Res(R.string.auth_error_restart)
+                step = AuthStep.CHECKING,
+                isBusy = true,
+                error = null
             )
 
             is AuthState.Failed -> _state.value.copy(

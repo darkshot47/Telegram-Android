@@ -1,5 +1,6 @@
 package com.telefarm.core.mtproto
 
+import com.telefarm.core.session.ImportedSession
 import java.io.ByteArrayInputStream
 import java.security.SecureRandom
 import java.util.zip.GZIPInputStream

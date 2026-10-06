@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
 import org.drinkless.tdlib.TdApi
 import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
@@ -129,15 +130,27 @@ class TdSessionController(
     /** Signs out and removes every local trace of the session. */
     suspend fun logOut() {
         runCatching { client.send(TdApi.LogOut()) }
-        // The session directory is removed as soon as TDLib closes the database; the key is
-        // discarded immediately so an interrupted logout cannot leave readable data behind.
-        secureStore.remove(KEY_DATABASE)
         _selfUserId.value = 0L
         _profile.value = null
         scope.launch {
-            waitForClosed(attempts = LOGOUT_CLOSE_ATTEMPTS)
+            if (!waitForClosed(attempts = LOGOUT_CLOSE_ATTEMPTS)) {
+                // A logout needs the network. If it did not finish, the instance is closed instead:
+                // closing always flushes the database and ends in the state the flow waits for.
+                withTimeoutOrNull(CLOSE_SEND_TIMEOUT_MS) { client.send(TdApi.Close()) }
+                waitForClosed(attempts = LOGOUT_CLOSE_ATTEMPTS)
+            }
+            // The database is closed now, so the files and the key that decrypts them can go.
+            secureStore.remove(KEY_DATABASE)
             deleteSessionDirectory()
-            _authState.value = AuthState.WaitPhoneNumber
+            // Logging out closes the TDLib instance: it is destroyed once it reaches
+            // authorizationStateClosed and cannot answer any request after that. Without a new
+            // instance the sign in screen would show its steps while every request disappears,
+            // which is exactly what "the Continue button does nothing" looked like. The parameters
+            // have to be sent again for the new instance.
+            parametersSent.set(false)
+            client.restart()
+            _authState.value = AuthState.Initializing
+            runCatching { client.send(TdApi.GetAuthorizationState()) }
         }
     }
 
@@ -331,6 +344,7 @@ class TdSessionController(
         const val DEVICE_MODEL_FALLBACK = "Android"
         const val SYSTEM_VERSION_FALLBACK = "Android"
         const val LOGOUT_CLOSE_ATTEMPTS = 40
+        const val CLOSE_SEND_TIMEOUT_MS = 3_000L
         const val CLOSE_POLL_INTERVAL_MS = 100L
     }
 }

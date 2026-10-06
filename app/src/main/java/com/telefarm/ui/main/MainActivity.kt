@@ -137,9 +137,21 @@ class MainActivity : AppCompatActivity() {
             else -> getString(R.string.state_connecting)
         }
 
-        val showLoading = state.isLoading && state.chats.isEmpty() && !state.requiresSignIn
-        val showEmpty = state.isEmpty && state.chats.isEmpty() && !state.requiresSignIn
-        val showError = state.error != null && state.chats.isEmpty() && !state.requiresSignIn
+        // While TDLib has not reported a usable state there is nothing to show yet: a session
+        // that turns out to be signed out must not flash the chat list before the sign in screen.
+        val determining = state.signIn == SignInRequirement.UNKNOWN
+        val signedOut = state.signIn == SignInRequirement.REQUIRED
+        if (!signedOut) {
+            // Anything but a pending sign in means the routing flag can be armed again, so a
+            // later logout is routed to the sign in screen as well.
+            signInScreenShown = false
+        }
+        binding.chatList.isVisible = !determining
+        binding.swipeRefresh.isEnabled = !determining
+
+        val showLoading = determining || (state.isLoading && state.chats.isEmpty() && !signedOut)
+        val showEmpty = !determining && state.isEmpty && state.chats.isEmpty() && !signedOut
+        val showError = !determining && state.error != null && state.chats.isEmpty() && !signedOut
 
         binding.stateContainer.isVisible = showLoading || showEmpty || showError
         binding.stateProgress.isVisible = showLoading
@@ -168,7 +180,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        if (state.requiresSignIn && !signInScreenShown) {
+        if (signedOut && !signInScreenShown) {
             signInScreenShown = true
             startActivity(
                 Intent(this, AuthActivity::class.java)

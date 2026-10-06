@@ -120,7 +120,7 @@ internal object MtProtoBytes {
 
     private const val EXTENDED_LENGTH_SIZE = 4
 
-    private const val MAX_LENGTH = 1 shl 24
+    private const val MAX_LENGTH = 0x1000000
 
     fun sha256(vararg parts: ByteArray): ByteArray {
         val digest = MessageDigest.getInstance("SHA-256")
