@@ -127,21 +127,23 @@ jobs:
       # run, because the raw logs/artifacts are not reachable from the development sandbox.
       - name: Publish CI diagnostics
         if: always()
+        continue-on-error: true
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           REPO: ${{ github.repository }}
           SHA: ${{ github.sha }}
         run: |
           set +e
-          mkdir -p diag
-          : > diag/log.txt
+          DIAG="$GITHUB_WORKSPACE/diag"
+          mkdir -p "$DIAG"
+          : > $DIAG/log.txt
           for f in ci-logs/*.log; do
             [ -f "$f" ] || continue
-            echo "########## $(basename "$f") ##########" >> diag/log.txt
-            cat "$f" >> diag/log.txt
+            echo "########## $(basename "$f") ##########" >> $DIAG/log.txt
+            cat "$f" >> $DIAG/log.txt
           done
-          grep -E "^e: |Unresolved|Unresolved reference|Assignment type mismatch|no longer supported|error:" diag/log.txt | tail -n 300 > diag/log-grep.txt
-          tail -c 8000 diag/log.txt > diag/log-tail.txt
+          grep -E "^e: |Unresolved|Unresolved reference|Assignment type mismatch|no longer supported|error:" $DIAG/log.txt | tail -n 300 > $DIAG/log-grep.txt
+          tail -c 8000 $DIAG/log.txt > $DIAG/log-tail.txt
 
           TDLIB_ROOT=/home/runner/.gradle/caches/modules-2/files-2.1/io.github.tdlib-android
           AAR=$(find "$TDLIB_ROOT" -name '*.aar' 2>/dev/null | head -1)
@@ -150,18 +152,19 @@ jobs:
           {
             echo "== pom =="; cat "$POM" 2>/dev/null
             echo "== module =="; cat "$MOD" 2>/dev/null
-          } > diag/meta.txt 2>&1
+          } > $DIAG/meta.txt 2>&1
 
           rm -rf /tmp/aar && mkdir -p /tmp/aar && cd /tmp/aar
-          unzip -o -q "$AAR" > diag/aar-list.txt 2>&1
-          echo "== top level ==" >> diag/aar-list.txt
-          ls -la >> diag/aar-list.txt
-          echo "== libs ==" >> diag/aar-list.txt
-          find . -name '*.jar' -exec ls -la {} \; >> diag/aar-list.txt 2>&1
-          echo "== jar entries (first 40) ==" >> diag/aar-list.txt
+          JARDIR=$GITHUB_WORKSPACE/diag
+          unzip -o -q "$AAR" > $DIAG/aar-list.txt 2>&1
+          echo "== top level ==" >> $DIAG/aar-list.txt
+          ls -la >> $DIAG/aar-list.txt
+          echo "== libs ==" >> $DIAG/aar-list.txt
+          find . -name '*.jar' -exec ls -la {} \; >> $DIAG/aar-list.txt 2>&1
+          echo "== jar entries (first 40) ==" >> $DIAG/aar-list.txt
           for j in $(find . -name '*.jar'); do
-            echo "--- $j" >> diag/aar-list.txt
-            unzip -l "$j" 2>/dev/null | head -40 >> diag/aar-list.txt
+            echo "--- $j" >> $DIAG/aar-list.txt
+            unzip -l "$j" 2>/dev/null | head -40 >> $DIAG/aar-list.txt
           done
 
           rm -rf /tmp/x && mkdir -p /tmp/x
@@ -171,7 +174,7 @@ jobs:
           done
           CLASSPATH=$(find /tmp/x -type d -name tdlib | head -1)
           TDLIB_CLASS=$(find /tmp/x -name 'TdApi.class' | head -1)
-          echo "tdlib class root: $TDLIB_CLASS" > diag/tdlib-api.txt
+          echo "tdlib class root: $TDLIB_CLASS" > $DIAG/tdlib-api.txt
           if [ -n "$TDLIB_CLASS" ]; then
             ROOTDIR=${TDLIB_CLASS%%/org/drinkless/tdlib/*}
             javap -classpath "$ROOTDIR" \
@@ -188,12 +191,12 @@ jobs:
               'org.drinkless.tdlib.TdApi$LocalFile' \
               'org.drinkless.tdlib.TdApi$Message' \
               'org.drinkless.tdlib.TdApi$SetTdlibParameters' \
-              >> diag/tdlib-api.txt 2>&1
+              >> $DIAG/tdlib-api.txt 2>&1
           fi
 
-          cat diag/log-grep.txt diag/meta.txt diag/aar-list.txt diag/tdlib-api.txt > diag/summary.txt
-          jq -n --rawfile summary diag/summary.txt --rawfile tail diag/log-tail.txt --arg sha "$SHA" \
+          cat $DIAG/log-grep.txt $DIAG/meta.txt $DIAG/aar-list.txt $DIAG/tdlib-api.txt > $DIAG/summary.txt
+          jq -n --rawfile summary $DIAG/summary.txt --rawfile tail $DIAG/log-tail.txt --arg sha "$SHA" \
             '{name:"gradle-diagnostics", head_sha:$sha, status:"completed", conclusion:"neutral",
-              output:{title:"Gradle diagnostics", summary: (($summary + "\n\n===== LOG TAIL =====\n" + $tail)[0:64000])}}' > diag/payload.json
-          gh api --method POST "/repos/$REPO/check-runs" --input diag/payload.json > diag/response.json 2>&1 || cat diag/response.json
+              output:{title:"Gradle diagnostics", summary: (($summary + "\n\n===== LOG TAIL =====\n" + $tail)[0:64000])}}' > $DIAG/payload.json
+          gh api --method POST "/repos/$REPO/check-runs" --input $DIAG/payload.json > $DIAG/response.json 2>&1 || cat $DIAG/response.json
       # END TEMPORARY DIAGNOSTICS --------------------------------------------------------
