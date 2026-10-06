@@ -29,13 +29,13 @@ class TlCodecTest {
                 query = TelegramApi.acceptLoginToken(token)
             )
         )
-        assertEquals(REFERENCE_WRAPPED.toHex(), query.toHex())
+        assertEquals(REFERENCE_WRAPPED, query.toHex())
     }
 
     @Test
     fun `the login token is written with a one byte length`() {
         val body = TelegramApi.acceptLoginToken(ByteArray(TOKEN_SIZE) { it.toByte() })
-        assertEquals(REFERENCE_ACCEPT.toHex(), body.toHex())
+        assertEquals(REFERENCE_ACCEPT, body.toHex())
     }
 
     @Test
