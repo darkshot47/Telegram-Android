@@ -60,7 +60,9 @@ jobs:
         if: failure()
         continue-on-error: true
         run: |
-          tail -c 30000 ci-logs/test.log > ci-test-failure.txt
+          grep -E "^(e: |w: )" ci-logs/test.log | head -80 > ci-test-failure.txt
+          echo "----- tail -----" >> ci-test-failure.txt
+          tail -c 4000 ci-logs/test.log >> ci-test-failure.txt
           git config user.email "actions@github.com"
           git config user.name "github-actions"
           git add ci-test-failure.txt
