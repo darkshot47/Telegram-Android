@@ -60,9 +60,19 @@ jobs:
         if: failure()
         continue-on-error: true
         run: |
-          grep -E "^(e: |w: )" ci-logs/test.log | head -80 > ci-test-failure.txt
-          echo "----- tail -----" >> ci-test-failure.txt
-          tail -c 4000 ci-logs/test.log >> ci-test-failure.txt
+          {
+            echo "===== compiler errors ====="
+            grep -E "^(e: |w: )" ci-logs/test.log | head -40
+            echo "===== task failures ====="
+            grep -E "What went wrong|Execution failed for task|^FAILURE" ci-logs/test.log | head -40
+            echo "===== failing tests ====="
+            grep -A 6 -E "FAILED$" ci-logs/test.log | head -150
+            echo "===== test result files ====="
+            find app/build/test-results -name "*.xml" 2>/dev/null | head -4 | while read -r report; do
+              echo "-- $report"
+              grep -E "testsuite name|testcase name|<failure" "$report" | head -60
+            done
+          } > ci-test-failure.txt
           git config user.email "actions@github.com"
           git config user.name "github-actions"
           git add ci-test-failure.txt
