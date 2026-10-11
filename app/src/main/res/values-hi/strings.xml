@@ -447,4 +447,10 @@
     <string name="delay_fifteen_minutes">पंद्रह मिनट बाद</string>
     <string name="delay_one_hour">एक घंटे बाद</string>
     <string name="lock_error_too_many">बहुत अधिक कोशिशें। थोड़ा रुककर दोबारा कोशिश करें।</string>
+    <string name="settings_quiet_hours">शांत समय</string>
+    <string name="settings_quiet_hours_times">कब से कब तक शांत</string>
+    <string name="settings_quiet_hours_mentions">ज़िक्र आने दें</string>
+    <string name="quiet_from">से</string>
+    <string name="quiet_until">तक</string>
+    <string name="settings_quiet_hours_format">%1$s – %2$s</string>
 </resources>

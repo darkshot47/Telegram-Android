@@ -3,6 +3,7 @@ package com.telefarm.ui.settings
 import android.Manifest
 import android.content.Context
 import android.content.Intent
+import android.app.TimePickerDialog
 import android.os.Bundle
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -18,6 +19,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.telefarm.BuildConfig
 import com.telefarm.R
 import com.telefarm.appGraph
+import com.telefarm.core.notifications.QuietHours
 import com.telefarm.core.security.AutoLockDelay
 import com.telefarm.core.security.PasscodeCheck
 import com.telefarm.core.security.PasscodePolicy
@@ -67,6 +69,14 @@ class SettingsActivity : AppCompatActivity() {
         binding.accountRow.setOnClickListener { openEditProfile() }
         binding.themeRow.setOnClickListener { showThemeDialog() }
         binding.passcodeRow.setOnClickListener { showPasscodeDialog() }
+        binding.quietHoursSwitch.setOnCheckedChangeListener { _, checked ->
+            appGraph.preferences.quietHours = appGraph.preferences.quietHours.copy(enabled = checked)
+            updateQuietHoursRows()
+        }
+        binding.quietMentionsSwitch.setOnCheckedChangeListener { _, checked ->
+            appGraph.preferences.quietHours = appGraph.preferences.quietHours.copy(allowsMentions = checked)
+        }
+        binding.quietTimesRow.setOnClickListener { showQuietTimesDialog() }
         binding.hidePhoneSwitch.setOnCheckedChangeListener { _, checked ->
             viewModel.setHidePhoneNumbers(checked)
         }
@@ -105,6 +115,49 @@ class SettingsActivity : AppCompatActivity() {
         viewModel.loadAccount()
         viewModel.loadStorage()
         updatePasscodeRow()
+        updateQuietHoursRows()
+    }
+
+    /** What the quiet hours rows say. */
+    private fun updateQuietHoursRows() {
+        val hours = appGraph.preferences.quietHours
+        binding.quietHoursSwitch.isChecked = hours.enabled
+        binding.quietMentionsSwitch.isChecked = hours.allowsMentions
+        binding.quietTimesRow.isEnabled = hours.enabled
+        binding.quietTimesValue.text = getString(
+            R.string.settings_quiet_hours_format,
+            QuietHours.format(hours.startMinuteOfDay),
+            QuietHours.format(hours.endMinuteOfDay)
+        )
+    }
+
+    /** Picks one end of the quiet hours. */
+    private fun showQuietTimesDialog() {
+        val actions = arrayOf(getString(R.string.quiet_from), getString(R.string.quiet_until))
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings_quiet_hours_times)
+            .setItems(actions) { _, which -> showTimePicker(pickStart = which == 0) }
+            .show()
+    }
+
+    private fun showTimePicker(pickStart: Boolean) {
+        val hours = appGraph.preferences.quietHours
+        val current = if (pickStart) hours.startMinuteOfDay else hours.endMinuteOfDay
+        TimePickerDialog(
+            this,
+            { _, hour, minute ->
+                val minuteOfDay = QuietHours.minuteOfDay(hour, minute)
+                appGraph.preferences.quietHours = if (pickStart) {
+                    hours.copy(startMinuteOfDay = minuteOfDay)
+                } else {
+                    hours.copy(endMinuteOfDay = minuteOfDay)
+                }
+                updateQuietHoursRows()
+            },
+            current / MINUTES_PER_HOUR,
+            current % MINUTES_PER_HOUR,
+            true
+        ).show()
     }
 
     /** What the passcode row says, which changes whenever a dialog on this screen closes. */
@@ -422,6 +475,10 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     companion object {
+
+        /** Minutes in an hour, for turning a minute of the day into a clock reading. */
+        private const val MINUTES_PER_HOUR = 60
+
         fun intent(context: Context): Intent = Intent(context, SettingsActivity::class.java)
     }
 }

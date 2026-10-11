@@ -343,6 +343,69 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/quietHoursRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settings_quiet_hours"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/quietHoursSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="@dimen/touch_target" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quietTimesRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settings_quiet_hours_times"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                <TextView
+                    android:id="@+id/quietTimesValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/quietMentionsRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settings_quiet_hours_mentions"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/quietMentionsSwitch"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="@dimen/touch_target" />
+            </LinearLayout>
+
             <!-- Storage -->
             <TextView
                 style="@style/Widget.Telefarm.SectionHeader"

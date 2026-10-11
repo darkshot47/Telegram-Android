@@ -473,4 +473,10 @@
     <string name="delay_fifteen_minutes">after fifteen minutes</string>
     <string name="delay_one_hour">after an hour</string>
     <string name="lock_error_too_many">Too many attempts. Wait a little and try again.</string>
+    <string name="settings_quiet_hours">Quiet hours</string>
+    <string name="settings_quiet_hours_times">Quiet from and until</string>
+    <string name="settings_quiet_hours_mentions">Let mentions through</string>
+    <string name="quiet_from">From</string>
+    <string name="quiet_until">Until</string>
+    <string name="settings_quiet_hours_format">%1$s – %2$s</string>
 </resources>

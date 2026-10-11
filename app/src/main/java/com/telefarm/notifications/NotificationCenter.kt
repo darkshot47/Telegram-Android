@@ -11,6 +11,8 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.telefarm.R
+import com.telefarm.core.notifications.NotificationPolicy
+import com.telefarm.core.notifications.QuietHours
 import com.telefarm.core.prefs.AppPreferences
 import com.telefarm.core.td.TdLibClient
 import com.telefarm.data.ChatListRepository
@@ -94,10 +96,27 @@ class NotificationCenter(
         if (!preferences.notificationsEnabled) return false
         if (message.isOutgoing) return false
         if (message.chatId in openedChats) return false
+        if (isQuietRightNow(message.containsUnreadMention)) return false
         val chat = chats.chatOrNull(message.chatId) ?: return false
         val type = chat.type
         if (type is TdApi.ChatTypeSupergroup && type.isChannel) return false
         return true
+    }
+
+    /**
+     * True while quiet hours are running and this message is not a mention that is let through.
+     *
+     * The minute of the day comes from the device clock, which is the only clock that matters
+     * here: quiet hours are about when the person holding the phone is asleep, not about when the
+     * message was sent.
+     */
+    private fun isQuietRightNow(isMention: Boolean): Boolean {
+        val now = java.util.Calendar.getInstance()
+        val minuteOfDay = QuietHours.minuteOfDay(
+            now.get(java.util.Calendar.HOUR_OF_DAY),
+            now.get(java.util.Calendar.MINUTE)
+        )
+        return NotificationPolicy.suppresses(preferences.quietHours, minuteOfDay, isMention)
     }
 
     private fun show(message: TdApi.Message) {

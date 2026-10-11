@@ -2,6 +2,7 @@ package com.telefarm.core.prefs
 
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
+import com.telefarm.core.notifications.QuietHours
 
 /**
  * Interface settings.
@@ -34,6 +35,11 @@ class AppPreferences(context: Context) {
         get() = preferences.getBoolean(KEY_NOTIFICATIONS, true)
         set(value) = preferences.edit().putBoolean(KEY_NOTIFICATIONS, value).apply()
 
+    /** The hours of the day when an incoming message stays silent. */
+    var quietHours: QuietHours
+        get() = QuietHours.decode(preferences.getString(KEY_QUIET_HOURS, null))
+        set(value) = preferences.edit().putString(KEY_QUIET_HOURS, QuietHours.encode(value)).apply()
+
     /** Applies the stored theme; called once when the application starts. */
     fun applyTheme() {
         AppCompatDelegate.setDefaultNightMode(themeMode)
@@ -45,5 +51,6 @@ class AppPreferences(context: Context) {
         const val KEY_HIDE_PHONE = "hide_phone_numbers"
         const val KEY_HIDE_ONLINE = "hide_online_status"
         const val KEY_NOTIFICATIONS = "notifications_enabled"
+        const val KEY_QUIET_HOURS = "quiet_hours"
     }
 }
