@@ -257,6 +257,42 @@ class MessageStore(
         }
     }
 
+    /**
+     * Replaces the text of a message this account sent.
+     *
+     * The new text is read as markup the same way a sent message is, so an edit can add bold to a
+     * message that had none. Telegram keeps the original reachable and marks the message as
+     * edited; nothing here has to do that part.
+     */
+    suspend fun editMessage(messageId: Long, text: String): Boolean {
+        val trimmed = text.trim()
+        if (trimmed.isEmpty()) return false
+        return try {
+            td.send(
+                TdApi.EditMessageText().apply {
+                    chatId = this@MessageStore.chatId
+                    this.messageId = messageId
+                    replyMarkup = null
+                    val formatted = Markdown.parse(trimmed)
+                    inputMessageContent = TdApi.InputMessageText().apply {
+                        this.text = TdApi.FormattedText().apply {
+                            this.text = formatted.text
+                            entities = formatted.spans.map { it.toEntity() }.toTypedArray()
+                        }
+                        linkPreviewOptions = null
+                        clearDraft = false
+                    }
+                }
+            )
+            _error.value = null
+            true
+        } catch (error: Throwable) {
+            if (error is CancellationException) throw error
+            _error.value = (error as? TdLibException)?.toUiMessage() ?: UiMessage.Res(R.string.chat_edit_failed)
+            false
+        }
+    }
+
     /** Deletes a message for everyone. */
     suspend fun deleteMessage(messageId: Long) {
         try {

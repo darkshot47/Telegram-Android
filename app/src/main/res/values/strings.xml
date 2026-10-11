@@ -486,4 +486,8 @@
     <string name="chat_export_empty">There are no loaded messages to export. Scroll up to load more of the conversation first.</string>
     <string name="chat_export_failed">The transcript could not be written</string>
     <string name="chat_export_share_title">Share the transcript</string>
+    <string name="chat_edit_message">Edit message</string>
+    <string name="chat_edit_save">Save</string>
+    <string name="chat_message_edited">Message edited</string>
+    <string name="chat_edit_failed">The message could not be edited</string>
 </resources>

@@ -8,6 +8,7 @@ import android.os.Bundle
 import android.view.KeyEvent
 import android.view.MenuItem
 import android.view.inputmethod.EditorInfo
+import android.widget.EditText
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
@@ -309,6 +310,9 @@ class ChatActivity : AppCompatActivity() {
         if (message.sendState == SendState.FAILED && message.canRetry) {
             options += R.string.chat_retry_send to { viewModel.retryMessage(message.id) }
         }
+        if (message.isOutgoing && !text.isNullOrEmpty()) {
+            options += R.string.chat_edit_message to { showEditDialog(message, text) }
+        }
         options += R.string.chat_delete_message to { confirmDelete(message) }
 
         val labels = options.map { getString(it.first) }.toTypedArray()
@@ -362,6 +366,28 @@ class ChatActivity : AppCompatActivity() {
         File(directory, viewModel.exportFileName(format)).apply { writeText(document, Charsets.UTF_8) }
     } catch (error: Throwable) {
         null
+    }
+
+    /** A message this account wrote, with its text back in a box to be changed. */
+    private fun showEditDialog(message: MessageUi, current: String) {
+        val field = EditText(this).apply {
+            setText(current)
+            setSelection(current.length)
+            minLines = MIN_EDIT_LINES
+            maxLines = MAX_EDIT_LINES
+            setPadding(EDIT_PADDING_PX, EDIT_PADDING_PX, EDIT_PADDING_PX, EDIT_PADDING_PX)
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.chat_edit_message)
+            .setView(field)
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .setPositiveButton(R.string.chat_edit_save) { _, _ ->
+                val next = field.text?.toString().orEmpty().trim()
+                if (next.isNotEmpty() && next != current) {
+                    viewModel.editMessage(message.id, next)
+                }
+            }
+            .show()
     }
 
     private fun confirmDelete(message: MessageUi) {

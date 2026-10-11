@@ -120,6 +120,15 @@ class ChatViewModel(
         viewModelScope.launch { store.retry(messageId) }
     }
 
+    /** Replaces the text of a message this account sent. */
+    fun editMessage(messageId: Long, text: String) {
+        viewModelScope.launch {
+            if (store.editMessage(messageId, text)) {
+                _event.value = ChatEvent.Message(R.string.chat_message_edited)
+            }
+        }
+    }
+
     fun deleteMessage(messageId: Long) {
         viewModelScope.launch {
             store.deleteMessage(messageId)

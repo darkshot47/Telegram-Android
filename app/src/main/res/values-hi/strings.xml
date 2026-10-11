@@ -460,4 +460,8 @@
     <string name="chat_export_empty">निर्यात करने के लिए कोई संदेश लोड नहीं हैं। पहले ऊपर स्क्रोल करके बातचीत और लोड करें।</string>
     <string name="chat_export_failed">ट्रांसक्रिप्ट लिखी नहीं जा सकी</string>
     <string name="chat_export_share_title">ट्रांसक्रिप्ट साझा करें</string>
+    <string name="chat_edit_message">संदेश बदलें</string>
+    <string name="chat_edit_save">सहेजें</string>
+    <string name="chat_message_edited">संदेश बदल दिया गया</string>
+    <string name="chat_edit_failed">संदेश बदला नहीं जा सका</string>
 </resources>
