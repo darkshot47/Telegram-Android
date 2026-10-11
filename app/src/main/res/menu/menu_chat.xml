@@ -13,6 +13,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_chat_export"
+        android:title="@string/chat_action_export"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_chat_clear_history"
         android:title="@string/chat_action_clear_history"
         app:showAsAction="never" />

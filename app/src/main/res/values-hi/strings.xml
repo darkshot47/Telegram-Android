@@ -453,4 +453,11 @@
     <string name="quiet_from">से</string>
     <string name="quiet_until">तक</string>
     <string name="settings_quiet_hours_format">%1$s – %2$s</string>
+    <string name="chat_action_export">चैट निर्यात करें</string>
+    <string name="chat_export_title">इस रूप में निर्यात करें</string>
+    <string name="chat_export_html">ब्राउज़र के लिए पेज</string>
+    <string name="chat_export_text">सादा टेक्स्ट</string>
+    <string name="chat_export_empty">निर्यात करने के लिए कोई संदेश लोड नहीं हैं। पहले ऊपर स्क्रोल करके बातचीत और लोड करें।</string>
+    <string name="chat_export_failed">ट्रांसक्रिप्ट लिखी नहीं जा सकी</string>
+    <string name="chat_export_share_title">ट्रांसक्रिप्ट साझा करें</string>
 </resources>

@@ -18,12 +18,13 @@ import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.core.content.FileProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.telefarm.core.export.ExportFormat
 import com.telefarm.R
 import com.telefarm.appGraph
 import com.telefarm.data.model.ChatHeaderUi
 import com.telefarm.data.model.MessageContentUi
-import com.telefarm.data.model.MessageRow
 import com.telefarm.data.model.MessageUi
 import com.telefarm.data.model.SendState
 import com.telefarm.databinding.ActivityChatBinding
@@ -34,6 +35,7 @@ import com.telefarm.ui.common.resolve
 import com.telefarm.ui.common.showSnackbar
 import com.telefarm.ui.profile.ProfileActivity
 import com.telefarm.ui.search.SearchActivity
+import java.io.File
 import kotlinx.coroutines.launch
 
 /**
@@ -279,6 +281,11 @@ class ChatActivity : AppCompatActivity() {
             true
         }
 
+        R.id.action_chat_export -> {
+            showExportDialog()
+            true
+        }
+
         R.id.action_chat_clear_history -> {
             MaterialAlertDialogBuilder(this)
                 .setTitle(R.string.dialog_clear_history_title)
@@ -308,6 +315,53 @@ class ChatActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setItems(labels) { _, index -> options[index].second() }
             .show()
+    }
+
+    /** Picks the format, then writes the transcript and hands it to another application. */
+    private fun showExportDialog() {
+        val formats = arrayOf(ExportFormat.HTML, ExportFormat.TEXT)
+        val labels = formats.map { format ->
+            getString(
+                when (format) {
+                    ExportFormat.HTML -> R.string.chat_export_html
+                    ExportFormat.TEXT -> R.string.chat_export_text
+                }
+            )
+        }.toTypedArray()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.chat_export_title)
+            .setItems(labels) { _, which -> shareExport(formats[which]) }
+            .show()
+    }
+
+    private fun shareExport(format: ExportFormat) {
+        val document = viewModel.export(format)
+        if (document == null) {
+            binding.root.showSnackbar(getString(R.string.chat_export_empty))
+            return
+        }
+        val file = writeExport(format, document)
+        if (file == null) {
+            binding.root.showSnackbar(getString(R.string.chat_export_failed))
+            return
+        }
+        // The transcript is handed over as a content URI, so the file itself stays in private
+        // storage and the receiving application gets read access to this one file only.
+        val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+        val send = Intent(Intent.ACTION_SEND).apply {
+            type = format.mimeType
+            putExtra(Intent.EXTRA_STREAM, uri)
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        startActivity(Intent.createChooser(send, getString(R.string.chat_export_share_title)))
+    }
+
+    /** Writes the transcript into the cache, which the system may clear and nothing else reads. */
+    private fun writeExport(format: ExportFormat, document: String): File? = try {
+        val directory = File(cacheDir, EXPORT_DIRECTORY).apply { mkdirs() }
+        File(directory, viewModel.exportFileName(format)).apply { writeText(document, Charsets.UTF_8) }
+    } catch (error: Throwable) {
+        null
     }
 
     private fun confirmDelete(message: MessageUi) {

@@ -224,6 +224,32 @@ does not reach it.
 
 ---
 
+## 📤 Export a chat
+
+The overflow menu of a conversation writes it out as a document - a page for a browser, or plain
+text - and hands it to any application that can take a file.
+
+What is written is what the device holds, so scrolling up first is how more of the conversation
+gets into the transcript. A date heading appears once per day, a name appears when the writer
+changes, media is written as a placeholder with its caption, and an edited message says so.
+
+Two things about it are deliberate:
+
+- **Everything is escaped.** A message can contain `<script>`, and it is somebody's message, not
+  code. Every character of what people wrote is escaped before it goes near markup, and a test
+  asserts that no angle bracket or quote that was typed survives into the page.
+- **Nothing extra is written out.** No message id, no phone number, nothing about the account
+  that the conversation itself does not already carry. The file name is stripped of path
+  separators and control characters, and an empty title falls back to a word rather than to a
+  file with no name.
+
+Dates are written by arithmetic rather than by asking the device what its calendar rules are, so
+a transcript reads the same everywhere. That arithmetic is checked against `java.time` over
+133 000 moments in five time zones, including dates before 1970, the leap day of 2000, and 1900 -
+a year a century rule makes not a leap year.
+
+---
+
 ## ✍️ Formatted messages
 
 A message can be typed with markup and it arrives formatted:
@@ -495,6 +521,9 @@ need no device:
   guess costs, and how long one unlock lasts
 - Reading typed markup into the text plus runs that the wire format asks for, and the invariants
   that format imposes on the runs
+- Quiet hours: what the range means when it crosses midnight, and which messages come through it
+- Writing a conversation out as a document, the escaping that keeps it a document, and the
+  calendar arithmetic behind the dates in it
 - The login token of a `tg://login` link
 - The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
 

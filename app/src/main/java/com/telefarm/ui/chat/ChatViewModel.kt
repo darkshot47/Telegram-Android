@@ -2,6 +2,9 @@ package com.telefarm.ui.chat
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.telefarm.core.export.ChatExport
+import com.telefarm.core.export.ExportFormat
+import com.telefarm.core.export.ExportOptions
 import com.telefarm.R
 import com.telefarm.core.AppGraph
 import com.telefarm.data.model.ChatActionUi
@@ -11,6 +14,7 @@ import com.telefarm.data.model.ChatKind
 import com.telefarm.data.model.MessageRow
 import com.telefarm.data.model.UiMessage
 import com.telefarm.ui.common.TimeFormat
+import java.util.TimeZone
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -189,6 +193,9 @@ class ChatViewModel(
 
     companion object {
         private const val STOP_TIMEOUT_MS = 5_000L
+
+        /** Milliseconds in a minute, for turning a zone offset into minutes. */
+        private const val MILLIS_PER_MINUTE = 60_000
     }
 }
 
@@ -201,6 +208,32 @@ fun chatActionLabel(action: ChatActionUi): Int = when (action) {
     ChatActionUi.CHOOSING_STICKER -> R.string.chat_action_choosing_sticker
     ChatActionUi.RECORDING_VIDEO -> R.string.chat_action_recording_video
     ChatActionUi.PLAYING_GAME -> R.string.chat_action_playing_game
+
+    /**
+     * The conversation loaded so far, as a document.
+     *
+     * Only what is on this device is written out, which is the part of the conversation the app
+     * actually holds; an export is not a synchronisation, and scrolling up first is how more of it
+     * gets here. Null means there was nothing to write.
+     */
+    fun export(format: ExportFormat): String? {
+        val content = state.value as? ChatUiState.Content ?: return null
+        val messages = content.rows.filterIsInstance<MessageRow.Message>().map { it.message }
+        if (messages.isEmpty()) return null
+        val offsetMinutes = TimeZone.getDefault().getOffset(System.currentTimeMillis()) / MILLIS_PER_MINUTE
+        return ChatExport.export(
+            chatTitle = content.header.title,
+            messages = messages,
+            options = ExportOptions(format = format, utcOffsetMinutes = offsetMinutes)
+        )
+    }
+
+    /** A safe name for the transcript file. */
+    fun exportFileName(format: ExportFormat): String {
+        val title = (state.value as? ChatUiState.Content)?.header?.title.orEmpty()
+        return ChatExport.fileName(title, ExportOptions(format = format))
+    }
+
 }
 
 /**

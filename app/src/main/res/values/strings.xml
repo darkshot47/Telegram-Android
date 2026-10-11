@@ -479,4 +479,11 @@
     <string name="quiet_from">From</string>
     <string name="quiet_until">Until</string>
     <string name="settings_quiet_hours_format">%1$s – %2$s</string>
+    <string name="chat_action_export">Export chat</string>
+    <string name="chat_export_title">Export as</string>
+    <string name="chat_export_html">A page for a browser</string>
+    <string name="chat_export_text">Plain text</string>
+    <string name="chat_export_empty">There are no loaded messages to export. Scroll up to load more of the conversation first.</string>
+    <string name="chat_export_failed">The transcript could not be written</string>
+    <string name="chat_export_share_title">Share the transcript</string>
 </resources>
