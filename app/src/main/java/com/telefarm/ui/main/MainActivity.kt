@@ -159,7 +159,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun render(state: MainState) {
-        adapter.submitList(state.chats)
+        adapter.submitList(state.entries)
         binding.swipeRefresh.isRefreshing = state.isRefreshing
 
         renderFolderTabs(state)

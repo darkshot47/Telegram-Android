@@ -2,14 +2,18 @@ package com.telefarm.ui.main
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.telefarm.R
+import com.telefarm.core.list.ChatListEntry
+import com.telefarm.core.list.DateBucket
 import com.telefarm.data.model.ChatKind
 import com.telefarm.data.model.ChatUi
 import com.telefarm.databinding.ItemChatBinding
+import com.telefarm.databinding.ItemChatSectionBinding
 import com.telefarm.media.ThumbnailLoader
 import com.telefarm.ui.common.Avatars
 import com.telefarm.ui.common.PreviewText
@@ -17,29 +21,65 @@ import com.telefarm.ui.common.TimeFormat
 import kotlinx.coroutines.CoroutineScope
 
 /**
- * Chat list rows.
+ * Chat list rows: the label of a section and the chats under it.
  *
- * Rows are diffed by id and content, so live updates only redraw the chats that changed.
+ * Rows are diffed by a key that says whether the row is a section or a chat, so live updates
+ * only redraw what changed and a section label is never recycled into a chat row.
  */
 class ChatListAdapter(
     private val loader: ThumbnailLoader,
     private val scope: CoroutineScope,
     private val onChatClick: (ChatUi) -> Unit,
     private val onChatLongClick: (ChatUi) -> Unit
-) : ListAdapter<ChatUi, ChatListAdapter.ChatViewHolder>(DIFF) {
+) : ListAdapter<ChatListEntry, RecyclerView.ViewHolder>(DIFF) {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ChatViewHolder {
-        val binding = ItemChatBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ChatViewHolder(binding, loader, scope, onChatClick, onChatLongClick)
+    override fun getItemViewType(position: Int): Int =
+        if (getItem(position) is ChatListEntry.Header) VIEW_SECTION else VIEW_CHAT
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        val inflater = LayoutInflater.from(parent.context)
+        return if (viewType == VIEW_SECTION) {
+            SectionViewHolder(ItemChatSectionBinding.inflate(inflater, parent, false))
+        } else {
+            ChatViewHolder(
+                ItemChatBinding.inflate(inflater, parent, false),
+                loader,
+                scope,
+                onChatClick,
+                onChatLongClick
+            )
+        }
     }
 
-    override fun onBindViewHolder(holder: ChatViewHolder, position: Int) {
-        holder.bind(getItem(position))
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        when (val entry = getItem(position)) {
+            is ChatListEntry.Header -> (holder as SectionViewHolder).bind(entry.bucket)
+            is ChatListEntry.Item -> (holder as ChatViewHolder).bind(entry.chat)
+        }
     }
 
-    override fun onViewRecycled(holder: ChatViewHolder) {
-        holder.release()
+    override fun onViewRecycled(holder: RecyclerView.ViewHolder) {
+        (holder as? ChatViewHolder)?.release()
         super.onViewRecycled(holder)
+    }
+
+    /** Label of one section of the list. */
+    class SectionViewHolder(
+        private val binding: ItemChatSectionBinding
+    ) : RecyclerView.ViewHolder(binding.root) {
+
+        fun bind(bucket: DateBucket) {
+            binding.sectionLabel.setText(labelRes(bucket))
+        }
+
+        @StringRes
+        private fun labelRes(bucket: DateBucket): Int = when (bucket) {
+            DateBucket.TODAY -> R.string.chat_section_today
+            DateBucket.YESTERDAY -> R.string.chat_section_yesterday
+            DateBucket.THIS_WEEK -> R.string.chat_section_this_week
+            DateBucket.THIS_MONTH -> R.string.chat_section_this_month
+            DateBucket.EARLIER -> R.string.chat_section_earlier
+        }
     }
 
     class ChatViewHolder(
@@ -139,10 +179,15 @@ class ChatListAdapter(
     }
 
     private companion object {
-        val DIFF = object : DiffUtil.ItemCallback<ChatUi>() {
-            override fun areItemsTheSame(oldItem: ChatUi, newItem: ChatUi): Boolean = oldItem.id == newItem.id
+        const val VIEW_SECTION = 0
+        const val VIEW_CHAT = 1
 
-            override fun areContentsTheSame(oldItem: ChatUi, newItem: ChatUi): Boolean = oldItem == newItem
+        val DIFF = object : DiffUtil.ItemCallback<ChatListEntry>() {
+            override fun areItemsTheSame(oldItem: ChatListEntry, newItem: ChatListEntry): Boolean =
+                oldItem.key == newItem.key
+
+            override fun areContentsTheSame(oldItem: ChatListEntry, newItem: ChatListEntry): Boolean =
+                oldItem == newItem
         }
     }
 }

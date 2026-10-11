@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/sectionLabel"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@color/app_background"
+    android:paddingStart="@dimen/screen_padding"
+    android:paddingTop="@dimen/spacing_small"
+    android:paddingEnd="@dimen/screen_padding"
+    android:paddingBottom="@dimen/spacing_tiny"
+    android:textAppearance="@style/TextAppearance.Telefarm.Caption"
+    android:textColor="@color/text_secondary" />

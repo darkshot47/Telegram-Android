@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.telefarm.R
 import com.telefarm.core.AppGraph
 import com.telefarm.core.folders.FolderMatcher
+import com.telefarm.core.list.ChatListEntry
+import com.telefarm.core.list.ChatListSections
 import com.telefarm.data.AppSettings
 import com.telefarm.data.FolderCreateResult
 import com.telefarm.data.model.AuthState
@@ -16,6 +18,7 @@ import com.telefarm.data.model.ConnectionStatus
 import com.telefarm.data.model.FolderRule
 import com.telefarm.data.model.FolderRuleMode
 import com.telefarm.data.model.UiMessage
+import com.telefarm.ui.common.TimeFormat
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -50,7 +53,9 @@ data class MainState(
     /** Folder that is shown, or null while the whole list is shown. */
     val activeFolderId: Long? = null,
     /** True when the list is short because a folder filters it, not because there is nothing. */
-    val isFilteredEmpty: Boolean = false
+    val isFilteredEmpty: Boolean = false,
+    /** The same chats with a section label in front of every run of a new age. */
+    val entries: List<ChatListEntry> = emptyList()
 )
 
 /**
@@ -91,7 +96,11 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
             signIn = authState.signInRequirement(),
             folders = FolderMatcher.summarizeAll(folders, allChats),
             activeFolderId = activeFolder?.id,
-            isFilteredEmpty = visible.isEmpty() && allChats.isNotEmpty() && activeFolder != null
+            isFilteredEmpty = visible.isEmpty() && allChats.isNotEmpty() && activeFolder != null,
+            entries = ChatListSections.section(
+                visible,
+                TimeFormat.localEpochDay(System.currentTimeMillis())
+            )
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), MainState())
 
