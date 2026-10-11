@@ -187,6 +187,23 @@ Play Store publication is not required for personal testing.
 
 ---
 
+## 🗂️ Chat folders
+
+Folders are extra tabs at the top of the chat list. They live on your device only - they are a
+way to look at the chats you already have, not a Telegram object, so nothing is sent to the
+server and nothing syncs to another device.
+
+- **New folder** in the overflow menu: give it a name and tick the chats that belong in it.
+- Long-press a tab to rename it, change its rules, move it, or delete it.
+- Long-press a chat to add it to a folder by hand, or take it out again.
+
+Rules: unread, not muted, muted, pinned, private chats, groups, channels, Saved Messages. Tick
+several and choose whether one rule is enough or every rule has to hold. Chats that are added or
+excluded by hand always win over the rules, so one loud chat can be kept out of an "everything
+unmuted" folder. Deleting a folder never touches a chat.
+
+---
+
 ## 🔑 Signing in
 
 Telefarm offers two ways in from the first screen:
@@ -385,6 +402,8 @@ need no device:
 - The key fingerprint that the sign-in screen shows, and that it leaks nothing
 - Which application credentials a build resolves to, and the validation of a pair that was typed
 - When a pasted session may be used, and with which application id
+- Chat folders: which chats a folder holds, its badge, and the stored form of the folders,
+  including the corrupt texts an older version could have left behind
 - The login token of a `tg://login` link
 - The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
 

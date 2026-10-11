@@ -2,12 +2,19 @@ package com.telefarm.ui.main
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.telefarm.R
 import com.telefarm.core.AppGraph
+import com.telefarm.core.folders.FolderMatcher
 import com.telefarm.data.AppSettings
+import com.telefarm.data.FolderCreateResult
 import com.telefarm.data.model.AuthState
+import com.telefarm.data.model.ChatFolder
+import com.telefarm.data.model.ChatFolderUi
 import com.telefarm.data.model.ChatListState
 import com.telefarm.data.model.ChatUi
 import com.telefarm.data.model.ConnectionStatus
+import com.telefarm.data.model.FolderRule
+import com.telefarm.data.model.FolderRuleMode
 import com.telefarm.data.model.UiMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -37,7 +44,13 @@ data class MainState(
     val error: UiMessage? = null,
     val isRefreshing: Boolean = false,
     val connectionStatus: ConnectionStatus = ConnectionStatus.CONNECTING,
-    val signIn: SignInRequirement = SignInRequirement.UNKNOWN
+    val signIn: SignInRequirement = SignInRequirement.UNKNOWN,
+    /** Tabs of the folder strip, with the badge each of them carries right now. */
+    val folders: List<ChatFolderUi> = emptyList(),
+    /** Folder that is shown, or null while the whole list is shown. */
+    val activeFolderId: Long? = null,
+    /** True when the list is short because a folder filters it, not because there is nothing. */
+    val isFilteredEmpty: Boolean = false
 )
 
 /**
@@ -55,20 +68,30 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
     /** Message shown once, for example after a failed chat action. */
     val transientError: StateFlow<UiMessage?> = _transientError.asStateFlow()
 
+    /** Folders and the one that is open, as a single flow so the combination below stays typed. */
+    private val folderTabs = combine(
+        graph.folders.folders,
+        graph.folders.activeFolder
+    ) { folders, active -> folders to active }
+
     val state: StateFlow<MainState> = combine(
-        graph.chats.state,
-        graph.chats.isRefreshing,
-        graph.session.connectionStatus,
-        graph.session.authState
-    ) { chatListState, refreshing, connection, authState ->
+        combine(graph.chats.state, graph.chats.isRefreshing) { list, refreshing -> list to refreshing },
+        combine(graph.session.connectionStatus, graph.session.authState) { connection, auth -> connection to auth },
+        folderTabs
+    ) { (chatListState, refreshing), (connection, authState), (folders, activeFolder) ->
+        val allChats = (chatListState as? ChatListState.Content)?.chats.orEmpty()
+        val visible = FolderMatcher.select(activeFolder, allChats)
         MainState(
             isLoading = chatListState is ChatListState.Loading,
-            chats = (chatListState as? ChatListState.Content)?.chats.orEmpty(),
+            chats = visible,
             isEmpty = chatListState is ChatListState.Empty,
             error = (chatListState as? ChatListState.Failed)?.message,
             isRefreshing = refreshing,
             connectionStatus = connection,
-            signIn = authState.signInRequirement()
+            signIn = authState.signInRequirement(),
+            folders = FolderMatcher.summarizeAll(folders, allChats),
+            activeFolderId = activeFolder?.id,
+            isFilteredEmpty = visible.isEmpty() && allChats.isNotEmpty() && activeFolder != null
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), MainState())
 
@@ -94,6 +117,64 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
     fun clearError() {
         _transientError.value = null
     }
+
+    // region Folders
+
+    /** Shows a folder, or the whole list when [folderId] is null. */
+    fun selectFolder(folderId: Long?) {
+        graph.folders.select(folderId)
+    }
+
+    /** Adds a tab; a failure is reported the same way as a failed chat action. */
+    fun createFolder(name: String, rules: Set<FolderRule>, mode: FolderRuleMode) {
+        when (val result = graph.folders.create(name, rules, mode)) {
+            is FolderCreateResult.Created -> graph.folders.select(result.folder.id)
+            FolderCreateResult.EmptyName -> _transientError.value = UiMessage.Res(R.string.folder_error_empty_name)
+            FolderCreateResult.TooManyFolders ->
+                _transientError.value = UiMessage.Res(R.string.folder_error_too_many)
+        }
+    }
+
+    fun renameFolder(folderId: Long, name: String) {
+        graph.folders.rename(folderId, name)
+    }
+
+    fun setFolderRules(folderId: Long, rules: Set<FolderRule>, mode: FolderRuleMode) {
+        graph.folders.setRules(folderId, rules, mode)
+    }
+
+    fun deleteFolder(folderId: Long) {
+        graph.folders.delete(folderId)
+    }
+
+    /** Folders in tab order, for the dialogs that name one. */
+    fun allFolders(): List<ChatFolder> = graph.folders.folders.value
+
+    fun moveFolderEarlier(folderId: Long) {
+        graph.folders.moveEarlier(folderId)
+    }
+
+    fun moveFolderLater(folderId: Long) {
+        graph.folders.moveLater(folderId)
+    }
+
+    /** Folders a chat could still be added to. */
+    fun foldersWithout(chatId: Long): List<ChatFolder> =
+        graph.folders.folders.value.filter { chatId !in it.includeChatIds }
+
+    /** Folders that name a chat by hand and could have it taken out again. */
+    fun foldersWith(chatId: Long): List<ChatFolder> =
+        graph.folders.folders.value.filter { chatId in it.includeChatIds }
+
+    fun addChatToFolder(folderId: Long, chatId: Long) {
+        graph.folders.addChat(folderId, chatId)
+    }
+
+    fun removeChatFromFolder(folderId: Long, chatId: Long) {
+        graph.folders.removeChat(folderId, chatId)
+    }
+
+    // endregion
 
     // region Chat actions
 

@@ -5,11 +5,13 @@ import com.telefarm.BuildConfig
 import com.telefarm.core.config.ApiCredentialStore
 import com.telefarm.core.config.TelegramApiIdentity
 import com.telefarm.core.prefs.AppPreferences
+import com.telefarm.core.prefs.FolderStore
 import com.telefarm.core.security.SecureStore
 import com.telefarm.core.td.TdLibClient
 import com.telefarm.core.td.TdLibConfig
 import com.telefarm.core.td.TelefarmLog
 import com.telefarm.data.ChatListRepository
+import com.telefarm.data.FolderRepository
 import com.telefarm.data.MessageRepository
 import com.telefarm.data.SearchRepository
 import com.telefarm.data.SettingsRepository
@@ -55,6 +57,9 @@ class AppGraph(context: Context) {
     val preferences = AppPreferences(appContext)
 
     private val workspaceDirectory = File(appContext.filesDir, WORKSPACE_DIRECTORY)
+
+    /** Chat folders: a device local way to look at the chat list. */
+    val folders = FolderRepository(FolderStore(appContext), applicationScope)
 
     /** Credentials of this device, stored in the secure store. */
     val apiCredentials = ApiCredentialStore(secureStore)

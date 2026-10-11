@@ -26,6 +26,10 @@
                 android:title="@string/menu_contacts" />
 
             <item
+                android:id="@+id/action_new_folder"
+                android:title="@string/menu_new_folder" />
+
+            <item
                 android:id="@+id/action_settings"
                 android:title="@string/menu_settings" />
 
