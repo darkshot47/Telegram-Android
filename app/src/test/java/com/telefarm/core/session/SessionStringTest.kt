@@ -107,6 +107,35 @@ class SessionStringTest {
     }
 
     @Test
+    fun `the key fingerprint is short, stable and hides the key`() {
+        val session = SessionString.parse(TELETHON_STRING)
+        val fingerprint = session.keyFingerprint()
+        assertEquals(8, fingerprint.length)
+        assertEquals(fingerprint, session.keyFingerprint())
+        assertEquals(fingerprint, SessionString.parse(TELETHON_STRING).keyFingerprint())
+        assertTrue(fingerprint.all { it in '0'..'9' || it in 'a'..'f' })
+        assertTrue(session.describeWithFingerprint().contains(fingerprint))
+        // The fingerprint is a digest: it may not contain a byte of the key.
+        val keyText = String(session.authorizationKey, Charsets.ISO_8859_1)
+        assertTrue(!keyText.contains(fingerprint))
+    }
+
+    @Test
+    fun `two different keys get different fingerprints`() {
+        val first = SessionString.parse(TELETHON_STRING).keyFingerprint()
+        val other = ImportedSession(
+            dcId = 2,
+            authorizationKey = ByteArray(256) { ((it * 5 + 7) % 256).toByte() },
+            address = "149.154.167.51",
+            port = 443,
+            applicationId = null,
+            testMode = false,
+            format = SessionFormat.TELETHON
+        ).keyFingerprint()
+        assertTrue(first != other)
+    }
+
+    @Test
     fun `rejects empty input`() {
         assertReason(SessionStringReason.EMPTY, "   ")
     }

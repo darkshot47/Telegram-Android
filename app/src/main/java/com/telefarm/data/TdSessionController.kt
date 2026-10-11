@@ -7,6 +7,7 @@ import com.telefarm.core.mtproto.MtProtoResponse
 import com.telefarm.core.security.SecureStore
 import com.telefarm.core.session.ImportedSession
 import com.telefarm.core.session.LoginToken
+import com.telefarm.core.session.SessionLoginPlanner
 import com.telefarm.core.session.SessionLoginException
 import com.telefarm.core.td.TdLibClient
 import com.telefarm.core.td.TelefarmLog
@@ -40,11 +41,20 @@ import java.util.concurrent.atomic.AtomicBoolean
 class TdSessionController(
     private val client: TdLibClient,
     private val secureStore: SecureStore,
-    private val credentials: TelegramCredentials,
+    credentials: TelegramCredentials,
     private val workspaceDirectory: File,
     private val applicationVersion: String,
     private val scope: CoroutineScope
 ) {
+
+    /**
+     * Credentials currently in use.
+     *
+     * Mutable because the sign in screen can replace them: TDLib bakes the application id into
+     * its database, so a change also replaces the client instance.
+     */
+    @Volatile
+    private var credentials: TelegramCredentials = credentials
 
     private val _authState = MutableStateFlow<AuthState>(AuthState.Initializing)
     val authState: StateFlow<AuthState> = _authState.asStateFlow()
@@ -156,17 +166,23 @@ class TdSessionController(
         withContext(Dispatchers.IO) {
             request {
                 val token = LoginToken.fromLink(link)
-                val error = (mtProtoClient().acceptLoginToken(session, token) as? MtProtoResponse.Error)
+                val client = mtProtoClient(SessionLoginPlanner.apiIdFor(session, credentials.apiId))
+                val error = (client.acceptLoginToken(session, token) as? MtProtoResponse.Error)
                 if (error != null) {
                     throw SessionLoginException(error.code, error.message)
                 }
             }
         }
 
-    /** The client that signs the login token; it carries no secret of its own. */
-    private fun mtProtoClient(): MtProtoClient = MtProtoClient(
+    /**
+     * The client that signs the login token; it carries no secret of its own.
+     *
+     * [apiId] is the identity of the pasted session when its format carries one, so the data
+     * center sees the same application that created the key.
+     */
+    private fun mtProtoClient(apiId: Int): MtProtoClient = MtProtoClient(
         MtProtoClientInfo(
-            apiId = credentials.apiId,
+            apiId = apiId,
             deviceModel = android.os.Build.MODEL.ifBlank { DEVICE_MODEL_FALLBACK },
             systemVersion = android.os.Build.VERSION.RELEASE.ifBlank { SYSTEM_VERSION_FALLBACK },
             appVersion = applicationVersion,
@@ -195,6 +211,46 @@ class TdSessionController(
             // instance the sign in screen would show its steps while every request disappears,
             // which is exactly what "the Continue button does nothing" looked like. The parameters
             // have to be sent again for the new instance.
+            parametersSent.set(false)
+            client.restart()
+            _authState.value = AuthState.Initializing
+            runCatching { client.send(TdApi.GetAuthorizationState()) }
+        }
+    }
+
+    /**
+     * Signs in again with different application credentials.
+     *
+     * TDLib refuses to reuse a database that was created with another application id, so the
+     * instance is closed and replaced. This is offered on the sign in screen only, where no
+     * session exists that could be lost.
+     */
+    fun updateCredentials(newCredentials: TelegramCredentials) {
+        if (newCredentials == credentials) return
+        credentials = newCredentials
+        scope.launch { restartClient() }
+    }
+
+    /**
+     * Retries a sign in that failed before Telegram answered.
+     *
+     * The sign in screen would otherwise stay on its failure panel with no way back, which is
+     * what an unrecoverable looking "credentials are missing" screen felt like.
+     */
+    fun retry() {
+        parametersSent.set(false)
+        scope.launch {
+            _authState.value = AuthState.Initializing
+            runCatching { client.send(TdApi.GetAuthorizationState()) }
+        }
+    }
+
+    /** Closes the instance, drops the database that belongs to it and starts a fresh one. */
+    private suspend fun restartClient() {
+        withContext(Dispatchers.IO) {
+            withTimeoutOrNull(CLOSE_SEND_TIMEOUT_MS) { client.send(TdApi.Close()) }
+            waitForClosed(attempts = LOGOUT_CLOSE_ATTEMPTS)
+            deleteSessionDirectory()
             parametersSent.set(false)
             client.restart()
             _authState.value = AuthState.Initializing
@@ -293,7 +349,10 @@ class TdSessionController(
     private suspend fun sendParameters() {
         if (!parametersSent.compareAndSet(false, true)) return
         if (!credentials.isConfigured) {
-            // Without credentials nothing can be authorized; the sign in screen explains it.
+            // Unreachable as long as the application ships an identity: TelegramApiIdentity
+            // always resolves a pair. The flag is reset so that the retry of the sign in screen
+            // can send the parameters again after credentials were entered.
+            parametersSent.set(false)
             _authState.value = AuthState.Failed(UiMessage.Res(R.string.error_credentials))
             return
         }

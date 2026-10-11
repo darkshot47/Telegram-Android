@@ -1,5 +1,6 @@
 package com.telefarm.core.session
 
+import java.security.MessageDigest
 import java.util.Base64
 
 /** Which client wrote a session string. */
@@ -67,8 +68,32 @@ class ImportedSession(
         return "$endpoint · ${format.name.lowercase().replace('_', ' ')}"
     }
 
+    /**
+     * Short, stable identifier of the authorization key.
+     *
+     * It is the first four bytes of the SHA-256 of the key, which is enough to tell two sessions
+     * of the same account apart on screen and nowhere near enough to recover the key itself. The
+     * key is a credential and is never rendered, logged or persisted in any other form.
+     */
+    fun keyFingerprint(): String {
+        val digest = MessageDigest.getInstance(FINGERPRINT_ALGORITHM).digest(authorizationKey)
+        return buildString(FINGERPRINT_HEX_LENGTH) {
+            for (index in 0 until FINGERPRINT_BYTES) {
+                append(HEX[(digest[index].toInt() shr 4) and 0x0F])
+                append(HEX[digest[index].toInt() and 0x0F])
+            }
+        }
+    }
+
+    /** Summary and fingerprint together, for the line the sign in screen shows under the input. */
+    fun describeWithFingerprint(): String = "${describe()} · key ${keyFingerprint()}"
+
     private companion object {
         const val DEFAULT_PORT = 443
+        const val FINGERPRINT_ALGORITHM = "SHA-256"
+        const val FINGERPRINT_BYTES = 4
+        const val FINGERPRINT_HEX_LENGTH = FINGERPRINT_BYTES * 2
+        const val HEX = "0123456789abcdef"
     }
 }
 

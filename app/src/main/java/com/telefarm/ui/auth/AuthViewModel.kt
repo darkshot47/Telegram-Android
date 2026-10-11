@@ -1,19 +1,25 @@
 package com.telefarm.ui.auth
 
+import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.telefarm.R
-import androidx.annotation.StringRes
 import com.telefarm.core.AppGraph
+import com.telefarm.core.config.CredentialInputResult
+import com.telefarm.core.config.TelegramApiIdentity
 import com.telefarm.core.session.ImportedSession
 import com.telefarm.core.session.LoginToken
 import com.telefarm.core.session.SessionLoginException
+import com.telefarm.core.session.SessionLoginPlanner
+import com.telefarm.core.session.SessionLoginReadiness
 import com.telefarm.core.session.SessionString
 import com.telefarm.core.session.SessionStringException
 import com.telefarm.core.session.SessionStringReason
 import com.telefarm.core.td.TdLibException
 import com.telefarm.data.map.toAuthMessage
 import com.telefarm.data.model.AuthState
+import com.telefarm.data.model.CredentialSource
+import com.telefarm.data.model.TelegramCredentials
 import com.telefarm.data.model.UiMessage
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -36,6 +42,16 @@ enum class AuthStep {
     FAILED
 }
 
+/** How the user signs in from the first screen of the flow. */
+enum class AuthMode {
+
+    /** Phone number, verification code, and everything Telegram asks for after that. */
+    PHONE,
+
+    /** A session string of another client; no phone number and no code. */
+    SESSION
+}
+
 /** Everything the sign in screens render. */
 data class AuthFormState(
     val step: AuthStep = AuthStep.CHECKING,
@@ -50,25 +66,43 @@ data class AuthFormState(
     val emailPattern: String? = null,
     val confirmationLink: String? = null,
     val termsOfService: String? = null,
-    val credentialsConfigured: Boolean = true,
-    val showsSessionLogin: Boolean = false,
+    val mode: AuthMode = AuthMode.PHONE,
+    val credentials: TelegramCredentials = TelegramApiIdentity.FALLBACK,
+    val showsApiCredentials: Boolean = false,
     val sessionSummary: String? = null
 ) {
     val canSubmit: Boolean get() = !isBusy
+
+    /**
+     * Whether the choice between a phone number and a session string is offered.
+     *
+     * It stays offered on the failure panel: a session login does not depend on the request that
+     * failed, so it is the way forward while the rest of the sign in cannot be reached.
+     */
+    val showsModeSwitch: Boolean get() = step == AuthStep.PHONE_NUMBER || step == AuthStep.FAILED
+
+    /** The credential label of the identity that is currently used to connect. */
+    @get:StringRes
+    val credentialsSummaryRes: Int
+        get() = when (credentials.source) {
+            CredentialSource.USER_PROVIDED -> R.string.auth_api_source_user
+            CredentialSource.BUILD_CONFIG -> R.string.auth_api_source_build
+            CredentialSource.BUILT_IN -> R.string.auth_api_source_built_in
+        }
 }
 
 /**
  * Sign in logic.
  *
- * The view model only mirrors [TdSessionController]; every state change comes from TDLib, so
- * the screen cannot show a step Telegram has not actually reached.
+ * The view model only mirrors [com.telefarm.data.TdSessionController]; every state change comes
+ * from TDLib, so the screen cannot show a step Telegram has not actually reached.
  */
 class AuthViewModel(private val graph: AppGraph) : ViewModel() {
 
     private val _state = MutableStateFlow(
         AuthFormState(
             step = AuthStep.CHECKING,
-            credentialsConfigured = graph.session.credentialsConfigured
+            credentials = graph.credentials.value
         )
     )
     val state: StateFlow<AuthFormState> = _state.asStateFlow()
@@ -86,6 +120,19 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
         viewModelScope.launch {
             graph.session.authState.collect { authState -> render(authState) }
         }
+        viewModelScope.launch {
+            // The identity can change while this screen is open, and the caption says which one
+            // is talking to Telegram.
+            graph.credentials.collect { credentials ->
+                _state.value = _state.value.copy(credentials = credentials)
+            }
+        }
+    }
+
+    /** Switches between the phone number and the session string form. */
+    fun setMode(mode: AuthMode) {
+        if (_state.value.mode == mode) return
+        _state.value = _state.value.copy(mode = mode, error = null)
     }
 
     /** Sends the phone number; the number is kept only to label the next screen. */
@@ -101,27 +148,49 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
         }
     }
 
-    /** Shows or hides the session login of the phone number step. */
-    fun toggleSessionLogin() {
-        _state.value = _state.value.copy(showsSessionLogin = !_state.value.showsSessionLogin, error = null)
-    }
-
     /**
      * Signs in with a session string instead of a phone number.
      *
      * The session is only read here: the sign in itself happens once TDLib reports the login token
-     * that the session has to approve.
+     * that the session has to approve. Nothing about the session leaves this device - it is parsed,
+     * used once to sign that token, and dropped.
      */
     fun submitSession(raw: String) {
         val session = try {
             SessionString.parse(raw)
         } catch (error: SessionStringException) {
-            _state.value = _state.value.copy(error = UiMessage.Res(sessionMessage(error.reason)))
+            _state.value = _state.value.copy(
+                sessionSummary = null,
+                error = UiMessage.Res(sessionMessage(error.reason))
+            )
             return
         }
-        pendingSession = session
-        _state.value = _state.value.copy(sessionSummary = session.describe(), error = null)
-        perform { graph.session.requestSessionLogin() }
+        when (SessionLoginPlanner.readiness(graph.session.authState.value)) {
+            SessionLoginReadiness.READY -> {
+                pendingSession = session
+                _state.value = _state.value.copy(
+                    sessionSummary = SessionLoginPlanner.describeFor(session),
+                    error = null
+                )
+                perform { graph.session.requestSessionLogin() }
+            }
+
+            SessionLoginReadiness.CLIENT_BUSY -> _state.value = _state.value.copy(
+                error = UiMessage.Res(R.string.auth_session_not_ready)
+            )
+
+            // A login is already running or the account is signed in: pasting a session now
+            // would produce a request that TDLib drops.
+            SessionLoginReadiness.NOT_WAITING_FOR_LOGIN -> _state.value = _state.value.copy(
+                error = UiMessage.Res(R.string.auth_session_not_ready)
+            )
+        }
+    }
+
+    /** Retries a sign in that failed before Telegram answered. */
+    fun retry() {
+        _state.value = _state.value.copy(error = null)
+        graph.session.retry()
     }
 
     fun submitCode(code: String) {
@@ -169,8 +238,48 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
         perform { graph.session.register(firstName, lastName) }
     }
 
+    /** Shows or hides the fields for a personal pair of application credentials. */
+    fun toggleApiCredentials() {
+        _state.value = _state.value.copy(
+            showsApiCredentials = !_state.value.showsApiCredentials,
+            error = null
+        )
+    }
+
+    /**
+     * Replaces the identity this device connects with.
+     *
+     * The pair is validated before anything is stored, and the connection is rebuilt afterwards
+     * because TDLib keeps the application id in its database.
+     */
+    fun submitApiCredentials(rawApiId: String, rawApiHash: String) {
+        when (val result = TelegramApiIdentity.parseInput(rawApiId, rawApiHash)) {
+            is CredentialInputResult.Valid -> {
+                graph.applyApiCredentials(result.credentials)
+                // The caption under the fields says which identity is connected now, so a
+                // success needs no message of its own - and must not borrow the error field.
+                _state.value = _state.value.copy(showsApiCredentials = false, error = null)
+            }
+
+            CredentialInputResult.Empty -> reject(R.string.auth_api_invalid_id)
+            CredentialInputResult.InvalidApiId -> reject(R.string.auth_api_invalid_id)
+            CredentialInputResult.InvalidApiHash -> reject(R.string.auth_api_invalid_hash)
+        }
+    }
+
+    /** Goes back to the identity the application ships with. */
+    fun resetApiCredentials() {
+        graph.applyApiCredentials(TelegramApiIdentity.FALLBACK)
+        _state.value = _state.value.copy(showsApiCredentials = false, error = null)
+    }
+
     fun dismissError() {
         _state.value = _state.value.copy(error = null)
+    }
+
+    /** Shows why the credentials that were typed cannot be used. */
+    private fun reject(@StringRes message: Int) {
+        _state.value = _state.value.copy(showsApiCredentials = true, error = UiMessage.Res(message))
     }
 
     private fun perform(block: suspend () -> Result<Unit>) {
@@ -206,6 +315,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
                     // Reaching this step means Telegram is reachable again: a message left over
                     // from an earlier attempt must not stay on screen.
                     error = null,
+                    sessionSummary = null,
                     codeLength = null,
                     codeType = null,
                     resendInSeconds = 0
@@ -254,7 +364,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
                 if (session != null) {
                     pendingSession = null
                     // The pasted session approves the token of this login on its own, so the
-                    // screen stays on the phone number step with a spinner instead of asking the
+                    // screen stays on the session step with a spinner instead of asking the
                     // user to confirm the login on another device.
                     val usable = LoginToken.matches(authState.link)
                     if (usable) {
@@ -302,6 +412,8 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
                 error = null
             )
 
+            // A failure the user cannot fix by filling in a field. The failure panel keeps the
+            // session login and the credential editor reachable, so this is never a dead end.
             is AuthState.Failed -> _state.value.copy(
                 step = AuthStep.FAILED,
                 isBusy = false,
@@ -322,7 +434,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
             val error = result.exceptionOrNull()
             sessionApproving = false
             if (error != null) {
-                // The session did not work, so the sign in goes back to the phone number step
+                // The session did not work, so the sign in goes back to the session step
                 // instead of leaving the user on a screen that only offers to open a link.
                 _state.value = _state.value.copy(
                     step = AuthStep.PHONE_NUMBER,

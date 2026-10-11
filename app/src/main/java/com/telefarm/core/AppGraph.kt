@@ -2,6 +2,8 @@ package com.telefarm.core
 
 import android.content.Context
 import com.telefarm.BuildConfig
+import com.telefarm.core.config.ApiCredentialStore
+import com.telefarm.core.config.TelegramApiIdentity
 import com.telefarm.core.prefs.AppPreferences
 import com.telefarm.core.security.SecureStore
 import com.telefarm.core.td.TdLibClient
@@ -13,6 +15,7 @@ import com.telefarm.data.SearchRepository
 import com.telefarm.data.SettingsRepository
 import com.telefarm.data.TdSessionController
 import com.telefarm.data.UserRepository
+import com.telefarm.data.model.CredentialSource
 import com.telefarm.data.model.TelegramCredentials
 import com.telefarm.media.FileManager
 import com.telefarm.media.ThumbnailLoader
@@ -23,6 +26,9 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.io.File
 
 /**
@@ -50,17 +56,38 @@ class AppGraph(context: Context) {
 
     private val workspaceDirectory = File(appContext.filesDir, WORKSPACE_DIRECTORY)
 
-    private val credentials = TelegramCredentials(
-        apiId = BuildConfig.TELEGRAM_API_ID,
-        apiHash = BuildConfig.TELEGRAM_API_HASH
+    /** Credentials of this device, stored in the secure store. */
+    val apiCredentials = ApiCredentialStore(secureStore)
+
+    private val storedApiCredentials = apiCredentials.load()
+
+    /**
+     * The application credentials the client signs in with.
+     *
+     * MTProto carries an application id on every connection, so a client always needs a pair. The
+     * order is the one [TelegramApiIdentity] documents: what this device entered, then what the
+     * build carries, then the shared identity the application ships with. The last step is what
+     * makes the sign in screen reachable on a fresh install instead of reporting missing
+     * credentials.
+     */
+    private val credentialsFlow = MutableStateFlow(
+        TelegramApiIdentity.resolve(
+            userApiId = storedApiCredentials.apiId,
+            userApiHash = storedApiCredentials.apiHash,
+            buildApiId = BuildConfig.TELEGRAM_API_ID,
+            buildApiHash = BuildConfig.TELEGRAM_API_HASH
+        )
     )
+
+    /** Live credentials, so the sign in screen can show which identity is in use. */
+    val credentials: StateFlow<TelegramCredentials> = credentialsFlow.asStateFlow()
 
     private val tdLibClient = TdLibClient(
         TdLibConfig(
             databaseDirectory = File(workspaceDirectory, "db").absolutePath,
             filesDirectory = File(workspaceDirectory, "files").absolutePath,
-            apiId = credentials.apiId,
-            apiHash = credentials.apiHash,
+            apiId = credentialsFlow.value.apiId,
+            apiHash = credentialsFlow.value.apiHash,
             logLevel = if (BuildConfig.DEBUG) LOG_LEVEL_WARNING else LOG_LEVEL_FATAL,
             logToLogcat = BuildConfig.DEBUG
         )
@@ -69,7 +96,7 @@ class AppGraph(context: Context) {
     val session = TdSessionController(
         client = tdLibClient,
         secureStore = secureStore,
-        credentials = credentials,
+        credentials = credentialsFlow.value,
         workspaceDirectory = workspaceDirectory,
         applicationVersion = BuildConfig.VERSION_NAME,
         scope = applicationScope
@@ -99,6 +126,26 @@ class AppGraph(context: Context) {
         preferences = preferences,
         scope = applicationScope
     )
+
+    /**
+     * Applies credentials that were entered on the sign in screen and reconnects with them.
+     *
+     * TDLib bakes the application id into its database, so a change needs a new instance; the
+     * session does that. Changing the identity only makes sense while signed out, which is the
+     * only moment the sign in screen offers it.
+     */
+    fun applyApiCredentials(credentials: TelegramCredentials) {
+        if (credentials.source == CredentialSource.USER_PROVIDED) {
+            apiCredentials.save(credentials.apiId, credentials.apiHash)
+        } else {
+            apiCredentials.clear()
+        }
+        val previous = credentialsFlow.value
+        credentialsFlow.value = credentials
+        if (previous != credentials) {
+            session.updateCredentials(credentials)
+        }
+    }
 
     private var started = false
 

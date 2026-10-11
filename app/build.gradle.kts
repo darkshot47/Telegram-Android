@@ -37,8 +37,9 @@ val hasTelegramCredentials = telegramApiId.isNotEmpty() &&
 
 if (!hasTelegramCredentials) {
     logger.warn(
-        "Telegram API credentials are not configured. The APK will build, but authentication " +
-            "requires TELEGRAM_API_ID and TELEGRAM_API_HASH (see README)."
+        "TELEGRAM_API_ID / TELEGRAM_API_HASH were not provided. The application signs in with " +
+            "the shared identity it ships with, so it stays fully usable; provide your own pair " +
+            "to use a personal Telegram application instead (see README)."
     )
 }
 

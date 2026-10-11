@@ -13,6 +13,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
+import com.google.android.material.button.MaterialButtonToggleGroup
 import com.telefarm.R
 import com.telefarm.appGraph
 import com.telefarm.data.model.AuthState
@@ -25,10 +26,11 @@ import kotlinx.coroutines.launch
 
 /**
  * Sign-in flow: phone number, verification code, optional two-step password, email based
- * logins and account registration.
+ * logins, account registration and the login with a session string of another client.
  *
  * Every step renders its own loading and error state; nothing sensitive is ever logged or
- * shown outside the input fields the user is typing into.
+ * shown outside the input fields the user is typing into. A session string is a credential, so
+ * only a digest of its key is ever displayed.
  */
 class AuthActivity : AppCompatActivity() {
 
@@ -53,6 +55,21 @@ class AuthActivity : AppCompatActivity() {
     }
 
     private fun setupSteps() {
+        binding.authModeGroup.addOnButtonCheckedListener(
+            object : MaterialButtonToggleGroup.OnButtonCheckedListener {
+                override fun onButtonChecked(
+                    group: MaterialButtonToggleGroup,
+                    checkedId: Int,
+                    isChecked: Boolean
+                ) {
+                    if (!isChecked) return
+                    viewModel.setMode(
+                        if (checkedId == R.id.modeSessionButton) AuthMode.SESSION else AuthMode.PHONE
+                    )
+                }
+            }
+        )
+
         binding.authPhone.phoneInput.doAfterTextChanged { editable ->
             val formatted = PhoneNumberFormatter.asYouType(editable?.toString().orEmpty())
             if (formatted != editable?.toString()) {
@@ -65,10 +82,9 @@ class AuthActivity : AppCompatActivity() {
             viewModel.submitPhoneNumber(binding.authPhone.phoneInput.text?.toString().orEmpty())
         }
 
-        binding.authPhone.sessionToggle.setOnClickListener { viewModel.toggleSessionLogin() }
-        binding.authPhone.sessionButton.setOnClickListener {
-            binding.authPhone.sessionInput.hideKeyboard()
-            viewModel.submitSession(binding.authPhone.sessionInput.text?.toString().orEmpty())
+        binding.authSession.sessionButton.setOnClickListener {
+            binding.authSession.sessionInput.hideKeyboard()
+            viewModel.submitSession(binding.authSession.sessionInput.text?.toString().orEmpty())
         }
 
         binding.authCode.codeButton.setOnClickListener {
@@ -103,6 +119,18 @@ class AuthActivity : AppCompatActivity() {
                 binding.authRegister.lastNameInput.text?.toString().orEmpty()
             )
         }
+
+        binding.authFailure.retryButton.setOnClickListener { viewModel.retry() }
+
+        binding.authApiToggle.setOnClickListener { viewModel.toggleApiCredentials() }
+        binding.authApi.apiSaveButton.setOnClickListener {
+            binding.authApi.apiHashInput.hideKeyboard()
+            viewModel.submitApiCredentials(
+                binding.authApi.apiIdInput.text?.toString().orEmpty(),
+                binding.authApi.apiHashInput.text?.toString().orEmpty()
+            )
+        }
+        binding.authApi.apiResetButton.setOnClickListener { viewModel.resetApiCredentials() }
     }
 
     private fun render(state: AuthFormState) {
@@ -112,19 +140,35 @@ class AuthActivity : AppCompatActivity() {
         binding.authError.setVisible(state.error != null)
         binding.authError.text = state.error?.resolve(this)
 
-        binding.authPhone.root.setVisible(state.step == AuthStep.PHONE_NUMBER)
+        binding.authModeGroup.setVisible(state.showsModeSwitch)
+        val checkedModeId = if (state.mode == AuthMode.SESSION) {
+            R.id.modeSessionButton
+        } else {
+            R.id.modePhoneButton
+        }
+        if (binding.authModeGroup.checkedButtonId != checkedModeId) {
+            binding.authModeGroup.check(checkedModeId)
+        }
+
+        val firstStep = state.step == AuthStep.PHONE_NUMBER || state.step == AuthStep.FAILED
+        binding.authPhone.root.setVisible(firstStep && state.mode == AuthMode.PHONE)
+        binding.authSession.root.setVisible(firstStep && state.mode == AuthMode.SESSION)
         binding.authCode.root.setVisible(state.step == AuthStep.CODE)
         binding.authPassword.root.setVisible(state.step == AuthStep.PASSWORD)
         binding.authEmail.root.setVisible(state.step == AuthStep.EMAIL_ADDRESS || state.step == AuthStep.EMAIL_CODE)
         binding.authOtherDevice.root.setVisible(state.step == AuthStep.OTHER_DEVICE)
         binding.authRegister.root.setVisible(state.step == AuthStep.REGISTRATION)
+        binding.authFailure.root.setVisible(state.step == AuthStep.FAILED)
 
-        binding.authPhone.sessionGroup.setVisible(state.showsSessionLogin)
-        binding.authPhone.sessionToggle.setText(
-            if (state.showsSessionLogin) R.string.auth_session_hide else R.string.auth_session_show
+        binding.authSession.sessionSummary.setVisible(state.sessionSummary != null)
+        binding.authSession.sessionSummary.text = state.sessionSummary
+
+        binding.authApi.root.setVisible(state.showsApiCredentials)
+        binding.authApiToggle.setText(
+            if (state.showsApiCredentials) R.string.auth_api_hide else R.string.auth_api_show
         )
-        binding.authPhone.sessionSummary.setVisible(state.sessionSummary != null)
-        binding.authPhone.sessionSummary.text = state.sessionSummary
+        binding.authApiStatus.setVisible(state.credentials.isConfigured)
+        binding.authApiStatus.text = getString(state.credentialsSummaryRes, state.credentials.apiId)
 
         when (state.step) {
             AuthStep.CODE -> renderCodeStep(state)

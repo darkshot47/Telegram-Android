@@ -125,6 +125,7 @@ A valid authenticated session can provide account access and must therefore be p
 
 ### 👤 Account
 
+- Sign in with a phone number, or with a session string of another client
 - Account profile
 - Username
 - Profile photo
@@ -186,13 +187,61 @@ Play Store publication is not required for personal testing.
 
 ---
 
+## 🔑 Signing in
+
+Telefarm offers two ways in from the first screen:
+
+| | Phone number | Session string |
+| --- | --- | --- |
+| What you need | Your number and the code Telegram sends | A session string of a client that is already signed in |
+| Where it comes from | Telegram | Telethon, GramJS, Hydrogram or Pyrogram |
+| Code / password needed | Yes | No |
+
+### Session login
+
+Choose **Session string** on the sign-in screen and paste the string. Telefarm reads the data
+center and the authorization key out of it, asks Telegram for a login token, and lets the pasted
+session approve that token - exactly what a signed-in device does when it scans a login QR code.
+The session string is parsed in memory, used once, and never written to disk, to a log, or to the
+interface; the screen only ever shows a four byte digest of the key so that two sessions of the
+same account can be told apart.
+
+Supported layouts:
+
+- Telethon 1.23+ `StringSession` (IPv4 and IPv6)
+- GramJS `StringSession`, including the host name variant
+- Hydrogram / Pyrogram `export_session_string()`
+- The older layout that stores the application id
+- The same shared layout with a `telefarm:` prefix
+
+Sessions of the Telegram **test environment** are rejected, because this client only talks to the
+production data centers.
+
+A session is a credential. Anybody who has it has your account, so treat it like a password.
+
+---
+
 ## ⚙️ Configuration
 
-Telefarm requires the appropriate Telegram application configuration for client/API communication.
+MTProto identifies the application on every connection, so a Telegram client always needs an
+`api_id` and an `api_hash`. Telefarm resolves them in this order:
 
-Development credentials must be kept outside source code whenever possible.
+1. **Your own pair, entered in the app** - "Use your own Telegram API credentials" on the sign-in
+   screen. Stored in the Android keystore backed store of this device only.
+2. **The build** - `TELEGRAM_API_ID` / `TELEGRAM_API_HASH` from Gradle properties, environment
+   variables or `local.properties`.
+3. **The shared identity the app ships with** - the application id of the official Android client.
 
-Example configuration:
+Step 3 is why a freshly installed build works at all: the sign-in screen appears and both login
+methods are usable without registering anything first.
+
+> [!IMPORTANT]
+> Telegram's API terms ask every application to register its own pair at
+> <https://my.telegram.org>. The built-in identity is shared, it is not yours, and using it for a
+> distributed app can put the accounts that use it at risk. Register your own pair - it takes a
+> minute and is free - and enter it in the app or in the build.
+
+Build time configuration example:
 
 TELEGRAM_API_ID=your_api_id
 TELEGRAM_API_HASH=your_api_hash
@@ -328,20 +377,19 @@ Performance will be optimized progressively during development.
 
 ## 🧪 Testing
 
-Testing will cover:
+`./gradlew :app:test` runs the unit tests. They cover the parts that decide correctness and that
+need no device:
 
-- Authentication
-- Session persistence
-- Chat synchronization
-- Message sending
-- Message receiving
-- Media transfers
-- Notifications
-- Offline states
-- Network reconnection
-- Local storage
-- Application restart
-- Security-sensitive operations
+- Session string parsing of every supported client format, against strings written by those
+  clients, and the rejection of test-mode sessions and unusable keys
+- The key fingerprint that the sign-in screen shows, and that it leaks nothing
+- Which application credentials a build resolves to, and the validation of a pair that was typed
+- When a pasted session may be used, and with which application id
+- The login token of a `tg://login` link
+- The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
+
+Still to cover: chat synchronization, media transfers, notifications, offline states and
+reconnection.
 
 ---
 
