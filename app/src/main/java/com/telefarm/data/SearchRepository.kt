@@ -1,5 +1,6 @@
 package com.telefarm.data
 
+import com.telefarm.core.search.SearchRanker
 import com.telefarm.core.td.TdLibClient
 import com.telefarm.core.td.TdLibException
 import com.telefarm.core.td.TelefarmLog
@@ -53,12 +54,20 @@ class SearchRepository(
             }
         }
 
+        // TDLib matches the script a chat is written in. A query typed in the other script -
+        // "kaise" for कैसे - is matched here against the chats this device already knows.
+        val crossScript = SearchRanker.rank(
+            trimmed,
+            chats.visibleChats().filter { it.id !in found.keys }
+        ) { it.title }.take(EXTRA_LOCAL_LIMIT)
+
         val selfUserId = session.selfUserId.value
-        return found.values.map { chat ->
+        val known = found.values.map { chat ->
             val senderId = chat.lastMessage?.let { message -> TdMappers.lastMessageSenderId(message, selfUserId) }
             val senderName = if (chat.lastMessage?.isOutgoing == true) null else senderId?.let(users::cachedDisplayName)
             TdMappers.chat(chat, selfUserId, senderName)
         }
+        return known + crossScript
     }
 
     /** Searches messages across all chats. */
@@ -173,6 +182,9 @@ class SearchRepository(
         /** Shortest query TDLib searches for. */
         const val MIN_QUERY_LENGTH = 2
         const val DEFAULT_LIMIT = 30
+
+        /** How many extra chats a query typed in another script may add. */
+        const val EXTRA_LOCAL_LIMIT = 10
 
         private val FALLBACK_ERROR = UiMessage.Res(com.telefarm.R.string.search_error)
 
