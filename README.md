@@ -224,6 +224,36 @@ does not reach it.
 
 ---
 
+## ✍️ Formatted messages
+
+A message can be typed with markup and it arrives formatted:
+
+| Typed | Sent as |
+| --- | --- |
+| `**bold**` | bold |
+| `__italic__` | italic |
+| `~~struck~~` | struck through |
+| `||spoiler||` | hidden until tapped |
+| `` `code` `` | inline code |
+| ` ```a block``` ` | a block of code |
+| `[label](https://example.com)` | a link |
+
+A marker with no matching closer is left as typed, because `2 ** 3` is arithmetic and not a
+failed attempt at bold. Nothing in the reader throws, whatever is typed.
+
+The nesting rules are the ones the format itself states, not a choice made here: code, a block of
+code and a link cannot hold other formatting, while bold, italic, strikethrough and a spoiler can
+nest freely. So `` `**not bold**` `` sends the asterisks and no bold run, and
+`[**label**](https://example.com)` sends the words without the asterisks, because the format has
+no way to make a link label bold. A check runs those invariants - nothing past the end of the
+text, nothing inside code, nothing partly overlapping - over every sample in the tests, because
+Telegram rejects the whole message when one of them is broken.
+
+Formatting is read on the way out. Messages arriving from other clients are still shown as plain
+text.
+
+---
+
 ## 📅 Sections and language
 
 The chat list is grouped under **Today**, **Yesterday**, **This week**, **This month** and
@@ -463,6 +493,8 @@ need no device:
 - The sections of the chat list, including a chat that is out of age order because it is pinned
 - The passcode: what is refused when it is set, how a stored passcode verifies, the waits a wrong
   guess costs, and how long one unlock lasts
+- Reading typed markup into the text plus runs that the wire format asks for, and the invariants
+  that format imposes on the runs
 - The login token of a `tg://login` link
 - The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
 

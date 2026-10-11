@@ -1,6 +1,9 @@
 package com.telefarm.data
 
 import com.telefarm.R
+import com.telefarm.core.format.Markdown
+import com.telefarm.core.format.TextKind
+import com.telefarm.core.format.TextSpan
 import com.telefarm.core.td.TdLibClient
 import com.telefarm.core.td.TdLibException
 import com.telefarm.core.td.TelefarmLog
@@ -212,9 +215,13 @@ class MessageStore(
                     replyMarkup = null
                     inputMessageContent = TdApi.InputMessageText().apply {
                         // `this` is required: the enclosing function also has a `text` parameter.
+                        //
+                        // What was typed is read as markup, so `**bold**` is sent as four bold
+                        // characters rather than as eight characters with asterisks in them.
+                        val formatted = Markdown.parse(trimmed)
                         this.text = TdApi.FormattedText().apply {
-                            this.text = trimmed
-                            entities = emptyArray()
+                            this.text = formatted.text
+                            entities = formatted.spans.map { it.toEntity() }.toTypedArray()
                         }
                         linkPreviewOptions = null
                         clearDraft = true
@@ -552,6 +559,28 @@ class MessageStore(
 
     private fun epochDayOf(timestamp: Int): Long =
         if (timestamp <= 0) Long.MIN_VALUE else timestamp.toLong() / SECONDS_PER_DAY
+
+    /**
+     * The wire form of one formatted run.
+     *
+     * Offsets and lengths are in UTF-16 code units on both sides of this, which is what a Kotlin
+     * string index already is, so nothing is converted. The nesting rules that keep this list
+     * acceptable - code and a link holding nothing, bold and italic free to nest - are enforced
+     * by [Markdown], not here.
+     */
+    private fun TextSpan.toEntity(): TdApi.TextEntity = TdApi.TextEntity().apply {
+        offset = this@toEntity.offset
+        length = this@toEntity.length
+        type = when (kind) {
+            TextKind.BOLD -> TdApi.TextEntityTypeBold()
+            TextKind.ITALIC -> TdApi.TextEntityTypeItalic()
+            TextKind.STRIKETHROUGH -> TdApi.TextEntityTypeStrikethrough()
+            TextKind.SPOILER -> TdApi.TextEntityTypeSpoiler()
+            TextKind.CODE -> TdApi.TextEntityTypeCode()
+            TextKind.PRE -> TdApi.TextEntityTypePre()
+            TextKind.LINK -> TdApi.TextEntityTypeTextUrl().apply { url = this@toEntity.url.orEmpty() }
+        }
+    }
 
     private companion object {
         const val TAG = "MessageStore"
