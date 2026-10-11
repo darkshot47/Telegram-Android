@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
 import android.view.MenuItem
+import android.view.WindowManager
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.activity.result.contract.ActivityResultContracts
@@ -37,6 +38,7 @@ import com.telefarm.ui.chat.ChatActivity
 import com.telefarm.ui.common.resolve
 import com.telefarm.ui.common.showSnackbar
 import com.telefarm.ui.contacts.ContactsActivity
+import com.telefarm.ui.lock.LockActivity
 import com.telefarm.ui.search.SearchActivity
 import com.telefarm.ui.settings.SettingsActivity
 import kotlinx.coroutines.launch
@@ -75,6 +77,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        applyLockGate()
 
         adapter = ChatListAdapter(
             loader = appGraph.thumbnails,
@@ -130,9 +133,32 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // Coming back from anywhere is when a grace period is most likely to have run out.
+        appGraph.passcodes.refresh()
+        applyLockGate()
+
         // Returning to the list means no conversation is on screen any more.
         appGraph.notifications.dismissAll()
         requestNotificationPermissionIfNeeded()
+    }
+
+    /**
+     * Puts the lock screen in front of the chat list when the passcode has not been entered.
+     *
+     * The window is also kept out of screenshots and the task switcher while a passcode is set,
+     * because the task switcher shows the last frame of the app - the chat list - to anyone
+     * holding the phone, which is exactly what the passcode is there to stop.
+     */
+    private fun applyLockGate() {
+        val passcodes = appGraph.passcodes
+        if (passcodes.isConfigured()) {
+            window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
+        if (passcodes.needsPasscodeNow()) {
+            startActivity(Intent(this, LockActivity::class.java))
+        }
     }
 
     override fun onDestroy() {

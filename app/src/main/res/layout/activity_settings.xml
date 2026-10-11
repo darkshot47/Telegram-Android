@@ -118,6 +118,42 @@
                 android:drawableStart="@drawable/ic_info"
                 android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
 
+            <!-- Security -->
+            <TextView
+                style="@style/Widget.Telefarm.SectionHeader"
+                android:text="@string/settings_section_security" />
+
+            <LinearLayout
+                android:id="@+id/passcodeRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="22dp"
+                    android:layout_height="22dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/ic_lock"
+                    app:tint="@color/icon_tint" />
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="@dimen/spacing_medium"
+                    android:layout_weight="1"
+                    android:text="@string/settings_passcode"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                <TextView
+                    android:id="@+id/passcodeSummary"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+            </LinearLayout>
+
             <!-- Appearance -->
             <TextView
                 style="@style/Widget.Telefarm.SectionHeader"

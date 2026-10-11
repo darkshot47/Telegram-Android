@@ -204,6 +204,60 @@ unmuted" folder. Deleting a folder never touches a chat.
 
 ---
 
+## 🔎 Search across scripts
+
+Searching is written for the way Hindi is actually typed. "kaise" finds कैसे, "Kaise Ho?" finds
+कैसे हो, and कैसे finds "kaise" - the query and the chat name are read through the same alphabet
+before they are compared.
+
+Devanagari is transliterated to Latin, which is the direction that is not ambiguous: every
+character of the script has one reading, while Romanized Hindi has several spellings for one
+sound. The reading follows what a Hindi reader says, not what the character table alone gives,
+so कैसे reads *kaise* and not *kaisea*, and a nukta written as a combining mark is joined to its
+consonant first, because that is how a keyboard produces it.
+
+Answers are then ranked - same text, starts with it, one of its words starts with it, contains
+it, matches with doubled letters collapsed, letters in order - and the chats found that way are
+added to the ones Telegram returned. Rule based transliteration has limits it does not hide: the
+inherent vowel before an anusvara is dropped, so संगीत reads *sngiit* and a search for "sangeet"
+does not reach it.
+
+---
+
+## 📅 Sections and language
+
+The chat list is grouped under **Today**, **Yesterday**, **This week**, **This month** and
+**Earlier**. A label appears the first time an age shows up and never again, so a pinned chat of
+last month sitting between two of today's chats joins the month section already on screen
+instead of opening a second one.
+
+The whole interface is translated into **Hindi**. It is used whenever the device language is
+Hindi; every other language falls back to English. All 382 strings and all four plurals have a
+translation, and a check compares the two files for missing keys and for placeholders that
+changed, so a string added to one file and forgotten in the other is caught rather than shipped.
+
+---
+
+## 🔒 Passcode lock
+
+A passcode in Settings keeps the chat list behind a lock screen.
+
+- Only the stretched passcode is stored - PBKDF2-HMAC-SHA256 with a random salt, 120 000
+  rounds - never the passcode itself, in the store already encrypted with a key in the Android
+  keystore.
+- Passcodes of one repeated character or consecutive digits are refused when they are set.
+- Five wrong guesses are free. After that each one costs longer: 30 seconds, a minute, five,
+  fifteen, and an hour at the most.
+- **Lock automatically** chooses how long one unlock lasts, from immediately to an hour.
+- While a passcode is set, the window is kept out of screenshots and out of the task switcher,
+  because the task switcher shows the last frame of the app - the chat list - to anyone holding
+  the phone.
+
+Turning the passcode off needs the passcode, and guessing at it there is throttled the same way.
+The passcode protects this device only; it is not a Telegram password and it is not synced.
+
+---
+
 ## 🔑 Signing in
 
 Telefarm offers two ways in from the first screen:
@@ -404,6 +458,11 @@ need no device:
 - When a pasted session may be used, and with which application id
 - Chat folders: which chats a folder holds, its badge, and the stored form of the folders,
   including the corrupt texts an older version could have left behind
+- Reading Devanagari as Latin - the inherent vowel, the nukta a keyboard writes as a separate
+  mark - and ranking what a query matches
+- The sections of the chat list, including a chat that is out of age order because it is pinned
+- The passcode: what is refused when it is set, how a stored passcode verifies, the waits a wrong
+  guess costs, and how long one unlock lasts
 - The login token of a `tg://login` link
 - The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
 

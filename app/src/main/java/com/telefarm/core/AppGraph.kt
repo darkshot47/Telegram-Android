@@ -6,6 +6,7 @@ import com.telefarm.core.config.ApiCredentialStore
 import com.telefarm.core.config.TelegramApiIdentity
 import com.telefarm.core.prefs.AppPreferences
 import com.telefarm.core.prefs.FolderStore
+import com.telefarm.core.prefs.PasscodeStore
 import com.telefarm.core.security.SecureStore
 import com.telefarm.core.td.TdLibClient
 import com.telefarm.core.td.TdLibConfig
@@ -13,6 +14,7 @@ import com.telefarm.core.td.TelefarmLog
 import com.telefarm.data.ChatListRepository
 import com.telefarm.data.FolderRepository
 import com.telefarm.data.MessageRepository
+import com.telefarm.data.PasscodeRepository
 import com.telefarm.data.SearchRepository
 import com.telefarm.data.SettingsRepository
 import com.telefarm.data.TdSessionController
@@ -63,6 +65,14 @@ class AppGraph(context: Context) {
 
     /** Credentials of this device, stored in the secure store. */
     val apiCredentials = ApiCredentialStore(secureStore)
+
+    /**
+     * The passcode that keeps this device's chats behind a lock screen.
+     *
+     * It is constructed after the secure store, and before the Telegram client: the gate has to
+     * be decidable the moment the first screen starts, without waiting for a connection.
+     */
+    val passcodes = PasscodeRepository(PasscodeStore(secureStore))
 
     private val storedApiCredentials = apiCredentials.load()
 

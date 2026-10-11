@@ -408,4 +408,43 @@
         <item quantity="other">%d सब्सक्राइबर</item>
     </plurals>
 
+    <string name="lock_title">Telefarm लॉक है</string>
+    <string name="lock_subtitle">आगे बढ़ने के लिए अपना पासकोड डालें।</string>
+    <string name="lock_hint">पासकोड</string>
+    <string name="lock_unlock">अनलॉक करें</string>
+    <string name="lock_error_wrong">यह पासकोड सही नहीं है।</string>
+    <string name="lock_error_last_attempt">यह पासकोड सही नहीं है। अगली ग़लत कोशिश पर इंतज़ार शुरू होगा।</string>
+    <string name="lock_error_waiting">बहुत अधिक कोशिशें। %1$s बाद दोबारा कोशिश करें।</string>
+    <string name="lock_wait_seconds">%1$d सेकंड</string>
+    <string name="lock_wait_minutes">%1$d मिनट</string>
+    <string name="settings_section_security">सुरक्षा</string>
+    <string name="settings_passcode">पासकोड लॉक</string>
+    <string name="settings_passcode_summary_off">कोई पासकोड सेट नहीं</string>
+    <string name="settings_passcode_summary_on">%1$s लॉक होता है</string>
+    <string name="settings_passcode_auto_lock">अपने आप लॉक करें</string>
+    <string name="settings_passcode_dialog_set_title">पासकोड सेट करें</string>
+    <string name="settings_passcode_dialog_change_title">पासकोड बदलें</string>
+    <string name="settings_passcode_current">मौजूदा पासकोड</string>
+    <string name="settings_passcode_new">नया पासकोड</string>
+    <string name="settings_passcode_confirm">नया पासकोड दोबारा डालें</string>
+    <string name="settings_passcode_set_action">सेट करें</string>
+    <string name="settings_passcode_change_action">बदलें</string>
+    <string name="settings_passcode_disable">पासकोड बंद करें</string>
+    <string name="settings_passcode_enter">बंद करने के लिए अपना पासकोड डालें</string>
+    <string name="settings_passcode_error_wrong_current">मौजूदा पासकोड सही नहीं है।</string>
+    <string name="settings_passcode_error_mismatch">दोनों पासकोड आपस में नहीं मिले।</string>
+    <string name="settings_passcode_error_short">कम से कम %1$d अक्षर इस्तेमाल करें।</string>
+    <string name="settings_passcode_error_long">ज़्यादा से ज़्यादा %1$d अक्षर इस्तेमाल करें।</string>
+    <string name="settings_passcode_error_repeated">एक ही अक्षर बार-बार बहुत आसानी से अनुमान लगाया जा सकता है।</string>
+    <string name="settings_passcode_error_sequential">लगातार अंक बहुत आसानी से अनुमान लगाए जा सकते हैं।</string>
+    <string name="settings_passcode_error_unchanged">यह वही पासकोड है जो पहले से चल रहा है।</string>
+    <string name="settings_passcode_set_done">पासकोड सेट हो गया</string>
+    <string name="settings_passcode_changed">पासकोड बदल दिया गया</string>
+    <string name="settings_passcode_disabled">पासकोड बंद कर दिया गया</string>
+    <string name="delay_immediately">तुरंत</string>
+    <string name="delay_one_minute">एक मिनट बाद</string>
+    <string name="delay_five_minutes">पाँच मिनट बाद</string>
+    <string name="delay_fifteen_minutes">पंद्रह मिनट बाद</string>
+    <string name="delay_one_hour">एक घंटे बाद</string>
+    <string name="lock_error_too_many">बहुत अधिक कोशिशें। थोड़ा रुककर दोबारा कोशिश करें।</string>
 </resources>

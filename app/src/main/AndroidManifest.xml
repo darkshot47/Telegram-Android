@@ -74,6 +74,18 @@
             android:name=".ui.media.PhotoViewerActivity"
             android:exported="false" />
 
+        <!--
+          In front of the chat list while the passcode has not been entered. Not exported, and
+          not a task of its own in the recents screen: it is part of the app's task, and back on
+          it sends the task away instead of walking into the app behind it.
+        -->
+        <activity
+            android:name=".ui.lock.LockActivity"
+            android:excludeFromRecents="true"
+            android:exported="false"
+            android:launchMode="singleTop"
+            android:windowSoftInputMode="adjustResize" />
+
         <provider
             android:name="androidx.core.content.FileProvider"
             android:authorities="${applicationId}.fileprovider"
