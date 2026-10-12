@@ -576,4 +576,8 @@
     <string name="chat_muted_for_hours">Muted for %1$d hour(s)</string>
     <string name="chat_muted_for_days">Muted for %1$d day(s)</string>
     <string name="chat_muted_forever">Muted</string>
+    <plurals name="chat_unread_messages">
+        <item quantity="one">%d unread message</item>
+        <item quantity="other">%d unread messages</item>
+    </plurals>
 </resources>

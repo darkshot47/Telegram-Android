@@ -265,6 +265,24 @@ box, because a reaction that reads wrong is worse than one that is not there.
 
 ---
 
+## 📍 Where you left off
+
+A conversation opens at the newest message. When there are messages that have not been read, a
+line is drawn above the first of them saying how many there are, so the scroll up to be sure is
+not necessary.
+
+Two rules decide where it goes, and both follow from what the line is for:
+
+- **Only incoming messages can be unread.** Your own messages were read by you as you wrote them,
+  so a conversation you have been talking in alone has nothing to mark.
+- **The line goes before the first unread message, not before the first message.** Those are the
+  same thing only when the conversation opens with somebody else's words.
+
+A chat whose unread messages are not on screen - older history that has not been loaded - gets no
+line, because a line pointing at a message nobody can see points at nothing.
+
+---
+
 ## 🔇 Mute a chat for a while
 
 Long-press a chat and choose **Mute**, and the question is not whether but for how long: an hour,

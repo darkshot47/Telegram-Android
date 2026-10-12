@@ -4,6 +4,7 @@ import com.telefarm.R
 import com.telefarm.core.forward.Forwarding
 import com.telefarm.data.model.ForwardOutcome
 import com.telefarm.core.format.Markdown
+import com.telefarm.core.list.UnreadDivider
 import com.telefarm.core.reactions.Reactions
 import com.telefarm.core.format.TextKind
 import com.telefarm.core.format.TextSpan
@@ -590,16 +591,33 @@ class MessageStore(
         val selfUserId = session.selfUserId.value
         val kind = _header.value.kind
         val lastReadOutbox = chats.chatOrNull(chatId)?.lastReadOutboxMessageId ?: 0L
+        val lastReadInbox = chats.chatOrNull(chatId)?.lastReadInboxMessageId ?: 0L
 
         val sorted = synchronized(messagesLock) { messages.values.sortedBy { it.id } }
         val rows = ArrayList<MessageRow>(sorted.size + 8)
         var lastEpochDay = Long.MIN_VALUE
+
+        // Where the conversation was left. Only incoming messages can be unread: your own were
+        // read as you wrote them, so a conversation you have been talking in alone has nothing to
+        // mark. A chat whose unread messages are not on screen gets no line at all, because a line
+        // pointing at a message nobody can see points at nothing.
+        val dividerAt = UnreadDivider.position(
+            messages = sorted,
+            lastReadInboxMessageId = lastReadInbox,
+            isIncoming = { !it.isOutgoing },
+            idOf = { it.id }
+        )
+        val dividerMessageId = dividerAt?.let { sorted[it].id }
+        val unreadCount = dividerAt?.let { index -> sorted.drop(index).count { !it.isOutgoing } } ?: 0
 
         sorted.forEach { message ->
             val epochDay = epochDayOf(message.date)
             if (epochDay != lastEpochDay) {
                 rows.add(MessageRow.DateSeparator(message.date))
                 lastEpochDay = epochDay
+            }
+            if (message.id == dividerMessageId) {
+                rows.add(MessageRow.UnreadDivider(unreadCount))
             }
             rows.add(
                 MessageRow.Message(

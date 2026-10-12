@@ -88,6 +88,15 @@ sealed interface MessageRow {
         override val stableId: Long get() = message.id
     }
 
+    /**
+     * The line between what has been read and what has not.
+     *
+     * @param unreadCount how many messages are below it, so the line can say so.
+     */
+    data class UnreadDivider(val unreadCount: Int) : MessageRow {
+        override val stableId: Long get() = -2L
+    }
+
     data class DateSeparator(val date: Int) : MessageRow {
         override val stableId: Long get() = date.toLong() * 31L + 7L
     }

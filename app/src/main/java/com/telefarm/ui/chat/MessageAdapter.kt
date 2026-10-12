@@ -34,6 +34,7 @@ class MessageAdapter(
         is MessageRow.Message -> TYPE_MESSAGE
         is MessageRow.DateSeparator -> TYPE_DATE
         is MessageRow.LoadMore -> TYPE_LOADING
+        is MessageRow.UnreadDivider -> TYPE_UNREAD
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
@@ -41,6 +42,7 @@ class MessageAdapter(
         return when (viewType) {
             TYPE_MESSAGE -> MessageViewHolder(ItemMessageBinding.inflate(inflater, parent, false), binder, onLongClick)
             TYPE_DATE -> DateViewHolder(inflater.inflate(R.layout.item_message_date, parent, false))
+            TYPE_UNREAD -> UnreadViewHolder(inflater.inflate(R.layout.item_message_unread, parent, false))
             else -> LoadingViewHolder(inflater.inflate(R.layout.item_messages_loading, parent, false))
         }
     }
@@ -50,6 +52,7 @@ class MessageAdapter(
             is MessageRow.Message -> (holder as MessageViewHolder).bind(row.message)
             is MessageRow.DateSeparator -> (holder as DateViewHolder).bind(row)
             is MessageRow.LoadMore -> (holder as LoadingViewHolder).bind(row)
+            is MessageRow.UnreadDivider -> (holder as UnreadViewHolder).bind(row)
         }
     }
 
@@ -131,6 +134,18 @@ class MessageAdapter(
     }
 
     /** Day separator. */
+    /** The line marking where the conversation was left. */
+    class UnreadViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+
+        private val label: TextView = view.findViewById(R.id.unreadLabel)
+
+        fun bind(row: MessageRow.UnreadDivider) {
+            label.text = label.context.resources.getQuantityString(
+                R.plurals.chat_unread_messages, row.unreadCount, row.unreadCount
+            )
+        }
+    }
+
     class DateViewHolder(view: View) : RecyclerView.ViewHolder(view) {
 
         private val label: TextView = view.findViewById(R.id.dateLabel)
@@ -155,6 +170,7 @@ class MessageAdapter(
         const val TYPE_MESSAGE = 0
         const val TYPE_DATE = 1
         const val TYPE_LOADING = 2
+        const val TYPE_UNREAD = 3
 
         val DIFF = object : DiffUtil.ItemCallback<MessageRow>() {
             override fun areItemsTheSame(oldItem: MessageRow, newItem: MessageRow): Boolean =
