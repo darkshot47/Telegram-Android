@@ -35,6 +35,7 @@ import androidx.core.content.FileProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.telefarm.core.format.ComposerEdit
 import com.telefarm.core.format.ComposerFormatting
+import com.telefarm.core.delete.DeletionScope
 import com.telefarm.core.export.ExportFormat
 import com.telefarm.R
 import com.telefarm.appGraph
@@ -746,13 +747,51 @@ class ChatActivity : AppCompatActivity() {
             .show()
     }
 
+    /**
+     * Asks how far the deletion should reach.
+     *
+     * The two answers are different acts and the question says so. Deleting for everybody takes
+     * words out of the other person's conversation; deleting for yourself leaves theirs exactly as
+     * it was. One button labelled "Delete" cannot carry both, and the difference is only visible
+     * afterwards, on somebody else's screen.
+     *
+     * What is offered is what Telegram says the message allows, so a message that can only be
+     * deleted for yourself is not offered a choice that would fail.
+     */
     private fun confirmDelete(message: MessageUi) {
-        MaterialAlertDialogBuilder(this)
-            .setTitle(R.string.chat_delete_message)
-            .setNegativeButton(R.string.dialog_cancel, null)
-            .setPositiveButton(R.string.dialog_delete_confirm) { _, _ -> viewModel.deleteMessage(message.id) }
-            .show()
+        lifecycleScope.launch {
+            val choices = viewModel.deletionChoices(message.id)
+            if (choices.isEmpty()) {
+                binding.root.showSnackbar(getString(R.string.chat_delete_not_allowed))
+                return@launch
+            }
+            val builder = MaterialAlertDialogBuilder(this@ChatActivity)
+                .setTitle(R.string.chat_delete_message)
+                .setNegativeButton(R.string.dialog_cancel, null)
+            when (choices.size) {
+                1 -> builder.setPositiveButton(labelFor(choices.first())) { _, _ ->
+                    viewModel.deleteMessage(message.id, choices.first())
+                }
+
+                else -> {
+                    builder.setPositiveButton(labelFor(DeletionScope.EVERYONE)) { _, _ ->
+                        viewModel.deleteMessage(message.id, DeletionScope.EVERYONE)
+                    }
+                    builder.setNeutralButton(labelFor(DeletionScope.ONLY_ME)) { _, _ ->
+                        viewModel.deleteMessage(message.id, DeletionScope.ONLY_ME)
+                    }
+                }
+            }
+            builder.show()
+        }
     }
+
+    private fun labelFor(scope: DeletionScope): String = getString(
+        when (scope) {
+            DeletionScope.EVERYONE -> R.string.chat_delete_for_everyone
+            DeletionScope.ONLY_ME -> R.string.chat_delete_for_me
+        }
+    )
 
     private fun copyToClipboard(text: String) {
         val clipboard = getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager ?: return

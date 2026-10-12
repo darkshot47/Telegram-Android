@@ -601,4 +601,7 @@
     <string name="blocked_empty">Nobody is blocked</string>
     <string name="blocked_failed">The block list could not be read</string>
     <string name="blocked_unknown_name">A person whose name could not be read</string>
+    <string name="chat_delete_for_everyone">Delete for everyone</string>
+    <string name="chat_delete_for_me">Delete only for me</string>
+    <string name="chat_delete_not_allowed">This message cannot be deleted</string>
 </resources>

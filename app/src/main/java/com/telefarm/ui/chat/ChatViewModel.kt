@@ -1,5 +1,6 @@
 package com.telefarm.ui.chat
 
+import com.telefarm.core.delete.DeletionScope
 import com.telefarm.core.media.MediaKind
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -202,9 +203,12 @@ class ChatViewModel(
         }
     }
 
-    fun deleteMessage(messageId: Long) {
+    /** How far a deletion of this message can reach. */
+    suspend fun deletionChoices(messageId: Long): List<DeletionScope> = store.deletionChoices(messageId)
+
+    fun deleteMessage(messageId: Long, scope: DeletionScope) {
         viewModelScope.launch {
-            store.deleteMessage(messageId)
+            store.deleteMessage(messageId, scope)
             _event.value = ChatEvent.Message(R.string.chat_message_deleted)
         }
     }

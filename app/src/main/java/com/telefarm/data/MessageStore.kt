@@ -3,6 +3,8 @@ package com.telefarm.data
 import com.telefarm.R
 import com.telefarm.core.forward.Forwarding
 import com.telefarm.data.model.ForwardOutcome
+import com.telefarm.core.delete.Deletion
+import com.telefarm.core.delete.DeletionScope
 import com.telefarm.core.format.Markdown
 import com.telefarm.core.media.MediaFiles
 import com.telefarm.core.media.MediaKind
@@ -325,13 +327,46 @@ class MessageStore(
     }
 
     /** Deletes a message for everyone. */
-    suspend fun deleteMessage(messageId: Long) {
+    /**
+     * How far a deletion of this message can reach.
+     *
+     * Asked of Telegram rather than guessed at: a message you wrote can usually be taken back from
+     * everybody, one somebody else wrote usually cannot, and getting it wrong either takes words
+     * out of another person's conversation or leaves up something the writer asked to remove.
+     */
+    suspend fun deletionChoices(messageId: Long): List<DeletionScope> = try {
+        val properties = td.send(
+            TdApi.GetMessageProperties().apply {
+                chatId = this@MessageStore.chatId
+                this.messageId = messageId
+            }
+        )
+        Deletion.choices(
+            forAllUsers = properties.canBeDeletedForAllUsers,
+            forSelfOnly = properties.canBeDeletedOnlyForSelf
+        )
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
+        // Deleting for yourself is always possible and changes nothing anybody else sees, so when
+        // the answer cannot be had that is the one offered rather than a guess that reaches
+        // further than it should.
+        listOf(DeletionScope.ONLY_ME)
+    }
+
+    /**
+     * Deletes a message.
+     *
+     * @param scope how far the deletion reaches. [DeletionScope.EVERYONE] takes the message away
+     *   from everybody who could see it; [DeletionScope.ONLY_ME] takes it from this account's copy
+     *   and leaves everybody else's exactly as it was.
+     */
+    suspend fun deleteMessage(messageId: Long, scope: DeletionScope) {
         try {
             td.send(
                 TdApi.DeleteMessages().apply {
                     chatId = this@MessageStore.chatId
                     messageIds = longArrayOf(messageId)
-                    revoke = true
+                    revoke = Deletion.reachesOthers(scope)
                 }
             )
         } catch (error: Throwable) {

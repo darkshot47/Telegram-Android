@@ -570,4 +570,7 @@
     <string name="blocked_empty">कोई ब्लॉक नहीं है</string>
     <string name="blocked_failed">ब्लॉक सूची पढ़ी नहीं जा सकी</string>
     <string name="blocked_unknown_name">एक व्यक्ति जिसका नाम पढ़ा नहीं जा सका</string>
+    <string name="chat_delete_for_everyone">सबके लिए हटाएँ</string>
+    <string name="chat_delete_for_me">सिर्फ़ मेरे लिए हटाएँ</string>
+    <string name="chat_delete_not_allowed">यह संदेश हटाया नहीं जा सकता</string>
 </resources>

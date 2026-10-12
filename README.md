@@ -265,6 +265,24 @@ box, because a reaction that reads wrong is worse than one that is not there.
 
 ---
 
+## 🗑️ Delete, and how far it reaches
+
+Deleting asks a question first, because the two answers are different acts. **Delete for
+everyone** takes the message away from everybody who could see it. **Delete only for me** takes it
+from your copy and leaves everybody else's exactly as it was.
+
+One button labelled "Delete" cannot carry both, and the difference is only visible afterwards, on
+somebody else's screen - which is the worst time to find out. Deleting somebody else's message for
+everybody takes words out of their conversation, and that is not what "delete" usually means to
+the person tapping it.
+
+What is offered is what Telegram says the message allows, so a message that can only be deleted for
+yourself is not offered a choice that would fail, and a message that cannot be deleted says so
+instead of failing. When Telegram cannot be asked at all, only the deletion that changes nothing
+anybody else sees is offered, rather than a guess that reaches further than it should.
+
+---
+
 ## 🚫 Block somebody
 
 A person's profile has **Block** on it, and once blocked it says **Unblock** instead.
