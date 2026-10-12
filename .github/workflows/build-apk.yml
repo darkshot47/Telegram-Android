@@ -45,6 +45,26 @@ jobs:
           chmod +x gradlew
           mkdir -p ci-logs
 
+      # A failing step is unreadable through the raw log, which lives on a host outside the
+      # ordinary API. Annotations are reachable through it, so the compiler's own complaint is
+      # re-published there: one annotation per line, which is where the build actually failed.
+      - name: Define the failure reporter
+        run: |
+          cat > ci-report.sh <<'SCRIPT'
+          #!/usr/bin/env bash
+          # usage: ci-report.sh <log file> <step title>
+          log="$1"
+          title="$2"
+          grep -E '^e: |error:|FAILED|Execution failed|Caused by|What went wrong' "$log" \
+            | head -25 \
+            | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g' \
+            | while IFS= read -r line; do
+                echo "::error title=${title}::${line}"
+              done
+          SCRIPT
+          chmod +x ci-report.sh
+          mkdir -p ci-logs
+
       # `set -o pipefail` keeps Gradle's exit code visible through `tee`. Without it a failed
       # Gradle build still reports a successful step, which is how a green run can produce no APK.
       #
@@ -56,13 +76,7 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew test --stacktrace 2>&1 | tee ci-logs/test.log || {
-            {
-              echo '### Unit tests failed'
-              echo
-              echo '```'
-              grep -E '^e: |error:|FAILED|Execution failed|Caused by' ci-logs/test.log | head -60
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
+            ./ci-report.sh ci-logs/test.log 'Unit tests'
             exit 1
           }
 
@@ -70,13 +84,7 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew assembleDebug --stacktrace 2>&1 | tee ci-logs/assembleDebug.log || {
-            {
-              echo '### Build debug APK failed'
-              echo
-              echo '```'
-              grep -E '^e: |error:|FAILED|Execution failed|Caused by' ci-logs/assembleDebug.log | head -60
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
+            ./ci-report.sh ci-logs/assembleDebug.log 'Build debug APK'
             exit 1
           }
 
@@ -100,13 +108,7 @@ jobs:
         run: |
           set -o pipefail
           ./gradlew assembleRelease --stacktrace 2>&1 | tee ci-logs/assembleRelease.log || {
-            {
-              echo '### Build release APK failed'
-              echo
-              echo '```'
-              grep -E '^e: |error:|FAILED|Execution failed|Caused by' ci-logs/assembleRelease.log | head -60
-              echo '```'
-            } >> "$GITHUB_STEP_SUMMARY"
+            ./ci-report.sh ci-logs/assembleRelease.log 'Build release APK'
             exit 1
           }
 
