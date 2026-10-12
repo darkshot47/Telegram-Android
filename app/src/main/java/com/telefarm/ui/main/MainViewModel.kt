@@ -191,6 +191,11 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
         graph.chats.setPinned(chatId, pinned)
     }
 
+    /** Puts a chat away, or brings it back. */
+    fun setArchived(chatId: Long, archived: Boolean) = viewModelScope.launch {
+        graph.chats.setArchived(chatId, archived)
+    }
+
     /** Mutes a chat for [muteForSeconds], or unmutes it when that is zero. */
     fun setMuted(chatId: Long, muteForSeconds: Int) = viewModelScope.launch {
         graph.chats.setMuted(chatId, muteForSeconds)

@@ -118,6 +118,7 @@ class ChatListSectionsTest {
         unreadMentionCount = 0,
         isMarkedAsUnread = false,
         isPinned = false,
+        isArchived = false,
         isMuted = false,
         muteForSeconds = 0,
         canSendMessages = true,

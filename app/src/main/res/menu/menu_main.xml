@@ -22,6 +22,10 @@
                 android:title="@string/menu_saved_messages" />
 
             <item
+                android:id="@+id/action_archived_chats"
+                android:title="@string/archived_title" />
+
+            <item
                 android:id="@+id/action_contacts"
                 android:title="@string/menu_contacts" />
 

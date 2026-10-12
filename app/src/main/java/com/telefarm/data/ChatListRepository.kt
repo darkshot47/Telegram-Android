@@ -171,6 +171,47 @@ class ChatListRepository(
         }
     }
 
+    /**
+     * The chats that have been put away, newest first.
+     *
+     * Read separately from the main list because it is a separate list: a chat is in one or the
+     * other and never in both.
+     */
+    suspend fun loadArchivedChats(): List<ChatUi> = try {
+        val chats = td.send(
+            TdApi.GetChats().apply {
+                chatList = TdApi.ChatListArchive()
+                limit = orderLimit
+            }
+        )
+        (chats.chatIds?.toList() ?: emptyList()).mapNotNull { id ->
+            chatOrFetch(id)?.let { TdMappers.chat(it, session.selfUserId.value) }
+        }
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
+        emptyList()
+    }
+
+    /**
+     * Puts a chat away, or brings it back.
+     *
+     * A chat cannot be in both lists, so moving it to one removes it from the other - there is no
+     * separate archive and unarchive to keep in step.
+     */
+    suspend fun setArchived(chatId: Long, archived: Boolean) = runAction(R.string.error_generic) {
+        td.send(
+            TdApi.AddChatToList().apply {
+                this.chatId = chatId
+                chatList = if (archived) TdApi.ChatListArchive() else TdApi.ChatListMain()
+            }
+        )
+        if (!archived) {
+            // Coming back means it belongs in the order again, which is read rather than guessed.
+            refreshOrder()
+            recomputeState()
+        }
+    }
+
     /** Reads the ordered list of chat ids from TDLib and fetches any chat it has not sent yet. */
     private suspend fun refreshOrder() {
         val chats = td.send(

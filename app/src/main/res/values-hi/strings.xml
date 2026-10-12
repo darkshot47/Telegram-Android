@@ -551,4 +551,13 @@
     </plurals>
     <string name="chat_attach_file">फ़ाइल भेजें</string>
     <string name="chat_attach_failed">वह फ़ाइल पढ़ी नहीं जा सकी</string>
+    <string name="archived_title">संग्रहित चैट</string>
+    <string name="archived_note">हटाई गई चैट वापस लाने तक यहाँ रहती हैं। उनमें संदेश आते रहते हैं।</string>
+    <string name="archived_loading">संग्रहित चैट पढ़ी जा रही हैं</string>
+    <string name="archived_empty">कुछ हटाया नहीं गया है</string>
+    <string name="archived_failed">संग्रहित चैट पढ़ी नहीं जा सकीं</string>
+    <string name="archived_move_back">चैट सूची में वापस लाएँ</string>
+    <string name="archived_moved">%1$s हटा दी गई है</string>
+    <string name="archived_restored">%1$s चैट सूची में वापस आ गई</string>
+    <string name="chat_action_archive">संग्रहित करें</string>
 </resources>

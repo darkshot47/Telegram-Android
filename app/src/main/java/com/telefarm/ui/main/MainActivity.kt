@@ -275,6 +275,11 @@ class MainActivity : AppCompatActivity() {
             true
         }
 
+        R.id.action_archived_chats -> {
+            startActivity(Intent(this, ArchivedChatsActivity::class.java))
+            true
+        }
+
         R.id.action_contacts -> {
             startActivity(ContactsActivity.intent(this))
             true
@@ -309,6 +314,16 @@ class MainActivity : AppCompatActivity() {
     }
 
     /** Context actions of a chat; only features that are implemented are offered. */
+    private fun archive(chat: ChatUi) {
+        viewModel.setArchived(chat.id, archived = true)
+        binding.root.showSnackbar(getString(R.string.archived_moved, chat.title))
+    }
+
+    private fun unarchive(chat: ChatUi) {
+        viewModel.setArchived(chat.id, archived = false)
+        binding.root.showSnackbar(getString(R.string.archived_restored, chat.title))
+    }
+
     /**
      * How long to mute a chat for.
      *
@@ -375,6 +390,11 @@ class MainActivity : AppCompatActivity() {
         val removable = viewModel.foldersWith(chat.id)
         if (removable.isNotEmpty()) {
             actions += getString(R.string.folder_remove_chat) to { pickFolder(removable) { id -> viewModel.removeChatFromFolder(id, chat.id) } }
+        }
+        actions += if (chat.isArchived) {
+            getString(R.string.archived_move_back) to { unarchive(chat) }
+        } else {
+            getString(R.string.chat_action_archive) to { archive(chat) }
         }
         actions += getString(R.string.chat_action_delete_chat) to { confirmDeleteChat(chat) }
 

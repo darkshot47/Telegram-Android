@@ -178,6 +178,7 @@ class FolderMatcherTest {
         unreadMentionCount = mentions,
         isMarkedAsUnread = markedAsUnread,
         isPinned = isPinned,
+        isArchived = false,
         isMuted = isMuted,
         muteForSeconds = 0,
         canSendMessages = true,

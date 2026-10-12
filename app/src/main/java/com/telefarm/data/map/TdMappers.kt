@@ -78,6 +78,7 @@ object TdMappers {
             unreadMentionCount = chat.unreadMentionCount,
             isMarkedAsUnread = chat.isMarkedAsUnread,
             isPinned = mainPosition?.isPinned == true,
+            isArchived = chat.positions?.any { it.list is TdApi.ChatListArchive } == true,
             isMuted = (chat.notificationSettings?.muteFor ?: 0) > 0,
             muteForSeconds = chat.notificationSettings?.muteFor ?: 0,
             canSendMessages = canSendMessages(chat, kind),

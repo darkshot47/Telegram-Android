@@ -41,6 +41,14 @@ data class ChatUi(
     val unreadMentionCount: Int,
     val isMarkedAsUnread: Boolean,
     val isPinned: Boolean,
+
+    /**
+     * True when the chat has been put away.
+     *
+     * A chat is either in the main list or in the archive and never in both, so this is not a
+     * label on the chat but a statement about which list it is in.
+     */
+    val isArchived: Boolean,
     val isMuted: Boolean,
 
     /**

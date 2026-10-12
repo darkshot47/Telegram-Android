@@ -265,6 +265,23 @@ box, because a reaction that reads wrong is worse than one that is not there.
 
 ---
 
+## 🗄️ Archived chats
+
+Long-press a chat and choose **Archive** and it leaves the list. Menu → **Archived chats** brings
+up everything that has been put away, and each one can be moved back.
+
+The screen is the point of the feature, not an afterthought to it: archiving a chat with nowhere
+to get it back would be a way to lose a conversation, so the two ship together.
+
+A chat is either on the main list or in the archive and never in both, which is Telegram's rule
+rather than a choice made here. It means there is one call in each direction - which list the chat
+is added to - and no separate unarchive that could drift out of step with the archive.
+
+An archived chat still receives messages. Putting a chat away is about the list, not about the
+conversation.
+
+---
+
 ## 📎 Send a file
 
 A picture, an animation, a video, a recording or any other file, from the system picker. Each is

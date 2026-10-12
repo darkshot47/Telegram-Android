@@ -582,4 +582,13 @@
     </plurals>
     <string name="chat_attach_file">Send a file</string>
     <string name="chat_attach_failed">That file could not be read</string>
+    <string name="archived_title">Archived chats</string>
+    <string name="archived_note">Chats put away stay here until they are brought back. They still receive messages.</string>
+    <string name="archived_loading">Reading the archived chats</string>
+    <string name="archived_empty">Nothing has been put away</string>
+    <string name="archived_failed">The archived chats could not be read</string>
+    <string name="archived_move_back">Move back to the chat list</string>
+    <string name="archived_moved">%1$s has been put away</string>
+    <string name="archived_restored">%1$s is back on the chat list</string>
+    <string name="chat_action_archive">Archive</string>
 </resources>
