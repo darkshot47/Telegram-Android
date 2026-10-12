@@ -122,4 +122,16 @@
         <item name="android:paddingBottom">8dp</item>
     </style>
 
+
+    <!-- One formatting button in the bar above the composer. -->
+    <style name="Widget.Telefarm.FormatButton">
+        <item name="android:layout_width">@dimen/touch_target</item>
+        <item name="android:layout_height">@dimen/touch_target</item>
+        <item name="android:gravity">center</item>
+        <item name="android:background">?attr/selectableItemBackgroundBorderless</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">17sp</item>
+        <item name="android:clickable">true</item>
+        <item name="android:focusable">true</item>
+    </style>
 </resources>

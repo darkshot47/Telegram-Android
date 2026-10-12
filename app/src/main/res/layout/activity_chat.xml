@@ -291,6 +291,59 @@
                 app:tint="@color/icon_tint" />
         </LinearLayout>
 
+        <HorizontalScrollView
+            android:id="@+id/formatBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface_variant"
+            android:scrollbars="none"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="@dimen/spacing_small"
+                android:paddingTop="@dimen/spacing_tiny"
+                android:paddingEnd="@dimen/spacing_small"
+                android:paddingBottom="@dimen/spacing_tiny">
+
+                <TextView
+                    android:id="@+id/formatBold"
+                    style="@style/Widget.Telefarm.FormatButton"
+                    android:contentDescription="@string/chat_format_bold"
+                    android:text="@string/chat_format_bold_glyph"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/formatItalic"
+                    style="@style/Widget.Telefarm.FormatButton"
+                    android:contentDescription="@string/chat_format_italic"
+                    android:text="@string/chat_format_italic_glyph"
+                    android:textStyle="italic" />
+
+                <TextView
+                    android:id="@+id/formatCode"
+                    style="@style/Widget.Telefarm.FormatButton"
+                    android:contentDescription="@string/chat_format_code"
+                    android:fontFamily="monospace"
+                    android:text="@string/chat_format_code_glyph" />
+
+                <TextView
+                    android:id="@+id/formatStrikethrough"
+                    style="@style/Widget.Telefarm.FormatButton"
+                    android:contentDescription="@string/chat_format_strikethrough"
+                    android:text="@string/chat_format_strikethrough_glyph" />
+
+                <TextView
+                    android:id="@+id/formatSpoiler"
+                    style="@style/Widget.Telefarm.FormatButton"
+                    android:contentDescription="@string/chat_format_spoiler"
+                    android:text="@string/chat_format_spoiler_glyph" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
     <LinearLayout
         android:id="@+id/composer"
         android:layout_width="match_parent"
@@ -301,6 +354,17 @@
         android:paddingTop="@dimen/spacing_tiny"
         android:paddingEnd="@dimen/spacing_small"
         android:paddingBottom="@dimen/spacing_small">
+
+        <ImageView
+            android:id="@+id/formatButton"
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:layout_marginEnd="@dimen/spacing_tiny"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/chat_format_toggle"
+            android:padding="@dimen/spacing_medium"
+            android:src="@drawable/ic_edit"
+            app:tint="@color/icon_tint" />
 
         <EditText
             android:id="@+id/messageInput"

@@ -548,4 +548,15 @@
     <string name="chat_react_title">React to this message</string>
     <string name="chat_reaction_remove">%1$s again to take it away</string>
     <string name="chat_reaction_failed">The reaction could not be sent</string>
+    <string name="chat_format_toggle">Formatting</string>
+    <string name="chat_format_bold">Bold</string>
+    <string name="chat_format_italic">Italic</string>
+    <string name="chat_format_code">Code</string>
+    <string name="chat_format_strikethrough">Strikethrough</string>
+    <string name="chat_format_spoiler">Hidden until tapped</string>
+    <string name="chat_format_bold_glyph" translatable="false">B</string>
+    <string name="chat_format_italic_glyph" translatable="false">I</string>
+    <string name="chat_format_code_glyph" translatable="false">&lt;/&gt;</string>
+    <string name="chat_format_strikethrough_glyph" translatable="false">S</string>
+    <string name="chat_format_spoiler_glyph" translatable="false">▨</string>
 </resources>

@@ -27,6 +27,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import androidx.core.content.FileProvider
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.telefarm.core.format.ComposerEdit
+import com.telefarm.core.format.ComposerFormatting
 import com.telefarm.core.export.ExportFormat
 import com.telefarm.R
 import com.telefarm.appGraph
@@ -98,6 +100,14 @@ class ChatActivity : AppCompatActivity() {
         binding.toolbar.setOnMenuItemClickListener(::onMenuItemSelected)
         binding.headerContent.setOnClickListener { openProfile() }
         binding.sendButton.setOnClickListener { sendCurrentInput() }
+        binding.formatButton.setOnClickListener {
+            binding.formatBar.isVisible = !binding.formatBar.isVisible
+        }
+        binding.formatBold.setOnClickListener { applyFormatting(::boldAtSelection) }
+        binding.formatItalic.setOnClickListener { applyFormatting(::italicAtSelection) }
+        binding.formatCode.setOnClickListener { applyFormatting(::codeAtSelection) }
+        binding.formatStrikethrough.setOnClickListener { applyFormatting(::strikethroughAtSelection) }
+        binding.formatSpoiler.setOnClickListener { applyFormatting(::spoilerAtSelection) }
         binding.chatStateAction.setOnClickListener { viewModel.retryLoad() }
         binding.messageInput.setOnEditorActionListener { _, actionId, event ->
             val shouldSend = actionId == EditorInfo.IME_ACTION_SEND ||
@@ -408,6 +418,35 @@ class ChatActivity : AppCompatActivity() {
     } catch (error: Throwable) {
         null
     }
+
+    /**
+     * Applies one formatting to whatever is selected in the composer.
+     *
+     * The text is replaced whole rather than edited in place, because the markers change the
+     * length of the message and a selection kept from before the edit would point at the wrong
+     * characters. The new selection comes back from the edit itself.
+     */
+    private fun applyFormatting(edit: (String, Int, Int) -> ComposerEdit) {
+        val result = edit(
+            binding.messageInput.text?.toString().orEmpty(),
+            binding.messageInput.selectionStart,
+            binding.messageInput.selectionEnd
+        )
+        binding.messageInput.setText(result.text)
+        binding.messageInput.setSelection(
+            result.caretStart.coerceIn(0, result.text.length),
+            result.caretEnd.coerceIn(0, result.text.length)
+        )
+        binding.messageInput.requestFocus()
+    }
+
+    private fun boldAtSelection(text: String, start: Int, end: Int) = ComposerFormatting.bold(text, start, end)
+    private fun italicAtSelection(text: String, start: Int, end: Int) = ComposerFormatting.italic(text, start, end)
+    private fun codeAtSelection(text: String, start: Int, end: Int) = ComposerFormatting.code(text, start, end)
+    private fun strikethroughAtSelection(text: String, start: Int, end: Int) =
+        ComposerFormatting.strikethrough(text, start, end)
+    private fun spoilerAtSelection(text: String, start: Int, end: Int) =
+        ComposerFormatting.spoiler(text, start, end)
 
     /**
      * The reactions on offer for a message.

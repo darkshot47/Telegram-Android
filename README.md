@@ -314,6 +314,12 @@ a year a century rule makes not a leap year.
 
 ## ✍️ Formatted messages
 
+The pen button beside the text box opens a bar of five buttons - **B**, *I*, `</>`, S, ▨ - for
+bold, italic, code, strikethrough and hidden-until-tapped. They put the same markers in that
+typing them would, so what is sent is what the parser already reads. Each one is a toggle: press
+it again and the markers come back off.
+
+
 A message can be typed with markup and it arrives formatted:
 
 | Typed | Sent as |
@@ -589,6 +595,7 @@ need no device:
 - The order and wording of the active session list, and which sessions it is allowed to sign out
 - Reading Telegram's privacy rules as three choices, and writing the same three back
 - What a reaction strip says, which reaction replaces which, and the order it is drawn in
+- Putting formatting markers into a message while it is written, and taking them back out
 - The login token of a `tg://login` link
 - The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
 
