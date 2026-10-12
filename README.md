@@ -265,6 +265,47 @@ box, because a reaction that reads wrong is worse than one that is not there.
 
 ---
 
+## 🔇 Mute a chat for a while
+
+Long-press a chat and choose **Mute**, and the question is not whether but for how long: an hour,
+eight hours, two days, or until it is unmuted by hand.
+
+A mute that can only be "on" is a mute nobody turns off, because the only way to hear the chat
+again is to unmute it and remember to. The four choices are the four reasons people mute: a
+conversation that is loud right now, one that is loud today, one that is loud this week, and one
+they never want to hear from.
+
+Telegram holds a mute as a count of seconds left, so what comes back is a countdown rather than
+the choice that was made. It is read back in the largest unit that is still honest - an exact hour
+reads as "1 hour" and never as "60 minutes" - and it rounds up, so a mute that is still on never
+reads as no time at all. The unmute action carries that count, so a chat that goes quiet tonight
+says so.
+
+"Forever" is the largest count a 32-bit integer holds, about 68 years. It is called forever
+because that is what it means to the person choosing it, not because the number is infinite.
+
+---
+
+## 🔕 Quiet hours
+
+A chat can be muted; the whole app can be quiet. Settings → **Quiet hours** sets a window - by
+default 23:00 to 07:00 - in which notifications are held back, with an option to let a
+notification through when it mentions you.
+
+Three rules are built in rather than left to the reader:
+
+- **Equal start and end means no quiet hours at all.** A zero-length window is not "quiet
+  forever", and treating it as one would silence an app that was asked to do nothing.
+- **A window that crosses midnight wraps.** 23:00 to 07:00 is quiet from eleven at night until
+  seven in the morning, which is the only reading that matches what the setting is for.
+- **The window is half open**, closed at the start and open at the end, so a notification at
+  exactly 07:00 is not held back by a window that ends at 07:00.
+
+A malformed stored value falls back to the defaults rather than to silence, and minutes are
+clamped to the range a clock has.
+
+---
+
 ## 🛡️ Account privacy
 
 Settings → **Privacy** shows and changes the account's own privacy settings: last seen and online,
