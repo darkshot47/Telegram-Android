@@ -559,4 +559,12 @@
     <string name="chat_format_code_glyph" translatable="false">&lt;/&gt;</string>
     <string name="chat_format_strikethrough_glyph" translatable="false">S</string>
     <string name="chat_format_spoiler_glyph" translatable="false">▨</string>
+    <string name="chat_action_forward">Forward</string>
+    <string name="chat_forward_title">Forward to</string>
+    <string name="chat_forward_no_chats">There is no other chat to forward to yet</string>
+    <string name="chat_forward_nothing_selected">No message was chosen</string>
+    <string name="chat_forward_sent">%1$d message forwarded to %2$s</string>
+    <string name="chat_forward_partial">%1$d forwarded to %3$s. %2$d could not leave this chat.</string>
+    <string name="chat_forward_refused_all">This chat does not let its messages be forwarded</string>
+    <string name="chat_forward_stopped">The forward stopped after %1$d. The rest were not sent.</string>
 </resources>

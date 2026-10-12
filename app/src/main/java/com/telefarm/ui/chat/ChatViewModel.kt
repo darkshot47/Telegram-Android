@@ -11,6 +11,7 @@ import com.telefarm.data.model.ChatActionUi
 import com.telefarm.data.model.ChatHeaderUi
 import com.telefarm.data.model.ChatSubtitle
 import com.telefarm.data.model.ChatKind
+import com.telefarm.data.model.ForwardOutcome
 import com.telefarm.data.model.MessageRow
 import com.telefarm.data.model.MessageUi
 import com.telefarm.data.model.UiMessage
@@ -153,6 +154,10 @@ class ChatViewModel(
     fun retryMessage(messageId: Long) {
         viewModelScope.launch { store.retry(messageId) }
     }
+
+    /** Forwards messages to another chat. */
+    suspend fun forward(ids: Collection<Long>, targetChatId: Long): ForwardOutcome =
+        store.forwardTo(targetChatId, ids)
 
     /** Reacts to a message, or takes this account's reaction away. */
     suspend fun react(messageId: Long, emoji: String): Boolean = store.setReaction(messageId, emoji)

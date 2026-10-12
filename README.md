@@ -224,6 +224,31 @@ does not reach it.
 
 ---
 
+## ↪️ Forward a message
+
+Long-press a message, choose **Forward**, and pick the chat. The chat the message is already in
+is not on the list: forwarding a message to the chat it came from is not something anybody means
+to do.
+
+A forward says where it came from. Copying the text instead would hide that, which is a different
+act, so it is not offered under this name.
+
+Telegram imposes three rules on a forward, and breaking any of them loses the whole request
+rather than part of it, so all three are applied before anything is sent:
+
+- the identifiers go in a **strictly increasing** order, which a selection made by tapping down a
+  conversation is not
+- **at most 100** messages at once - two hundred become two forwards of a hundred rather than one
+  request that is refused
+- a message that cannot leave the chat it is in has to be left out, which is asked of Telegram
+  rather than guessed at, because a channel can forbid forwarding and a client that guesses wrong
+  either sends something it should not or refuses something it could
+
+The messages left out are counted and reported, so nobody is left wondering where one went. A
+forward that stops part way says how many went before it stopped.
+
+---
+
 ## 👍 Reactions
 
 A reaction is the shortest possible answer: it says "seen" without asking anybody to read
@@ -596,6 +621,7 @@ need no device:
 - Reading Telegram's privacy rules as three choices, and writing the same three back
 - What a reaction strip says, which reaction replaces which, and the order it is drawn in
 - Putting formatting markers into a message while it is written, and taking them back out
+- Ordering and batching a selection into forwards Telegram will accept
 - The login token of a `tg://login` link
 - The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
 

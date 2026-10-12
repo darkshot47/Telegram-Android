@@ -528,4 +528,12 @@
     <string name="chat_format_code">कोड</string>
     <string name="chat_format_strikethrough">काटा हुआ</string>
     <string name="chat_format_spoiler">छुपा हुआ, टैप पर दिखे</string>
+    <string name="chat_action_forward">आगे भेजें</string>
+    <string name="chat_forward_title">इसमें आगे भेजें</string>
+    <string name="chat_forward_no_chats">अभी आगे भेजने के लिए कोई दूसरी चैट नहीं है</string>
+    <string name="chat_forward_nothing_selected">कोई संदेश चुना नहीं गया</string>
+    <string name="chat_forward_sent">%1$d संदेश %2$s में भेजा गया</string>
+    <string name="chat_forward_partial">%1$d संदेश %3$s में भेजे गए। %2$d इस चैट से बाहर नहीं जा सके।</string>
+    <string name="chat_forward_refused_all">यह चैट अपने संदेश आगे भेजने नहीं देती</string>
+    <string name="chat_forward_stopped">%1$d के बाद आगे भेजना रुक गया। बाकी नहीं भेजे गए।</string>
 </resources>

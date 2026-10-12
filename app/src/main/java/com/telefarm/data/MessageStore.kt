@@ -1,6 +1,8 @@
 package com.telefarm.data
 
 import com.telefarm.R
+import com.telefarm.core.forward.Forwarding
+import com.telefarm.data.model.ForwardOutcome
 import com.telefarm.core.format.Markdown
 import com.telefarm.core.reactions.Reactions
 import com.telefarm.core.format.TextKind
@@ -652,6 +654,74 @@ class MessageStore(
             ?.filter { it.isChosen }
             ?.map { it.emoji }
             .orEmpty()
+
+    // endregion
+
+    // region Forwarding
+
+    /**
+     * Forwards a selection to another chat.
+     *
+     * Telegram takes the identifiers in strictly increasing order, at most a hundred at a time,
+     * and refuses the whole request if one of them cannot leave this chat. All three are handled
+     * before anything is sent, because the person chose messages and not identifiers, and the
+     * difference between the two is not theirs to manage.
+     *
+     * Messages that cannot be forwarded are left out and counted, so the person is told rather
+     * than left wondering where a message went.
+     */
+    suspend fun forwardTo(targetChatId: Long, ids: Collection<Long>): ForwardOutcome {
+        val selection = Forwarding.ordered(ids)
+        if (selection.isEmpty()) return ForwardOutcome.NothingSelected
+
+        val allowed = selection.filter { canBeForwarded(it) }.toSet()
+        val refused = selection.size - allowed.size
+        val sendable = selection.filter { it in allowed }
+        if (sendable.isEmpty()) return ForwardOutcome.Done(sent = 0, refused = refused)
+
+        var sent = 0
+        for (batch in Forwarding.batches(sendable)) {
+            try {
+                td.send(
+                    TdApi.ForwardMessages().apply {
+                        chatId = targetChatId
+                        topicId = null
+                        fromChatId = this@MessageStore.chatId
+                        messageIds = batch.toLongArray()
+                        // A forward says where it came from. Copying instead would hide that,
+                        // which is a different act and not what "forward" means.
+                        sendCopy = false
+                        removeCaption = false
+                    }
+                )
+                sent += batch.size
+            } catch (error: Throwable) {
+                if (error is CancellationException) throw error
+                return ForwardOutcome.StoppedAt(sent, refused)
+            }
+        }
+        return ForwardOutcome.Done(sent, refused)
+    }
+
+    /**
+     * Whether a message may leave this chat.
+     *
+     * Asked of Telegram rather than guessed at - a channel can forbid forwarding, and a client
+     * that guesses wrong either sends something it should not or refuses something it could.
+     */
+    private suspend fun canBeForwarded(messageId: Long): Boolean = try {
+        td.send(
+            TdApi.GetMessageProperties().apply {
+                chatId = this@MessageStore.chatId
+                this.messageId = messageId
+            }
+        ).canBeForwarded
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
+        // Answered with an error rather than a refusal, so the forward is attempted and its own
+        // answer reported. Dropping a message silently is the worse mistake.
+        true
+    }
 
     // endregion
 

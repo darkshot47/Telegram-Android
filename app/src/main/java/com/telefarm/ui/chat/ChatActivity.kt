@@ -32,6 +32,8 @@ import com.telefarm.core.format.ComposerFormatting
 import com.telefarm.core.export.ExportFormat
 import com.telefarm.R
 import com.telefarm.appGraph
+import com.telefarm.data.model.ChatUi
+import com.telefarm.data.model.ForwardOutcome
 import com.telefarm.data.model.ChatHeaderUi
 import com.telefarm.data.model.MessageContentUi
 import com.telefarm.data.model.MessageUi
@@ -359,6 +361,7 @@ class ChatActivity : AppCompatActivity() {
             options += R.string.chat_retry_send to { viewModel.retryMessage(message.id) }
         }
         options += R.string.chat_action_react to { showReactionPicker(message) }
+        options += R.string.chat_action_forward to { showForwardPicker(message) }
         options += R.string.chat_action_reply to { viewModel.replyTo(message) }
         options += R.string.chat_action_pin_message to { pinMessage(message) }
         if (message.isOutgoing && !text.isNullOrEmpty()) {
@@ -417,6 +420,47 @@ class ChatActivity : AppCompatActivity() {
         File(directory, viewModel.exportFileName(format)).apply { writeText(document, Charsets.UTF_8) }
     } catch (error: Throwable) {
         null
+    }
+
+    /**
+     * The chats a message can be forwarded to.
+     *
+     * The chat it is already in is left off the list: forwarding a message to the chat it came
+     * from is not something anybody means to do, and offering it is offering a way to make a
+     * mistake.
+     */
+    private fun showForwardPicker(message: MessageUi) {
+        val targets = appGraph.chats.visibleChats().filter { it.id != chatId }
+        if (targets.isEmpty()) {
+            binding.root.showSnackbar(getString(R.string.chat_forward_no_chats))
+            return
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.chat_forward_title)
+            .setItems(targets.map { it.title }.toTypedArray()) { _, index ->
+                applyForward(message, targets[index])
+            }
+            .show()
+    }
+
+    private fun applyForward(message: MessageUi, target: ChatUi) {
+        lifecycleScope.launch {
+            val outcome = viewModel.forward(listOf(message.id), target.id)
+            binding.root.showSnackbar(forwardMessage(outcome, target.title))
+        }
+    }
+
+    /** What the person is told, which is how many went and how many could not. */
+    private fun forwardMessage(outcome: ForwardOutcome, targetTitle: String): String = when (outcome) {
+        is ForwardOutcome.NothingSelected -> getString(R.string.chat_forward_nothing_selected)
+        is ForwardOutcome.Done -> when {
+            outcome.sent == 0 -> getString(R.string.chat_forward_refused_all)
+            outcome.refused > 0 -> getString(
+                R.string.chat_forward_partial, outcome.sent, outcome.refused, targetTitle
+            )
+            else -> getString(R.string.chat_forward_sent, outcome.sent, targetTitle)
+        }
+        is ForwardOutcome.StoppedAt -> getString(R.string.chat_forward_stopped, outcome.sent)
     }
 
     /**
