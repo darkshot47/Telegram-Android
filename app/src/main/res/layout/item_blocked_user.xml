@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="@dimen/screen_padding"
+    android:paddingTop="@dimen/spacing_medium"
+    android:paddingEnd="@dimen/spacing_small"
+    android:paddingBottom="@dimen/spacing_medium">
+
+    <FrameLayout
+        android:layout_width="@dimen/avatar_medium"
+        android:layout_height="@dimen/avatar_medium">
+
+        <TextView
+            android:id="@+id/blockedInitials"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_avatar_circle"
+            android:gravity="center"
+            android:textColor="@color/text_on_accent"
+            android:textSize="18sp" />
+
+        <ImageView
+            android:id="@+id/blockedPhoto"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/cd_avatar" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/blockedName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/spacing_medium"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/blockedUnblock"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/profile_unblock" />
+</LinearLayout>

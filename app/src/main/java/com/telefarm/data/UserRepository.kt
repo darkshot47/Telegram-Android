@@ -7,6 +7,7 @@ import com.telefarm.data.map.userIdOrNull
 import com.telefarm.data.model.ChatKind
 import com.telefarm.data.model.ChatMemberUi
 import com.telefarm.data.model.ProfileUi
+import com.telefarm.data.model.UserStatusUi
 import com.telefarm.data.model.UserUi
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -210,6 +211,31 @@ class UserRepository(
     } catch (error: Throwable) {
         if (error is CancellationException) throw error
         emptySet()
+    }
+
+    /**
+     * Who is blocked, with names.
+     *
+     * The block list holds senders and a sender is an identifier, so each one is fetched to give
+     * the list something to read. One that cannot be fetched is still listed, under whatever is
+     * known of it: a person blocked is not removed from the list because their name is not
+     * available, and a block nobody can see is a block nobody can take back.
+     */
+    suspend fun blockedUsers(): List<UserUi> = blockedIds().map { id ->
+        userUi(id) ?: UserUi(
+            id = id,
+            displayName = "",
+            firstName = "",
+            lastName = "",
+            username = null,
+            phoneNumber = null,
+            photo = null,
+            status = UserStatusUi.Empty,
+            isBot = false,
+            isVerified = false,
+            isContact = false,
+            isPremium = false
+        )
     }
 
     /**

@@ -281,6 +281,12 @@ Telegram now holds and not what was just tapped.
 A group's profile does not offer it. The block list holds senders and a chat is not a sender, so
 claiming a block state there would be a claim about something Telegram does not track.
 
+Settings → **Blocked people** is the other half of the same feature, and the reason blocking is
+safe to offer at all: a block nobody can find is a block nobody can take back. Everybody on the
+list is there with an Unblock beside them, including anybody whose name could not be fetched - a
+person is not quietly unblocked because their name was unavailable, and a block that vanishes from
+the list is a block the account still has.
+
 ---
 
 ## 🗄️ Archived chats

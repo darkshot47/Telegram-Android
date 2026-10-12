@@ -563,4 +563,11 @@
     <string name="profile_block">ब्लॉक करें</string>
     <string name="profile_unblock">अनब्लॉक करें</string>
     <string name="profile_block_failed">यह बदला नहीं जा सका</string>
+    <string name="blocked_title">ब्लॉक किए गए लोग</string>
+    <string name="blocked_summary">कौन आपको लिख नहीं सकता</string>
+    <string name="blocked_note">इस सूची का कोई व्यक्ति किसी भी Telegram क्लाइंट में आपको लिख नहीं सकता, कॉल नहीं कर सकता, और आपका अंतिम दर्शन नहीं देख सकता।</string>
+    <string name="blocked_loading">ब्लॉक सूची पढ़ी जा रही है</string>
+    <string name="blocked_empty">कोई ब्लॉक नहीं है</string>
+    <string name="blocked_failed">ब्लॉक सूची पढ़ी नहीं जा सकी</string>
+    <string name="blocked_unknown_name">एक व्यक्ति जिसका नाम पढ़ा नहीं जा सका</string>
 </resources>

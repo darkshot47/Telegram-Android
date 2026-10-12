@@ -70,6 +70,10 @@
             android:exported="false" />
 
         <activity
+            android:name=".ui.settings.BlockedUsersActivity"
+            android:exported="false" />
+
+        <activity
             android:name=".ui.settings.PrivacyActivity"
             android:exported="false" />
 

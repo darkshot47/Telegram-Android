@@ -594,4 +594,11 @@
     <string name="profile_block">Block</string>
     <string name="profile_unblock">Unblock</string>
     <string name="profile_block_failed">That could not be changed</string>
+    <string name="blocked_title">Blocked people</string>
+    <string name="blocked_summary">Who cannot write to you</string>
+    <string name="blocked_note">Somebody on this list cannot write to you, call you or see when you were last online, in any Telegram client.</string>
+    <string name="blocked_loading">Reading the block list</string>
+    <string name="blocked_empty">Nobody is blocked</string>
+    <string name="blocked_failed">The block list could not be read</string>
+    <string name="blocked_unknown_name">A person whose name could not be read</string>
 </resources>
