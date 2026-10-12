@@ -154,6 +154,9 @@ class ChatViewModel(
         viewModelScope.launch { store.retry(messageId) }
     }
 
+    /** Reacts to a message, or takes this account's reaction away. */
+    suspend fun react(messageId: Long, emoji: String): Boolean = store.setReaction(messageId, emoji)
+
     /** Pins a message for everybody in the chat; false when Telegram refused. */
     suspend fun pinMessage(messageId: Long): Boolean = store.pinMessage(messageId)
 

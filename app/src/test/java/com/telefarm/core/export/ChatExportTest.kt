@@ -291,6 +291,7 @@ class ChatExportTest {
         sendState = SendState.SENT,
         canRetry = false,
         isRead = true,
+        reactions = emptyList(),
         content = content ?: MessageContentUi.Text(text.orEmpty())
     )
 }

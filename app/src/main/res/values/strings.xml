@@ -544,4 +544,8 @@
     <string name="chat_scheduled_for">The next message will be sent on %1$s</string>
     <string name="chat_schedule_too_soon">That moment has already passed. Pick one at least a minute ahead.</string>
     <string name="chat_schedule_too_far">That is further ahead than a message can be held. Pick a moment within a year.</string>
+    <string name="chat_action_react">React</string>
+    <string name="chat_react_title">React to this message</string>
+    <string name="chat_reaction_remove">%1$s again to take it away</string>
+    <string name="chat_reaction_failed">The reaction could not be sent</string>
 </resources>

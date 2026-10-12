@@ -518,4 +518,8 @@
     <string name="chat_scheduled_for">अगला संदेश %1$s को भेजा जाएगा</string>
     <string name="chat_schedule_too_soon">वह समय बीत चुका है। कम से कम एक मिनट आगे का चुनें।</string>
     <string name="chat_schedule_too_far">यह एक संदेश को रखे रखने की सीमा से आगे है। एक साल के भीतर का समय चुनें।</string>
+    <string name="chat_action_react">प्रतिक्रिया दें</string>
+    <string name="chat_react_title">इस संदेश पर प्रतिक्रिया दें</string>
+    <string name="chat_reaction_remove">हटाने के लिए %1$s दोबारा चुनें</string>
+    <string name="chat_reaction_failed">प्रतिक्रिया भेजी नहीं जा सकी</string>
 </resources>

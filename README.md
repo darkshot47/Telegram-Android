@@ -224,6 +224,22 @@ does not reach it.
 
 ---
 
+## 👍 Reactions
+
+A reaction is the shortest possible answer: it says "seen" without asking anybody to read
+anything. Long-press a message, choose **React**, and eight emoji are on offer in one row - 👍 👎
+❤️ 🔥 🎉 😂 😮 😢. Eight, because a picker you have to search is slower than typing the reply.
+
+Choosing the one already chosen takes it away, which is how a reaction is undone. Telegram
+replaces the whole set rather than adding to it, so a reaction cannot be doubled and a mistake
+cannot pile up.
+
+Under the bubble a strip shows what is on the message - `👍 3 🔥 2` - with the one you made
+first, then the most used. A reaction this client cannot draw is left out rather than shown as a
+box, because a reaction that reads wrong is worse than one that is not there.
+
+---
+
 ## 🛡️ Account privacy
 
 Settings → **Privacy** shows and changes the account's own privacy settings: last seen and online,
@@ -572,6 +588,7 @@ need no device:
   calendar arithmetic behind the dates in it
 - The order and wording of the active session list, and which sessions it is allowed to sign out
 - Reading Telegram's privacy rules as three choices, and writing the same three back
+- What a reaction strip says, which reaction replaces which, and the order it is drawn in
 - The login token of a `tg://login` link
 - The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
 

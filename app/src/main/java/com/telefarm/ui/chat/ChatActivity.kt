@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import com.telefarm.core.reactions.Reactions
 import com.telefarm.core.schedule.MessageSchedule
 import com.telefarm.core.schedule.ScheduleDecision
 import java.util.Calendar
@@ -347,6 +348,7 @@ class ChatActivity : AppCompatActivity() {
         if (message.sendState == SendState.FAILED && message.canRetry) {
             options += R.string.chat_retry_send to { viewModel.retryMessage(message.id) }
         }
+        options += R.string.chat_action_react to { showReactionPicker(message) }
         options += R.string.chat_action_reply to { viewModel.replyTo(message) }
         options += R.string.chat_action_pin_message to { pinMessage(message) }
         if (message.isOutgoing && !text.isNullOrEmpty()) {
@@ -405,6 +407,30 @@ class ChatActivity : AppCompatActivity() {
         File(directory, viewModel.exportFileName(format)).apply { writeText(document, Charsets.UTF_8) }
     } catch (error: Throwable) {
         null
+    }
+
+    /**
+     * The reactions on offer for a message.
+     *
+     * Eight, in one row, because a reaction is worth having only when it takes one tap; a picker
+     * that has to be searched is slower than typing the reply.
+     */
+    private fun showReactionPicker(message: MessageUi) {
+        val chosen = Reactions.chosen(message.reactions).firstOrNull()
+        val labels = Reactions.QUICK.map { emoji ->
+            if (emoji == chosen) getString(R.string.chat_reaction_remove, emoji) else emoji
+        }.toTypedArray()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.chat_react_title)
+            .setItems(labels) { _, index -> applyReaction(message, Reactions.QUICK[index]) }
+            .show()
+    }
+
+    private fun applyReaction(message: MessageUi, emoji: String) {
+        lifecycleScope.launch {
+            val done = viewModel.react(message.id, emoji)
+            if (!done) binding.root.showSnackbar(getString(R.string.chat_reaction_failed))
+        }
     }
 
     /** This device's offset from UTC, in minutes, the way [MessageSchedule] takes it. */

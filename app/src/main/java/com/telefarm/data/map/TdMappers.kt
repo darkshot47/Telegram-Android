@@ -1,5 +1,6 @@
 package com.telefarm.data.map
 
+import com.telefarm.core.reactions.ReactionUi
 import com.telefarm.data.model.ChatKind
 import com.telefarm.data.model.ChatMemberUi
 import com.telefarm.data.model.ChatUi
@@ -153,9 +154,23 @@ object TdMappers {
             },
             canRetry = failed?.canRetry == true,
             isRead = !message.isOutgoing || message.id <= lastReadOutboxMessageId,
+            reactions = reactions(message.interactionInfo),
             content = content(message.content)
         )
     }
+
+    /**
+     * The reactions on a message.
+     *
+     * A reaction this client cannot draw - a custom sticker emoji, say - is left out rather than
+     * shown as a box, because a reaction that reads wrong is worse than one that is not there.
+     */
+    private fun reactions(interactionInfo: TdApi.MessageInteractionInfo?): List<ReactionUi> =
+        interactionInfo?.reactions?.reactions.orEmpty().mapNotNull { reaction ->
+            val emoji = (reaction.type as? TdApi.ReactionTypeEmoji)?.emoji?.takeIf { it.isNotBlank() }
+                ?: return@mapNotNull null
+            ReactionUi(emoji, reaction.totalCount, reaction.isChosen)
+        }
 
     /** Maps message content that has a dedicated view. */
     fun content(content: TdApi.MessageContent): MessageContentUi = when (content) {

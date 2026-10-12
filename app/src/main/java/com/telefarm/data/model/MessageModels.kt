@@ -1,5 +1,7 @@
 package com.telefarm.data.model
 
+import com.telefarm.core.reactions.ReactionUi
+
 /** Delivery state of an outgoing message. */
 enum class SendState { SENT, SENDING, FAILED }
 
@@ -72,6 +74,9 @@ data class MessageUi(
     val sendState: SendState,
     val canRetry: Boolean,
     val isRead: Boolean,
+
+    /** The reactions on the message, empty when nobody has reacted. */
+    val reactions: List<ReactionUi>,
     val content: MessageContentUi
 )
 

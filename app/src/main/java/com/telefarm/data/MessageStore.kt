@@ -2,6 +2,7 @@ package com.telefarm.data
 
 import com.telefarm.R
 import com.telefarm.core.format.Markdown
+import com.telefarm.core.reactions.Reactions
 import com.telefarm.core.format.TextKind
 import com.telefarm.core.format.TextSpan
 import com.telefarm.core.td.TdLibClient
@@ -471,6 +472,14 @@ class MessageStore(
             is TdApi.UpdateMessageIsPinned ->
                 if (update.chatId == chatId) scope.launch { loadPinnedMessage() }
 
+            // A reaction was put on, or taken off, a message that is on screen.
+            is TdApi.UpdateMessageInteractionInfo -> if (update.chatId == chatId) {
+                synchronized(messagesLock) {
+                    messages[update.messageId]?.interactionInfo = update.interactionInfo
+                }
+                markDirty()
+            }
+
             is TdApi.UpdateUser -> markDirty()
 
             else -> Unit
@@ -609,6 +618,42 @@ class MessageStore(
 
         _rows.value = rows
     }
+
+    // region Reactions
+
+    /**
+     * Reacts to a message, or takes this account's reaction away.
+     *
+     * Telegram replaces the whole set rather than adding to it, so a reaction cannot be doubled
+     * and choosing the one already chosen is how it is undone.
+     */
+    suspend fun setReaction(messageId: Long, emoji: String): Boolean = try {
+        td.send(
+            TdApi.SetMessageReactions().apply {
+                chatId = this@MessageStore.chatId
+                this.messageId = messageId
+                reactionTypes = Reactions.toggle(chosenFor(messageId), emoji)
+                    .map { TdApi.ReactionTypeEmoji().apply { this.emoji = it } }
+                    .toTypedArray<TdApi.ReactionType>()
+                isBig = false
+            }
+        )
+        true
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
+        false
+    }
+
+    /** The reactions this account has already put on a message. */
+    private fun chosenFor(messageId: Long): List<String> =
+        _rows.value.filterIsInstance<MessageRow.Message>()
+            .firstOrNull { it.message.id == messageId }
+            ?.message?.reactions
+            ?.filter { it.isChosen }
+            ?.map { it.emoji }
+            .orEmpty()
+
+    // endregion
 
     // region Pinned message
 

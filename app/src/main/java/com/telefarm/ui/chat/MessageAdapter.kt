@@ -1,5 +1,6 @@
 package com.telefarm.ui.chat
 
+import com.telefarm.core.reactions.Reactions
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -83,6 +84,11 @@ class MessageAdapter(
             binding.messageSender.text = message.senderName.orEmpty()
 
             binding.messageTime.text = TimeFormat.messageTime(message.date)
+            // The strip is drawn only when there is something on it, so a message nobody has
+            // reacted to does not carry a blank line under it.
+            val reactions = Reactions.label(message.reactions)
+            binding.messageReactions.isVisible = reactions.isNotEmpty()
+            binding.messageReactions.text = reactions
             binding.messageEdited.isVisible = message.isEdited
 
             bindState(message)
