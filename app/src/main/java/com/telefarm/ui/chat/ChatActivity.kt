@@ -6,6 +6,7 @@ import com.telefarm.ui.common.Sizes
 import com.telefarm.core.media.VoiceRecording
 import com.telefarm.core.media.RecordingDecision
 import android.media.MediaRecorder
+import android.net.Uri
 import android.content.pm.PackageManager
 import android.Manifest
 import kotlinx.coroutines.withContext
@@ -496,33 +497,35 @@ class ChatActivity : AppCompatActivity() {
     /** A file picked from the system picker, copied somewhere Telegram can read it. */
     private data class PickedFile(val path: String, val kind: MediaKind, val sizeBytes: Long)
 
-    private fun copyToCache(uri: Uri): PickedFile? = try {
-        var name: String? = null
-        var type: String? = null
-        var size = 0L
-        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
-            if (cursor.moveToFirst()) {
-                val nameColumn = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                if (nameColumn >= 0) name = cursor.getString(nameColumn)
-                val sizeColumn = cursor.getColumnIndex(OpenableColumns.SIZE)
-                if (sizeColumn >= 0 && !cursor.isNull(sizeColumn)) size = cursor.getLong(sizeColumn)
+    private fun copyToCache(uri: Uri): PickedFile? {
+        return try {
+            var name: String? = null
+            var type: String? = null
+            var size = 0L
+            contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+                if (cursor.moveToFirst()) {
+                    val nameColumn = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                    if (nameColumn >= 0) name = cursor.getString(nameColumn)
+                    val sizeColumn = cursor.getColumnIndex(OpenableColumns.SIZE)
+                    if (sizeColumn >= 0 && !cursor.isNull(sizeColumn)) size = cursor.getLong(sizeColumn)
+                }
             }
+            type = contentResolver.getType(uri)
+
+            val target = File(cacheDir, MediaFiles.cacheFileName(name, type, System.currentTimeMillis()))
+            contentResolver.openInputStream(uri)?.use { input ->
+                target.outputStream().use { output -> input.copyTo(output) }
+            } ?: return null
+
+            PickedFile(
+                path = target.absolutePath,
+                kind = MediaFiles.of(type, name),
+                sizeBytes = if (size > 0) size else target.length()
+            )
+        } catch (error: Throwable) {
+            if (error is CancellationException) throw error
+            null
         }
-        type = contentResolver.getType(uri)
-
-        val target = File(cacheDir, MediaFiles.cacheFileName(name, type, System.currentTimeMillis()))
-        contentResolver.openInputStream(uri)?.use { input ->
-            target.outputStream().use { output -> input.copyTo(output) }
-        } ?: return null
-
-        PickedFile(
-            path = target.absolutePath,
-            kind = MediaFiles.of(type, name),
-            sizeBytes = if (size > 0) size else target.length()
-        )
-    } catch (error: Throwable) {
-        if (error is CancellationException) throw error
-        null
     }
 
     // region Recording a voice message

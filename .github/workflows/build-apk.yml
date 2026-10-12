@@ -51,12 +51,21 @@ jobs:
       - name: Dump the TDLib signatures a failing call needs
         if: always()
         run: |
-          jar=$(find "$HOME/.gradle/caches/modules-2/files-2.1" -name '*.jar' -path '*tdlib*' 2>/dev/null | head -1)
-          echo "tdlib jar: ${jar:-none found}"
-          if [ -n "$jar" ]; then
-            for cls in 'TdApi$UserPrivacySettingRuleAllowUsers' 'TdApi$UserPrivacySettingRuleRestrictUsers' 'TdApi$InputMessageReplyToMessage' 'TdApi$MessageReplyToMessage' 'TdApi$SendMessage'; do
-              javap -classpath "$jar" "org.drinkless.tdlib.$cls" 2>/dev/null \
-                | grep -E 'public (long|java|int|boolean|org)' \
+          # The binding ships as an archive rather than a jar, so its classes have to be taken out
+          # of it before javap can read them.
+          artifact=$(find "$HOME/.gradle/caches/modules-2/files-2.1" \
+            \( -name '*.aar' -o -name '*.jar' \) -path '*tdlib*' 2>/dev/null | head -1)
+          echo "::notice title=TDLib artifact::${artifact:-none found}"
+          if [ -n "$artifact" ]; then
+            case "$artifact" in
+              *.aar)
+                mkdir -p /tmp/tdx && cd /tmp/tdx
+                unzip -o -q "$artifact" classes.jar && cp="$PWD/classes.jar" ;;
+              *) cp="$artifact" ;;
+            esac
+            for cls in 'TdApi$UserPrivacySettingRuleAllowUsers' 'TdApi$UserPrivacySettingRuleRestrictUsers' 'TdApi$InputMessageReplyToMessage' 'TdApi$SendMessage'; do
+              javap -classpath "$cp" "org.drinkless.tdlib.$cls" 2>&1 \
+                | grep -E 'public|class' \
                 | sed "s|^|::notice title=TDLib ${cls}::|"
             done
           fi

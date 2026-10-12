@@ -108,12 +108,12 @@ class PrivacyRepository(private val td: TdLibClient) {
         is TdApi.UserPrivacySettingRuleAllowAll -> PrivacyRuleUi(PrivacyRuleKind.ALLOW_ALL)
         is TdApi.UserPrivacySettingRuleAllowContacts -> PrivacyRuleUi(PrivacyRuleKind.ALLOW_CONTACTS)
         is TdApi.UserPrivacySettingRuleAllowUsers ->
-            PrivacyRuleUi(PrivacyRuleKind.ALLOW_USERS, userIds.orEmpty().toList())
+            PrivacyRuleUi(PrivacyRuleKind.ALLOW_USERS, userIds?.toList().orEmpty())
         is TdApi.UserPrivacySettingRuleRestrictAll -> PrivacyRuleUi(PrivacyRuleKind.RESTRICT_ALL)
         is TdApi.UserPrivacySettingRuleRestrictContacts ->
             PrivacyRuleUi(PrivacyRuleKind.RESTRICT_CONTACTS)
         is TdApi.UserPrivacySettingRuleRestrictUsers ->
-            PrivacyRuleUi(PrivacyRuleKind.RESTRICT_USERS, userIds.orEmpty().toList())
+            PrivacyRuleUi(PrivacyRuleKind.RESTRICT_USERS, userIds?.toList().orEmpty())
         else -> PrivacyRuleUi(PrivacyRuleKind.UNKNOWN)
     }
 }

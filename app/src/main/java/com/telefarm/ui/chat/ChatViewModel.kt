@@ -286,24 +286,6 @@ class ChatViewModel(
         graph.messages.release(chatId)
     }
 
-    companion object {
-        private const val STOP_TIMEOUT_MS = 5_000L
-
-        /** Milliseconds in a minute, for turning a zone offset into minutes. */
-        private const val MILLIS_PER_MINUTE = 60_000
-    }
-}
-
-/** Text of the indicator shown while another member is doing something in the chat. */
-fun chatActionLabel(action: ChatActionUi): Int = when (action) {
-    ChatActionUi.TYPING -> R.string.chat_action_typing
-    ChatActionUi.UPLOADING_PHOTO -> R.string.chat_action_uploading_photo
-    ChatActionUi.RECORDING_VOICE -> R.string.chat_action_recording_voice
-    ChatActionUi.UPLOADING_DOCUMENT -> R.string.chat_action_uploading_document
-    ChatActionUi.CHOOSING_STICKER -> R.string.chat_action_choosing_sticker
-    ChatActionUi.RECORDING_VIDEO -> R.string.chat_action_recording_video
-    ChatActionUi.PLAYING_GAME -> R.string.chat_action_playing_game
-
     /**
      * The conversation loaded so far, as a document.
      *
@@ -329,6 +311,23 @@ fun chatActionLabel(action: ChatActionUi): Int = when (action) {
         return ChatExport.fileName(title, ExportOptions(format = format))
     }
 
+    companion object {
+        private const val STOP_TIMEOUT_MS = 5_000L
+
+        /** Milliseconds in a minute, for turning a zone offset into minutes. */
+        private const val MILLIS_PER_MINUTE = 60_000
+    }
+}
+
+/** Text of the indicator shown while another member is doing something in the chat. */
+fun chatActionLabel(action: ChatActionUi): Int = when (action) {
+    ChatActionUi.TYPING -> R.string.chat_action_typing
+    ChatActionUi.UPLOADING_PHOTO -> R.string.chat_action_uploading_photo
+    ChatActionUi.RECORDING_VOICE -> R.string.chat_action_recording_voice
+    ChatActionUi.UPLOADING_DOCUMENT -> R.string.chat_action_uploading_document
+    ChatActionUi.CHOOSING_STICKER -> R.string.chat_action_choosing_sticker
+    ChatActionUi.RECORDING_VIDEO -> R.string.chat_action_recording_video
+    ChatActionUi.PLAYING_GAME -> R.string.chat_action_playing_game
 }
 
 /**
