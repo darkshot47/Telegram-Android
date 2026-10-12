@@ -12,6 +12,8 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.telefarm.R
 import com.telefarm.core.notifications.NotificationPolicy
+import com.telefarm.core.notifications.NotificationPreview
+import com.telefarm.core.notifications.NotificationPreviewText
 import com.telefarm.core.notifications.QuietHours
 import com.telefarm.core.prefs.AppPreferences
 import com.telefarm.core.td.TdLibClient
@@ -161,7 +163,15 @@ class NotificationCenter(
                 is MessagePreview.Text -> preview.text
             }
         }
-        return listOfNotNull(senderName, body.takeIf { it.isNotBlank() }).joinToString(": ")
+        return when (val mode = preferences.notificationPreview) {
+            // Who wrote it and what they wrote, which is what a notification has always said.
+            NotificationPreview.FULL ->
+                listOfNotNull(senderName, body.takeIf { it.isNotBlank() }).joinToString(": ")
+
+            // Either half of that on its own, so the notification is never blank and never says
+            // more than was asked for.
+            else -> NotificationPreviewText.content(mode, senderName, body.toString())
+        }
     }
 
     private fun createChannel() {

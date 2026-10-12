@@ -437,6 +437,29 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/previewRow"
+                style="@style/Widget.Telefarm.SettingsRow"
+                android:background="?attr/selectableItemBackground"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/settings_notification_preview"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+                <TextView
+                    android:id="@+id/previewValue"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/quietHoursRow"
                 style="@style/Widget.Telefarm.SettingsRow"
                 android:gravity="center_vertical"

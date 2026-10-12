@@ -613,4 +613,8 @@
         <item quantity="one">%d message chosen</item>
         <item quantity="other">%d messages chosen</item>
     </plurals>
+    <string name="settings_notification_preview">Show in notifications</string>
+    <string name="settings_preview_full">The message</string>
+    <string name="settings_preview_sender">Only who wrote it</string>
+    <string name="settings_preview_none">Only that a message arrived</string>
 </resources>

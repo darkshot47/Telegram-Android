@@ -408,6 +408,22 @@ because that is what it means to the person choosing it, not because the number 
 
 ---
 
+## 🙈 What a notification says
+
+A notification is read on a lock screen, which means it is read by whoever picks the phone up.
+Settings → **Show in notifications** offers three answers: the message, only who wrote it, or only
+that a message arrived.
+
+That is not a reason to hide messages. It is a reason for the choice to belong to the person whose
+messages they are, rather than being made for them by whoever built the client.
+
+The rule behind it is that a notification is never empty. A setting of "who wrote it" on a message
+with no sender name falls back to a name rather than to a blank line, and a message with no words
+at all - a photograph - still says what it is. A blank notification says less than "new message"
+does.
+
+---
+
 ## 🔕 Quiet hours
 
 A chat can be muted; the whole app can be quiet. Settings → **Quiet hours** sets a window - by

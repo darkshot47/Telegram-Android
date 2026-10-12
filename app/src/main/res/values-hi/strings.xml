@@ -582,4 +582,8 @@
         <item quantity="one">%d संदेश चुना गया</item>
         <item quantity="other">%d संदेश चुने गए</item>
     </plurals>
+    <string name="settings_notification_preview">सूचनाओं में दिखाएँ</string>
+    <string name="settings_preview_full">संदेश</string>
+    <string name="settings_preview_sender">सिर्फ़ किसने लिखा</string>
+    <string name="settings_preview_none">सिर्फ़ इतना कि संदेश आया</string>
 </resources>

@@ -1,5 +1,6 @@
 package com.telefarm.core.prefs
 
+import com.telefarm.core.notifications.NotificationPreview
 import android.content.Context
 import androidx.appcompat.app.AppCompatDelegate
 import com.telefarm.core.notifications.QuietHours
@@ -40,6 +41,18 @@ class AppPreferences(context: Context) {
         get() = QuietHours.decode(preferences.getString(KEY_QUIET_HOURS, null))
         set(value) = preferences.edit().putString(KEY_QUIET_HOURS, QuietHours.encode(value)).apply()
 
+    /**
+     * How much a notification says about the message behind it.
+     *
+     * A name is stored rather than a number, so a setting written by an older build that did not
+     * have this one reads as the default instead of as something nobody chose.
+     */
+    var notificationPreview: NotificationPreview
+        get() = preferences.getString(KEY_NOTIFICATION_PREVIEW, null)?.let { stored ->
+            NotificationPreview.entries.firstOrNull { it.name == stored }
+        } ?: NotificationPreview.FULL
+        set(value) = preferences.edit().putString(KEY_NOTIFICATION_PREVIEW, value.name).apply()
+
     /** Applies the stored theme; called once when the application starts. */
     fun applyTheme() {
         AppCompatDelegate.setDefaultNightMode(themeMode)
@@ -52,5 +65,6 @@ class AppPreferences(context: Context) {
         const val KEY_HIDE_ONLINE = "hide_online_status"
         const val KEY_NOTIFICATIONS = "notifications_enabled"
         const val KEY_QUIET_HOURS = "quiet_hours"
+        const val KEY_NOTIFICATION_PREVIEW = "notification_preview"
     }
 }

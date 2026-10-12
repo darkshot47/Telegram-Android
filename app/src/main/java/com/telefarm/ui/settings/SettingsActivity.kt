@@ -1,5 +1,6 @@
 package com.telefarm.ui.settings
 
+import com.telefarm.core.notifications.NotificationPreview
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -72,6 +73,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.privacyRow.setOnClickListener { startActivity(Intent(this, PrivacyActivity::class.java)) }
         binding.blockedRow.setOnClickListener { startActivity(Intent(this, BlockedUsersActivity::class.java)) }
         binding.sessionsRow.setOnClickListener { startActivity(Intent(this, SessionsActivity::class.java)) }
+        binding.previewRow.setOnClickListener { showPreviewDialog() }
         binding.quietHoursSwitch.setOnCheckedChangeListener { _, checked ->
             appGraph.preferences.quietHours = appGraph.preferences.quietHours.copy(enabled = checked)
             updateQuietHoursRows()
@@ -123,6 +125,7 @@ class SettingsActivity : AppCompatActivity() {
 
     /** What the quiet hours rows say. */
     private fun updateQuietHoursRows() {
+        binding.previewValue.setText(previewLabel(appGraph.preferences.notificationPreview))
         val hours = appGraph.preferences.quietHours
         binding.quietHoursSwitch.isChecked = hours.enabled
         binding.quietMentionsSwitch.isChecked = hours.allowsMentions
@@ -135,6 +138,32 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     /** Picks one end of the quiet hours. */
+    /**
+     * How much a notification says.
+     *
+     * A notification is read on a lock screen, which means it is read by whoever picks the phone
+     * up. That is not a reason to hide messages, but it is a reason for the choice to belong here.
+     */
+    private fun showPreviewDialog() {
+        val choices = NotificationPreview.entries
+        val labels = choices.map { getString(previewLabel(it)) }.toTypedArray()
+        val current = appGraph.preferences.notificationPreview
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.settings_notification_preview)
+            .setSingleChoiceItems(labels, choices.indexOf(current)) { dialog, index ->
+                appGraph.preferences.notificationPreview = choices[index]
+                binding.previewValue.setText(previewLabel(choices[index]))
+                dialog.dismiss()
+            }
+            .show()
+    }
+
+    private fun previewLabel(mode: NotificationPreview): Int = when (mode) {
+        NotificationPreview.FULL -> R.string.settings_preview_full
+        NotificationPreview.SENDER -> R.string.settings_preview_sender
+        NotificationPreview.NONE -> R.string.settings_preview_none
+    }
+
     private fun showQuietTimesDialog() {
         val actions = arrayOf(getString(R.string.quiet_from), getString(R.string.quiet_until))
         MaterialAlertDialogBuilder(this)
