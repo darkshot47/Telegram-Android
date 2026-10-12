@@ -73,6 +73,21 @@ class ChatViewModel(
     /** The message pinned in this chat, or null when there is none. */
     val pinned: StateFlow<MessageUi?> = store.pinnedMessage
 
+    private val _replyTarget = MutableStateFlow<MessageUi?>(null)
+
+    /** The message the next one will answer, or null for a plain message. */
+    val replyTarget: StateFlow<MessageUi?> = _replyTarget.asStateFlow()
+
+    /** Points the composer at a message to answer. */
+    fun replyTo(message: MessageUi) {
+        _replyTarget.value = message
+    }
+
+    /** Sends the next message as a plain one again. */
+    fun clearReplyTarget() {
+        _replyTarget.value = null
+    }
+
     /** Typing state of other members, null when nobody is doing anything. */
     val typing: StateFlow<ChatActionUi?> = store.typing
 
@@ -167,7 +182,11 @@ class ChatViewModel(
         if (text.isBlank()) return false
         _isSending.value = true
         return try {
-            val sent = store.sendText(text)
+            // The reply is cleared whether or not the message went out: leaving it pointing at a
+            // message that was not answered would send the next one as a reply nobody asked for.
+            val replyToMessageId = _replyTarget.value?.id
+            _replyTarget.value = null
+            val sent = store.sendText(text, replyToMessageId)
             if (!sent) _event.value = ChatEvent.Error(message = UiMessage.Res(R.string.chat_send_failed))
             sent
         } catch (error: Throwable) {

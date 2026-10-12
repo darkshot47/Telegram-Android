@@ -198,9 +198,10 @@ class MessageStore(
      * Telegram allows at most [MAX_MESSAGE_LENGTH] UTF-16 characters per message; longer input
      * is rejected before it reaches the network.
      *
+     * @param replyToMessageId the message this one answers, or null for a plain message.
      * @return true when TDLib accepted the message.
      */
-    suspend fun sendText(text: String): Boolean {
+    suspend fun sendText(text: String, replyToMessageId: Long? = null): Boolean {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return false
         if (trimmed.length > MAX_MESSAGE_LENGTH) {
@@ -212,7 +213,14 @@ class MessageStore(
                 TdApi.SendMessage().apply {
                     chatId = this@MessageStore.chatId
                     topicId = null
-                    replyTo = null
+                    // A reply carries the chat it is in as well as the message, because in a
+                    // forum topic or a linked channel the two can be in different chats.
+                    replyTo = replyToMessageId?.let { id ->
+                        TdApi.MessageReplyToMessage().apply {
+                            chatId = this@MessageStore.chatId
+                            messageId = id
+                        }
+                    }
                     options = null
                     replyMarkup = null
                     inputMessageContent = TdApi.InputMessageText().apply {

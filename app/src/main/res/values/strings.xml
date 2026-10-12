@@ -536,4 +536,7 @@
     <string name="chat_pin_failed">The message could not be pinned</string>
     <string name="chat_unpin_failed">The message could not be unpinned</string>
     <string name="chat_pinned_not_loaded">That message is not loaded yet. Scroll up to reach it.</string>
+    <string name="chat_reply_cancel">Stop replying</string>
+    <string name="chat_reply_you">You</string>
+    <string name="chat_reply_unknown_sender">Unknown sender</string>
 </resources>

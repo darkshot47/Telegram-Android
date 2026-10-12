@@ -210,6 +210,54 @@
         android:visibility="gone"
         tools:text="typing..." />
 
+        <LinearLayout
+            android:id="@+id/replyBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface_variant"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingTop="@dimen/spacing_small"
+            android:paddingEnd="@dimen/spacing_small"
+            android:paddingBottom="@dimen/spacing_small"
+            android:visibility="gone">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/replySender"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="1"
+                    android:textAppearance="@style/TextAppearance.Telefarm.Caption"
+                    android:textColor="@color/accent" />
+
+                <TextView
+                    android:id="@+id/replyPreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:maxLines="2"
+                    android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+            </LinearLayout>
+
+            <ImageView
+                android:id="@+id/replyClose"
+                android:layout_width="@dimen/touch_target"
+                android:layout_height="@dimen/touch_target"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/chat_reply_cancel"
+                android:padding="@dimen/spacing_medium"
+                android:src="@drawable/ic_close"
+                app:tint="@color/icon_tint" />
+        </LinearLayout>
+
     <LinearLayout
         android:id="@+id/composer"
         android:layout_width="match_parent"

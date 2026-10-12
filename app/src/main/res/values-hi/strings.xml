@@ -510,4 +510,7 @@
     <string name="chat_pin_failed">संदेश पिन नहीं हो सका</string>
     <string name="chat_unpin_failed">संदेश अनपिन नहीं हो सका</string>
     <string name="chat_pinned_not_loaded">वह संदेश अभी लोड नहीं है। पहुँचने के लिए ऊपर स्क्रोल करें।</string>
+    <string name="chat_reply_cancel">जवाब देना बंद करें</string>
+    <string name="chat_reply_you">आप</string>
+    <string name="chat_reply_unknown_sender">अज्ञात भेजने वाला</string>
 </resources>

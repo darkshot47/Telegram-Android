@@ -150,6 +150,11 @@ class ChatActivity : AppCompatActivity() {
         }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.replyTarget.collect(::renderReplyTarget)
+            }
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.typing.collect { action ->
                     binding.typingIndicator.isVisible = action != null
                     binding.typingIndicator.text = action?.let { getString(chatActionLabel(it)) }.orEmpty()
@@ -315,6 +320,7 @@ class ChatActivity : AppCompatActivity() {
         if (message.sendState == SendState.FAILED && message.canRetry) {
             options += R.string.chat_retry_send to { viewModel.retryMessage(message.id) }
         }
+        options += R.string.chat_action_reply to { viewModel.replyTo(message) }
         options += R.string.chat_action_pin_message to { pinMessage(message) }
         if (message.isOutgoing && !text.isNullOrEmpty()) {
             options += R.string.chat_edit_message to { showEditDialog(message, text) }
@@ -372,6 +378,23 @@ class ChatActivity : AppCompatActivity() {
         File(directory, viewModel.exportFileName(format)).apply { writeText(document, Charsets.UTF_8) }
     } catch (error: Throwable) {
         null
+    }
+
+    /**
+     * Shows what the next message will answer.
+     *
+     * The bar is above the text box rather than inside it, so the words being answered stay
+     * visible while a long reply is being typed.
+     */
+    private fun renderReplyTarget(target: MessageUi?) {
+        binding.replyBar.isVisible = target != null
+        if (target == null) return
+        binding.replySender.text = target.senderName
+            ?.takeIf { it.isNotBlank() }
+            ?: getString(if (target.isOutgoing) R.string.chat_reply_you else R.string.chat_reply_unknown_sender)
+        binding.replyPreview.text = previewOf(target)
+        binding.replyClose.setOnClickListener { viewModel.clearReplyTarget() }
+        binding.messageInput.requestFocus()
     }
 
     /** Shows or hides the bar for the pinned message, and fills it in. */
