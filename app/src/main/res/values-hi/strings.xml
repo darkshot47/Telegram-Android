@@ -513,4 +513,9 @@
     <string name="chat_reply_cancel">जवाब देना बंद करें</string>
     <string name="chat_reply_you">आप</string>
     <string name="chat_reply_unknown_sender">अज्ञात भेजने वाला</string>
+    <string name="chat_action_schedule">बाद में भेजें</string>
+    <string name="chat_schedule_cancel">इसे अभी भेजें</string>
+    <string name="chat_scheduled_for">अगला संदेश %1$s को भेजा जाएगा</string>
+    <string name="chat_schedule_too_soon">वह समय बीत चुका है। कम से कम एक मिनट आगे का चुनें।</string>
+    <string name="chat_schedule_too_far">यह एक संदेश को रखे रखने की सीमा से आगे है। एक साल के भीतर का समय चुनें।</string>
 </resources>

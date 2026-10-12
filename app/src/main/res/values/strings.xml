@@ -539,4 +539,9 @@
     <string name="chat_reply_cancel">Stop replying</string>
     <string name="chat_reply_you">You</string>
     <string name="chat_reply_unknown_sender">Unknown sender</string>
+    <string name="chat_action_schedule">Send later</string>
+    <string name="chat_schedule_cancel">Send it now instead</string>
+    <string name="chat_scheduled_for">The next message will be sent on %1$s</string>
+    <string name="chat_schedule_too_soon">That moment has already passed. Pick one at least a minute ahead.</string>
+    <string name="chat_schedule_too_far">That is further ahead than a message can be held. Pick a moment within a year.</string>
 </resources>

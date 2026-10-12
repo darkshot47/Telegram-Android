@@ -13,6 +13,11 @@
         app:showAsAction="never" />
 
     <item
+        android:id="@+id/action_chat_schedule"
+        android:title="@string/chat_action_schedule"
+        app:showAsAction="never" />
+
+    <item
         android:id="@+id/action_chat_export"
         android:title="@string/chat_action_export"
         app:showAsAction="never" />

@@ -4,6 +4,11 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import com.telefarm.core.schedule.MessageSchedule
+import com.telefarm.core.schedule.ScheduleDecision
+import java.util.Calendar
 import android.os.Bundle
 import android.view.KeyEvent
 import android.view.MenuItem
@@ -155,6 +160,23 @@ class ChatActivity : AppCompatActivity() {
         }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.scheduleTarget.collect { target ->
+                    if (target == null) {
+                        binding.scheduleBar.isVisible = false
+                    } else {
+                        val offsetMinutes = timeZoneOffsetMinutes()
+                        binding.scheduleText.text = getString(
+                            R.string.chat_scheduled_for,
+                            MessageSchedule.label(target, System.currentTimeMillis() / 1_000L, offsetMinutes)
+                        )
+                        binding.scheduleBar.isVisible = true
+                        binding.scheduleClose.setOnClickListener { viewModel.clearSchedule() }
+                    }
+                }
+            }
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.typing.collect { action ->
                     binding.typingIndicator.isVisible = action != null
                     binding.typingIndicator.text = action?.let { getString(chatActionLabel(it)) }.orEmpty()
@@ -292,6 +314,11 @@ class ChatActivity : AppCompatActivity() {
             true
         }
 
+        R.id.action_chat_schedule -> {
+            pickScheduleDay()
+            true
+        }
+
         R.id.action_chat_export -> {
             showExportDialog()
             true
@@ -378,6 +405,66 @@ class ChatActivity : AppCompatActivity() {
         File(directory, viewModel.exportFileName(format)).apply { writeText(document, Charsets.UTF_8) }
     } catch (error: Throwable) {
         null
+    }
+
+    /** This device's offset from UTC, in minutes, the way [MessageSchedule] takes it. */
+    private fun timeZoneOffsetMinutes(): Int {
+        val calendar = Calendar.getInstance()
+        return (calendar.get(Calendar.ZONE_OFFSET) + calendar.get(Calendar.DST_OFFSET)) / 60_000
+    }
+
+    /**
+     * Picks the day a message is to go out, then the hour on it.
+     *
+     * Two pickers rather than one, because the platform's date picker does not do times and a
+     * schedule is worth nothing without both. The time picker is not shown until a day has been
+     * chosen, so a half-finished choice cannot be scheduled.
+     */
+    private fun pickScheduleDay() {
+        val now = Calendar.getInstance()
+        DatePickerDialog(
+            this,
+            { _, year, month, day -> pickScheduleTime(year, month, day) },
+            now.get(Calendar.YEAR),
+            now.get(Calendar.MONTH),
+            now.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    private fun pickScheduleTime(year: Int, month: Int, day: Int) {
+        val now = Calendar.getInstance()
+        TimePickerDialog(
+            this,
+            { _, hour, minute -> applySchedule(year, month, day, hour, minute) },
+            now.get(Calendar.HOUR_OF_DAY),
+            now.get(Calendar.MINUTE),
+            true
+        ).show()
+    }
+
+    /** Turns the picked wall clock into a moment, and checks it can be used. */
+    private fun applySchedule(year: Int, month: Int, day: Int, hour: Int, minute: Int) {
+        val picked = Calendar.getInstance().apply {
+            clear()
+            set(year, month, day, hour, minute, 0)
+        }
+        val targetSeconds = picked.timeInMillis / 1_000L
+        val offsetMinutes = (picked.get(Calendar.ZONE_OFFSET) + picked.get(Calendar.DST_OFFSET)) / 60_000
+        val nowSeconds = System.currentTimeMillis() / 1_000L
+        when (val decision = MessageSchedule.validate(targetSeconds, nowSeconds)) {
+            is ScheduleDecision.Ok -> {
+                viewModel.scheduleAt(targetSeconds)
+                binding.scheduleText.text = getString(
+                    R.string.chat_scheduled_for,
+                    MessageSchedule.label(targetSeconds, nowSeconds, offsetMinutes)
+                )
+                binding.scheduleBar.isVisible = true
+                binding.messageInput.requestFocus()
+            }
+
+            is ScheduleDecision.TooSoon -> binding.root.showSnackbar(getString(R.string.chat_schedule_too_soon))
+            is ScheduleDecision.TooFar -> binding.root.showSnackbar(getString(R.string.chat_schedule_too_far))
+        }
     }
 
     /**

@@ -199,9 +199,16 @@ class MessageStore(
      * is rejected before it reaches the network.
      *
      * @param replyToMessageId the message this one answers, or null for a plain message.
+     * @param sendAtSeconds when to send it instead of now, or null to send it now. The message
+     *   then waits on Telegram rather than on this device, so it goes out even if the phone is
+     *   off at that moment.
      * @return true when TDLib accepted the message.
      */
-    suspend fun sendText(text: String, replyToMessageId: Long? = null): Boolean {
+    suspend fun sendText(
+        text: String,
+        replyToMessageId: Long? = null,
+        sendAtSeconds: Long? = null
+    ): Boolean {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return false
         if (trimmed.length > MAX_MESSAGE_LENGTH) {
@@ -213,6 +220,15 @@ class MessageStore(
                 TdApi.SendMessage().apply {
                     chatId = this@MessageStore.chatId
                     topicId = null
+                    options = sendAtSeconds?.let { at ->
+                        TdApi.MessageSendOptions().apply {
+                            disableNotification = false
+                            fromBackground = false
+                            schedulingState = TdApi.MessageSchedulingStateSendAtDate().apply {
+                                sendDate = at.toInt()
+                            }
+                        }
+                    }
                     // A reply carries the chat it is in as well as the message, because in a
                     // forum topic or a linked channel the two can be in different chats.
                     replyTo = replyToMessageId?.let { id ->

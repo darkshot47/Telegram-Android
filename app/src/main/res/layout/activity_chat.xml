@@ -211,6 +211,39 @@
         tools:text="typing..." />
 
         <LinearLayout
+            android:id="@+id/scheduleBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface_variant"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingTop="@dimen/spacing_small"
+            android:paddingEnd="@dimen/spacing_small"
+            android:paddingBottom="@dimen/spacing_small"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/scheduleText"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemSubtitle" />
+
+            <ImageView
+                android:id="@+id/scheduleClose"
+                android:layout_width="@dimen/touch_target"
+                android:layout_height="@dimen/touch_target"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/chat_schedule_cancel"
+                android:padding="@dimen/spacing_medium"
+                android:src="@drawable/ic_close"
+                app:tint="@color/icon_tint" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/replyBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
