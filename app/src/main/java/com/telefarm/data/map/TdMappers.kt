@@ -355,7 +355,10 @@ object TdMappers {
             memberCount = memberCount,
             canViewMembers = canViewMembers,
             canSendMessage = canSendMessages(chat, kind) && kind != ChatKind.CHANNEL,
-            canLeave = canLeave
+            canLeave = canLeave,
+            // A chat is not a sender and the block list holds senders, so a group profile does not
+            // claim a block state it cannot have.
+            isBlocked = false
         )
     }
 

@@ -149,6 +149,13 @@ class ProfileActivity : AppCompatActivity() {
                 }
             )
         }
+        if (profile.isUser && !viewModel.isSelf) {
+            binding.actionContainer.addView(
+                actionRow(
+                    if (profile.isBlocked) R.string.profile_unblock else R.string.profile_block
+                ) { viewModel.toggleBlock() }
+            )
+        }
         if (profile.canLeave && !profile.isUser) {
             binding.actionContainer.addView(
                 actionRow(R.string.profile_leave_chat) { viewModel.leave() }

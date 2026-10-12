@@ -51,5 +51,14 @@ data class ProfileUi(
     val memberCount: Int,
     val canViewMembers: Boolean,
     val canSendMessage: Boolean,
-    val canLeave: Boolean
+    val canLeave: Boolean,
+
+    /**
+     * True when this sender is on the account's block list.
+     *
+     * Telegram keeps no such mark on a user, so this is read from the block list rather than from
+     * the profile. Offering to block somebody without knowing whether they already are would offer
+     * the same button twice with two different meanings behind it.
+     */
+    val isBlocked: Boolean
 )

@@ -184,9 +184,52 @@ class UserRepository(
                 memberCount = 0,
                 canViewMembers = false,
                 canSendMessage = true,
-                canLeave = false
+                canLeave = false,
+                isBlocked = userId in blockedIds()
             )
         }
+    }
+
+    /**
+     * Who the account has blocked.
+     *
+     * Read from the block list because a user carries no mark of being blocked: the list is the
+     * only place that says so.
+     */
+    suspend fun blockedIds(): Set<Long> = try {
+        val senders = td.send(
+            TdApi.GetBlockedMessageSenders().apply {
+                blockList = TdApi.BlockListMain()
+                offset = 0
+                limit = BLOCKED_PAGE_SIZE
+            }
+        )
+        senders.senders.orEmpty().mapNotNull { sender ->
+            (sender as? TdApi.MessageSenderUser)?.userId
+        }.toSet()
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
+        emptySet()
+    }
+
+    /**
+     * Blocks a user, or unblocks them.
+     *
+     * Blocking is a change to what the other person can do, so it is the account's setting and not
+     * this device's: it holds in every client until it is taken back here or there.
+     */
+    suspend fun setBlocked(userId: Long, blocked: Boolean): Boolean = try {
+        td.send(
+            TdApi.SetMessageSenderBlockList().apply {
+                senderId = TdApi.MessageSenderUser().apply { this.userId = userId }
+                // Null is how a sender is taken off the list; there is no unblock call of its own.
+                blockList = if (blocked) TdApi.BlockListMain() else null
+            }
+        )
+        true
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
+        false
     }
 
     /** True when the user is the signed in account. */
@@ -195,6 +238,9 @@ class UserRepository(
     private companion object {
         const val TAG = "UserRepository"
         const val MAX_CONCURRENT_FETCHES = 8
+
+        /** How many blocked senders are read. A block list past this is unlikely and can be paged. */
+        const val BLOCKED_PAGE_SIZE = 100
     }
 }
 

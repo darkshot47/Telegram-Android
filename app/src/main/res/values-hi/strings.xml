@@ -560,4 +560,7 @@
     <string name="archived_moved">%1$s हटा दी गई है</string>
     <string name="archived_restored">%1$s चैट सूची में वापस आ गई</string>
     <string name="chat_action_archive">संग्रहित करें</string>
+    <string name="profile_block">ब्लॉक करें</string>
+    <string name="profile_unblock">अनब्लॉक करें</string>
+    <string name="profile_block_failed">यह बदला नहीं जा सका</string>
 </resources>

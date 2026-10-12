@@ -591,4 +591,7 @@
     <string name="archived_moved">%1$s has been put away</string>
     <string name="archived_restored">%1$s is back on the chat list</string>
     <string name="chat_action_archive">Archive</string>
+    <string name="profile_block">Block</string>
+    <string name="profile_unblock">Unblock</string>
+    <string name="profile_block_failed">That could not be changed</string>
 </resources>

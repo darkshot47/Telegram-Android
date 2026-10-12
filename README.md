@@ -265,6 +265,24 @@ box, because a reaction that reads wrong is worse than one that is not there.
 
 ---
 
+## 🚫 Block somebody
+
+A person's profile has **Block** on it, and once blocked it says **Unblock** instead.
+
+The row says which because Telegram keeps no mark of being blocked on a user - the block list is
+the only place that says so, and it is read from there. Offering one button that means two
+different things depending on what you cannot see is how people block somebody twice and wonder
+why nothing changed.
+
+Blocking is a setting of the account rather than of this device, so it holds in every Telegram
+client until it is taken back. The profile is read back after the change, so the row shows what
+Telegram now holds and not what was just tapped.
+
+A group's profile does not offer it. The block list holds senders and a chat is not a sender, so
+claiming a block state there would be a claim about something Telegram does not track.
+
+---
+
 ## 🗄️ Archived chats
 
 Long-press a chat and choose **Archive** and it leaves the list. Menu → **Archived chats** brings

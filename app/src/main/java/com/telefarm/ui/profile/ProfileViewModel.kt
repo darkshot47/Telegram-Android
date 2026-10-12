@@ -32,6 +32,9 @@ class ProfileViewModel(
     private val chatId: Long = 0L
 ) : ViewModel() {
 
+    /** True when the profile being shown is the signed in account, which cannot block itself. */
+    val isSelf: Boolean get() = graph.users.isSelf(userId)
+
     private val _state = MutableStateFlow(ProfileScreenState())
     val state: StateFlow<ProfileScreenState> = _state.asStateFlow()
 
@@ -84,6 +87,25 @@ class ProfileViewModel(
     }
 
     /** Leaves a group or channel. */
+    /**
+     * Blocks the user, or unblocks them.
+     *
+     * The profile is read back afterwards, so the row shows what Telegram now holds rather than
+     * what was just tapped.
+     */
+    fun toggleBlock() {
+        val profile = _state.value.profile ?: return
+        if (!profile.isUser) return
+        viewModelScope.launch {
+            val done = graph.users.setBlocked(profile.id, blocked = !profile.isBlocked)
+            if (done) {
+                _state.value = _state.value.copy(profile = graph.users.profile(profile.id))
+            } else {
+                _event.value = ProfileEvent.Error(UiMessage.Res(R.string.profile_block_failed))
+            }
+        }
+    }
+
     fun leave() {
         val profile = _state.value.profile ?: return
         if (profile.isUser) return
