@@ -266,6 +266,28 @@ box, because a reaction that reads wrong is worse than one that is not there.
 
 ---
 
+## 🎙️ Record a voice message
+
+The microphone button next to Send starts a recording, and a bar above the composer counts how
+long it has been running. Throw it away, or send it.
+
+Two decisions are made rather than left open.
+
+A recording under a second is not sent. A voice message is the one message that cannot be read
+before it arrives, so a tenth of a second of one is noise at the other end that cannot be taken
+back - and a tenth of a second of recording is a finger that slipped rather than something
+anybody meant to say.
+
+The clock rounds down. A recording that ran for 1.9 seconds is a 1 second recording, because
+length is the only thing the other person has to go on before they press play and calling it 2
+seconds would say it is longer than it was.
+
+The microphone is asked for when the button is pressed rather than when the screen opens, and
+nothing is recorded before it is granted. A conversation screen that asks for a microphone before
+anything has been said is asking for something it does not yet need.
+
+---
+
 ## ✅ Choose several messages
 
 Hold a message down and choose **Choose messages**, and taps stop opening messages and start

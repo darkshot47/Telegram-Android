@@ -7,6 +7,10 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
+    <!-- Recording a voice message. Asked for at the moment the microphone button is pressed,
+         and the app records nothing before it is granted. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+
     <application
         android:name=".TelefarmApp"
         android:allowBackup="false"

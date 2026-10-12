@@ -617,4 +617,10 @@
     <string name="settings_preview_full">The message</string>
     <string name="settings_preview_sender">Only who wrote it</string>
     <string name="settings_preview_none">Only that a message arrived</string>
+    <string name="chat_record_voice">Record a voice message</string>
+    <string name="chat_recording_cancel">Throw away</string>
+    <string name="chat_recording_send">Send</string>
+    <string name="chat_recording_denied">The microphone is needed to record a voice message</string>
+    <string name="chat_recording_failed">Recording could not be started</string>
+    <string name="chat_recording_too_short">That was too short to send</string>
 </resources>

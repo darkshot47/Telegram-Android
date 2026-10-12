@@ -1,5 +1,13 @@
 package com.telefarm.ui.chat
 
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.Job
+import com.telefarm.ui.common.Sizes
+import com.telefarm.core.media.VoiceRecording
+import com.telefarm.core.media.RecordingDecision
+import android.media.MediaRecorder
+import android.content.pm.PackageManager
+import android.Manifest
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.Dispatchers
 import android.provider.OpenableColumns
@@ -113,6 +121,9 @@ class ChatActivity : AppCompatActivity() {
         binding.toolbar.setOnMenuItemClickListener(::onMenuItemSelected)
         binding.headerContent.setOnClickListener { openProfile() }
         binding.sendButton.setOnClickListener { sendCurrentInput() }
+        binding.micButton.setOnClickListener { startRecordingFlow() }
+        binding.recordingCancel.setOnClickListener { cancelRecording() }
+        binding.recordingSend.setOnClickListener { finishRecording(send = true) }
         binding.selectionClose.setOnClickListener { exitSelection() }
         binding.selectionForward.setOnClickListener { forwardSelection() }
         binding.selectionDelete.setOnClickListener { deleteSelection() }
@@ -514,6 +525,132 @@ class ChatActivity : AppCompatActivity() {
         null
     }
 
+    // region Recording a voice message
+
+    private var recorder: MediaRecorder? = null
+    private var recordingFile: File? = null
+    private var recordingStartedAt = 0L
+    private var recordingTicker: Job? = null
+
+    /**
+     * Asks for the microphone, and only then records.
+     *
+     * Nothing is recorded before the permission is granted, and asking happens when the button is
+     * pressed rather than when the screen opens, because a conversation screen that asks for a
+     * microphone before anything has been said is asking for something it does not yet need.
+     */
+    private fun startRecordingFlow() {
+        if (checkSelfPermission(Manifest.permission.RECORD_AUDIO) == PackageManager.PERMISSION_GRANTED) {
+            startRecording()
+        } else {
+            microphonePermission.launch(Manifest.permission.RECORD_AUDIO)
+        }
+    }
+
+    private val microphonePermission = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            startRecording()
+        } else {
+            binding.root.showSnackbar(getString(R.string.chat_recording_denied))
+        }
+    }
+
+    private fun startRecording() {
+        if (recorder != null) return
+        val target = File(cacheDir, VoiceRecording.fileName(System.currentTimeMillis()))
+        recorder = try {
+            MediaRecorder().apply {
+                setAudioSource(MediaRecorder.AudioSource.MIC)
+                // A container and encoder every device from the minimum supported one has, rather
+                // than the one a voice note is usually sent in: a recording that cannot be made on
+                // the phone in somebody's hand is worth less than one in a less usual format.
+                setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
+                setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
+                setOutputFile(target.absolutePath)
+                prepare()
+                start()
+            }
+        } catch (error: Throwable) {
+            if (error is CancellationException) throw error
+            binding.root.showSnackbar(getString(R.string.chat_recording_failed))
+            null
+        }
+        if (recorder == null) {
+            target.delete()
+            return
+        }
+        recordingFile = target
+        recordingStartedAt = System.currentTimeMillis()
+        binding.recordingBar.isVisible = true
+        recordingTicker = lifecycleScope.launch {
+            while (true) {
+                binding.recordingTime.text =
+                    Sizes.duration(VoiceRecording.seconds(System.currentTimeMillis() - recordingStartedAt))
+                delay(TICK_INTERVAL_MS)
+            }
+        }
+    }
+
+    /** Stops recording and throws it away. */
+    private fun cancelRecording() {
+        finishRecording(send = false)
+    }
+
+    /**
+     * Stops recording, and sends it or throws it away.
+     *
+     * A recording too short to be a message is not sent, because a voice message is the one
+     * message that cannot be read before it arrives and a tenth of a second of it is noise at the
+     * other end.
+     */
+    private fun finishRecording(send: Boolean) {
+        val elapsed = System.currentTimeMillis() - recordingStartedAt
+        stopRecorder()
+        recordingTicker?.cancel()
+        recordingTicker = null
+        binding.recordingBar.isVisible = false
+
+        val file = recordingFile ?: return
+        recordingFile = null
+        if (!send) {
+            file.delete()
+            return
+        }
+        when (val decision = VoiceRecording.decide(elapsed)) {
+            is RecordingDecision.TooShort -> {
+                file.delete()
+                binding.root.showSnackbar(getString(R.string.chat_recording_too_short))
+            }
+
+            is RecordingDecision.Ready -> lifecycleScope.launch {
+                viewModel.sendMedia(
+                    path = file.absolutePath,
+                    kind = MediaKind.AUDIO,
+                    sizeBytes = file.length(),
+                    caption = ""
+                )
+            }
+        }
+    }
+
+    private fun stopRecorder() {
+        try {
+            recorder?.stop()
+        } catch (ignored: Throwable) {
+            // Stopping a recorder that never got going throws, and there is nothing to do about it.
+        } finally {
+            try {
+                recorder?.release()
+            } catch (ignored: Throwable) {
+            }
+            recorder = null
+        }
+    }
+
+    // endregion
+
     // region Choosing several messages
 
     private var selectedIds: Set<Long> = emptySet()
@@ -900,6 +1037,9 @@ class ChatActivity : AppCompatActivity() {
 
         private const val EXTRA_CHAT_ID = "com.telefarm.extra.CHAT_ID"
         private const val PREFETCH_DISTANCE = 4
+
+        /** How often the recording clock is redrawn. */
+        private const val TICK_INTERVAL_MS = 250L
 
         /** Opens the conversation with the given chat id. */
         fun intent(context: Context, chatId: Long): Intent =

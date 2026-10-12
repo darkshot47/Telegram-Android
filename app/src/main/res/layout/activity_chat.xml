@@ -395,6 +395,49 @@
             </LinearLayout>
         </HorizontalScrollView>
 
+        <LinearLayout
+            android:id="@+id/recordingBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface_variant"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingTop="@dimen/spacing_small"
+            android:paddingEnd="@dimen/spacing_small"
+            android:paddingBottom="@dimen/spacing_small"
+            android:visibility="gone">
+
+            <ImageView
+                android:layout_width="18dp"
+                android:layout_height="18dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_mic"
+                app:tint="@color/error" />
+
+            <TextView
+                android:id="@+id/recordingTime"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_small"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/recordingCancel"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/chat_recording_cancel" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/recordingSend"
+                style="@style/Widget.Material3.Button.TextButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/chat_recording_send" />
+        </LinearLayout>
+
     <LinearLayout
         android:id="@+id/composer"
         android:layout_width="match_parent"
@@ -445,6 +488,17 @@
             android:paddingBottom="@dimen/spacing_small"
             android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle"
             android:textColorHint="@color/text_secondary" />
+
+        <ImageView
+            android:id="@+id/micButton"
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:layout_marginStart="@dimen/spacing_small"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/chat_record_voice"
+            android:padding="@dimen/spacing_medium"
+            android:src="@drawable/ic_mic"
+            app:tint="@color/icon_tint" />
 
         <FrameLayout
             android:layout_width="wrap_content"

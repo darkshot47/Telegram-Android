@@ -586,4 +586,10 @@
     <string name="settings_preview_full">संदेश</string>
     <string name="settings_preview_sender">सिर्फ़ किसने लिखा</string>
     <string name="settings_preview_none">सिर्फ़ इतना कि संदेश आया</string>
+    <string name="chat_record_voice">वॉइस संदेश रिकॉर्ड करें</string>
+    <string name="chat_recording_cancel">फेंक दें</string>
+    <string name="chat_recording_send">भेजें</string>
+    <string name="chat_recording_denied">वॉइस संदेश रिकॉर्ड करने के लिए माइक्रोफ़ोन चाहिए</string>
+    <string name="chat_recording_failed">रिकॉर्डिंग शुरू नहीं हो सकी</string>
+    <string name="chat_recording_too_short">यह भेजने लायक नहीं, बहुत छोटा था</string>
 </resources>
