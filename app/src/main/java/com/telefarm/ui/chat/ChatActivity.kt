@@ -1,6 +1,7 @@
 package com.telefarm.ui.chat
 
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Job
 import com.telefarm.ui.common.Sizes
 import com.telefarm.core.media.VoiceRecording
@@ -52,6 +53,7 @@ import com.telefarm.data.model.ChatUi
 import com.telefarm.data.model.ForwardOutcome
 import com.telefarm.data.model.ChatHeaderUi
 import com.telefarm.data.model.MessageContentUi
+import com.telefarm.data.model.MessageRow
 import com.telefarm.data.model.MessageUi
 import com.telefarm.data.model.SendState
 import com.telefarm.databinding.ActivityChatBinding
@@ -964,12 +966,15 @@ class ChatActivity : AppCompatActivity() {
 
     /** A message this account wrote, with its text back in a box to be changed. */
     private fun showEditDialog(message: MessageUi, current: String) {
+        // The padding is read from a dimen rather than written as a number of pixels, because a
+        // number of pixels means something different on every screen and the box would not.
+        val padding = resources.getDimensionPixelSize(R.dimen.spacing_medium)
         val field = EditText(this).apply {
             setText(current)
             setSelection(current.length)
             minLines = MIN_EDIT_LINES
             maxLines = MAX_EDIT_LINES
-            setPadding(EDIT_PADDING_PX, EDIT_PADDING_PX, EDIT_PADDING_PX, EDIT_PADDING_PX)
+            setPadding(padding, padding, padding, padding)
         }
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.chat_edit_message)
@@ -1040,6 +1045,10 @@ class ChatActivity : AppCompatActivity() {
 
         private const val EXTRA_CHAT_ID = "com.telefarm.extra.CHAT_ID"
         private const val PREFETCH_DISTANCE = 4
+
+        /** How much room a message being changed is given, in lines. */
+        private const val MIN_EDIT_LINES = 2
+        private const val MAX_EDIT_LINES = 8
 
         /** Where a transcript is written before it is handed to another application. */
         private const val EXPORT_DIRECTORY = "exports"

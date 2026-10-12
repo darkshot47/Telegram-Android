@@ -45,31 +45,6 @@ jobs:
           chmod +x gradlew
           mkdir -p ci-logs
 
-      # The TDLib binding is not something this project can read from source, and the names it
-      # gives a field are the only authority on what a call may pass. When a call is rejected the
-      # signature is dumped here rather than guessed at, because guessing costs a build each time.
-      - name: Dump the TDLib signatures a failing call needs
-        if: always()
-        run: |
-          # The binding ships as an archive rather than a jar, so its classes have to be taken out
-          # of it before javap can read them.
-          artifact=$(find "$HOME/.gradle/caches/modules-2/files-2.1" \
-            \( -name '*.aar' -o -name '*.jar' \) -path '*tdlib*' 2>/dev/null | head -1)
-          echo "::notice title=TDLib artifact::${artifact:-none found}"
-          if [ -n "$artifact" ]; then
-            case "$artifact" in
-              *.aar)
-                mkdir -p /tmp/tdx && cd /tmp/tdx
-                unzip -o -q "$artifact" classes.jar && cp="$PWD/classes.jar" ;;
-              *) cp="$artifact" ;;
-            esac
-            for cls in 'TdApi$UserPrivacySettingRuleAllowUsers' 'TdApi$UserPrivacySettingRuleRestrictUsers' 'TdApi$InputMessageReplyToMessage' 'TdApi$SendMessage'; do
-              javap -classpath "$cp" "org.drinkless.tdlib.$cls" 2>&1 \
-                | grep -E 'public|class' \
-                | sed "s|^|::notice title=TDLib ${cls}::|"
-            done
-          fi
-
       # A failing step is unreadable through the raw log, which lives on a host outside the
       # ordinary API. Annotations are reachable through it, so the compiler's own complaint is
       # re-published there: one annotation per line, which is where the build actually failed.
