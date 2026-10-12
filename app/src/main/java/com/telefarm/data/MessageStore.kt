@@ -15,6 +15,7 @@ import com.telefarm.data.model.ChatActionUi
 import com.telefarm.data.model.ChatHeaderUi
 import com.telefarm.data.model.ChatSubtitle
 import com.telefarm.data.model.MessageRow
+import com.telefarm.data.model.MessageUi
 import com.telefarm.data.model.UiMessage
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
@@ -90,6 +91,7 @@ class MessageStore(
         }
         scope.launch { users.changes.collect { markDirty() } }
         scope.launch { refreshHeader() }
+        scope.launch { loadPinnedMessage() }
         scope.launch { openChat() }
     }
 
@@ -441,6 +443,10 @@ class MessageStore(
 
             is TdApi.UpdateChatAction -> if (update.chatId == chatId) onTyping(chatAction(update))
 
+            // Somebody pinned or unpinned a message here, in this client or in another one.
+            is TdApi.UpdateMessageIsPinned ->
+                if (update.chatId == chatId) scope.launch { loadPinnedMessage() }
+
             is TdApi.UpdateUser -> markDirty()
 
             else -> Unit
@@ -579,6 +585,68 @@ class MessageStore(
 
         _rows.value = rows
     }
+
+    // region Pinned message
+
+    private val _pinnedMessage = MutableStateFlow<MessageUi?>(null)
+
+    /** The message pinned in this chat, or null when there is none. */
+    val pinnedMessage: StateFlow<MessageUi?> = _pinnedMessage.asStateFlow()
+
+    /**
+     * Reads the pinned message.
+     *
+     * Telegram answers "there is no pinned message" with an error rather than with an empty
+     * result, so a failure here is read as no pinned message and is not shown to the person as
+     * something that went wrong.
+     */
+    suspend fun loadPinnedMessage() {
+        _pinnedMessage.value = try {
+            td.send(TdApi.GetChatPinnedMessage().apply { chatId = this@MessageStore.chatId }).toUi()
+        } catch (error: Throwable) {
+            if (error is CancellationException) throw error
+            null
+        }
+    }
+
+    /** Pins a message for everybody in the chat. */
+    suspend fun pinMessage(messageId: Long): Boolean = pinRequest {
+        td.send(
+            TdApi.PinChatMessage().apply {
+                chatId = this@MessageStore.chatId
+                this.messageId = messageId
+                // A pinned message that rings every phone in a channel is a reason to mute the
+                // channel, so it arrives quietly and the bar at the top says it is there.
+                disableNotification = true
+                onlyForSelf = false
+            }
+        )
+    }
+
+    /** Takes the pinned message down. */
+    suspend fun unpinPinnedMessage(): Boolean = pinRequest {
+        td.send(TdApi.UnpinChatMessage().apply { chatId = this@MessageStore.chatId })
+    }
+
+    private suspend fun pinRequest(request: suspend () -> Unit): Boolean = try {
+        request()
+        loadPinnedMessage()
+        true
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
+        false
+    }
+
+    /** One message on its own, mapped the same way the rows are. */
+    private fun TdApi.Message.toUi(): MessageUi = TdMappers.message(
+        message = this,
+        selfUserId = session.selfUserId.value,
+        chatKind = _header.value.kind,
+        lastReadOutboxMessageId = chats.chatOrNull(chatId)?.lastReadOutboxMessageId ?: 0L,
+        senderDisplayName = senderId.userIdOrNull()?.let { users.cachedDisplayName(it) }
+    )
+
+    // endregion
 
     /** Releases the chat when the conversation screen is destroyed. */
     fun close() {

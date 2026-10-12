@@ -504,4 +504,10 @@
     <string name="privacy_unknown">लोड नहीं हुई</string>
     <string name="privacy_saved">सहेजा गया</string>
     <string name="privacy_save_failed">सेटिंग बदली नहीं जा सकी</string>
+    <string name="chat_pinned_message">पिन किया गया संदेश</string>
+    <string name="chat_unpin_message">संदेश अनपिन करें</string>
+    <string name="chat_action_pin_message">संदेश पिन करें</string>
+    <string name="chat_pin_failed">संदेश पिन नहीं हो सका</string>
+    <string name="chat_unpin_failed">संदेश अनपिन नहीं हो सका</string>
+    <string name="chat_pinned_not_loaded">वह संदेश अभी लोड नहीं है। पहुँचने के लिए ऊपर स्क्रोल करें।</string>
 </resources>

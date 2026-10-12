@@ -12,6 +12,7 @@ import com.telefarm.data.model.ChatHeaderUi
 import com.telefarm.data.model.ChatSubtitle
 import com.telefarm.data.model.ChatKind
 import com.telefarm.data.model.MessageRow
+import com.telefarm.data.model.MessageUi
 import com.telefarm.data.model.UiMessage
 import com.telefarm.ui.common.TimeFormat
 import java.util.TimeZone
@@ -69,6 +70,9 @@ class ChatViewModel(
 
     val header: StateFlow<ChatHeaderUi> = store.header
 
+    /** The message pinned in this chat, or null when there is none. */
+    val pinned: StateFlow<MessageUi?> = store.pinnedMessage
+
     /** Typing state of other members, null when nobody is doing anything. */
     val typing: StateFlow<ChatActionUi?> = store.typing
 
@@ -119,6 +123,12 @@ class ChatViewModel(
     fun retryMessage(messageId: Long) {
         viewModelScope.launch { store.retry(messageId) }
     }
+
+    /** Pins a message for everybody in the chat; false when Telegram refused. */
+    suspend fun pinMessage(messageId: Long): Boolean = store.pinMessage(messageId)
+
+    /** Takes the pinned message down; false when Telegram refused. */
+    suspend fun unpinPinnedMessage(): Boolean = store.unpinPinnedMessage()
 
     /** Replaces the text of a message this account sent. */
     fun editMessage(messageId: Long, text: String) {

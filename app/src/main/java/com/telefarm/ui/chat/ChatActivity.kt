@@ -145,6 +145,11 @@ class ChatActivity : AppCompatActivity() {
         }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.pinned.collect(::renderPinned)
+            }
+        }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
                 viewModel.typing.collect { action ->
                     binding.typingIndicator.isVisible = action != null
                     binding.typingIndicator.text = action?.let { getString(chatActionLabel(it)) }.orEmpty()
@@ -310,6 +315,7 @@ class ChatActivity : AppCompatActivity() {
         if (message.sendState == SendState.FAILED && message.canRetry) {
             options += R.string.chat_retry_send to { viewModel.retryMessage(message.id) }
         }
+        options += R.string.chat_action_pin_message to { pinMessage(message) }
         if (message.isOutgoing && !text.isNullOrEmpty()) {
             options += R.string.chat_edit_message to { showEditDialog(message, text) }
         }
@@ -366,6 +372,55 @@ class ChatActivity : AppCompatActivity() {
         File(directory, viewModel.exportFileName(format)).apply { writeText(document, Charsets.UTF_8) }
     } catch (error: Throwable) {
         null
+    }
+
+    /** Shows or hides the bar for the pinned message, and fills it in. */
+    private fun renderPinned(pinned: MessageUi?) {
+        binding.pinnedBar.isVisible = pinned != null
+        if (pinned == null) return
+        binding.pinnedText.text = previewOf(pinned)
+        binding.pinnedContent.setOnClickListener { scrollTo(pinned.id) }
+        binding.pinnedClose.setOnClickListener { unpinPinnedMessage() }
+    }
+
+    /** What the bar says, which is the words of the message and nothing else. */
+    private fun previewOf(message: MessageUi): String = when (val content = message.content) {
+        is MessageContentUi.Text -> content.text
+        is MessageContentUi.Photo -> content.caption ?: getString(R.string.message_photo)
+        is MessageContentUi.Video -> content.caption ?: getString(R.string.message_video)
+        is MessageContentUi.Document -> content.fileName
+        is MessageContentUi.Voice -> getString(R.string.message_voice)
+        is MessageContentUi.Audio -> content.title ?: getString(R.string.message_audio)
+        is MessageContentUi.Sticker -> getString(R.string.message_sticker)
+        is MessageContentUi.Other -> getString(R.string.message_service)
+    }
+
+    /** Moves the list to a message, whether or not it is loaded. */
+    private fun scrollTo(messageId: Long) {
+        val position = adapter.currentList.indexOfFirst {
+            it is MessageRow.Message && it.message.id == messageId
+        }
+        if (position >= 0) {
+            binding.messageList.scrollToPosition(position)
+        } else {
+            binding.root.showSnackbar(getString(R.string.chat_pinned_not_loaded))
+        }
+    }
+
+    private fun pinMessage(message: MessageUi) {
+        lifecycleScope.launch {
+            val done = viewModel.pinMessage(message.id)
+            binding.root.showSnackbar(
+                getString(if (done) R.string.chat_pinned_message else R.string.chat_pin_failed)
+            )
+        }
+    }
+
+    private fun unpinPinnedMessage() {
+        lifecycleScope.launch {
+            val done = viewModel.unpinPinnedMessage()
+            if (!done) binding.root.showSnackbar(getString(R.string.chat_unpin_failed))
+        }
     }
 
     /** A message this account wrote, with its text back in a box to be changed. */
