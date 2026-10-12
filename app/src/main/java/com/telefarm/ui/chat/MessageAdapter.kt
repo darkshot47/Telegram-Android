@@ -27,8 +27,35 @@ import kotlinx.coroutines.Job
  */
 class MessageAdapter(
     private val binder: MessageContentBinder,
-    private val onLongClick: (MessageUi) -> Unit
+    private val onLongClick: (MessageUi) -> Unit,
+    private val onSelectionTap: (MessageUi) -> Unit = {}
 ) : ListAdapter<MessageRow, RecyclerView.ViewHolder>(DIFF) {
+
+    /**
+     * The messages currently chosen, and whether choosing is what a tap does.
+     *
+     * Kept here rather than in the rows because the conversation and the selection are two
+     * different things: the conversation comes from Telegram and the selection belongs to the
+     * screen. Putting the selection into the rows would mean rebuilding the list to redraw a
+     * highlight.
+     */
+    var selectionMode: Boolean = false
+        set(value) {
+            field = value
+            if (!value) selectedIds = emptySet()
+            refreshSelection()
+        }
+
+    var selectedIds: Set<Long> = emptySet()
+        set(value) {
+            field = value
+            refreshSelection()
+        }
+
+    /** Redraws the rows so the highlight follows the selection. */
+    private fun refreshSelection() {
+        if (itemCount > 0) notifyItemRangeChanged(0, itemCount, SELECTION_PAYLOAD)
+    }
 
     override fun getItemViewType(position: Int): Int = when (getItem(position)) {
         is MessageRow.Message -> TYPE_MESSAGE
@@ -40,16 +67,34 @@ class MessageAdapter(
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
         val inflater = LayoutInflater.from(parent.context)
         return when (viewType) {
-            TYPE_MESSAGE -> MessageViewHolder(ItemMessageBinding.inflate(inflater, parent, false), binder, onLongClick)
+            TYPE_MESSAGE -> MessageViewHolder(
+                ItemMessageBinding.inflate(inflater, parent, false), binder, onLongClick, onSelectionTap
+            )
             TYPE_DATE -> DateViewHolder(inflater.inflate(R.layout.item_message_date, parent, false))
             TYPE_UNREAD -> UnreadViewHolder(inflater.inflate(R.layout.item_message_unread, parent, false))
             else -> LoadingViewHolder(inflater.inflate(R.layout.item_messages_loading, parent, false))
         }
     }
 
+    override fun onBindViewHolder(
+        holder: RecyclerView.ViewHolder,
+        position: Int,
+        payloads: List<Any>
+    ) {
+        // A highlight change does not need the message rebuilt, only the selection redrawn.
+        if (payloads.contains(SELECTION_PAYLOAD) && holder is MessageViewHolder) {
+            holder.bindSelection(getItem(position), selectionMode, selectedIds)
+            return
+        }
+        super.onBindViewHolder(holder, position, payloads)
+    }
+
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         when (val row = getItem(position)) {
-            is MessageRow.Message -> (holder as MessageViewHolder).bind(row.message)
+            is MessageRow.Message -> (holder as MessageViewHolder).apply {
+                bind(row.message)
+                bindSelection(row, selectionMode, selectedIds)
+            }
             is MessageRow.DateSeparator -> (holder as DateViewHolder).bind(row)
             is MessageRow.LoadMore -> (holder as LoadingViewHolder).bind(row)
             is MessageRow.UnreadDivider -> (holder as UnreadViewHolder).bind(row)
@@ -65,11 +110,33 @@ class MessageAdapter(
     class MessageViewHolder(
         private val binding: ItemMessageBinding,
         private val binder: MessageContentBinder,
-        private val onLongClick: (MessageUi) -> Unit
+        private val onLongClick: (MessageUi) -> Unit,
+        private val onSelectionTap: (MessageUi) -> Unit
     ) : RecyclerView.ViewHolder(binding.root) {
 
         private val jobs = mutableListOf<Job>()
         private var current: MessageUi? = null
+
+        /**
+         * Draws whether this message is one of the chosen ones.
+         *
+         * A tap in selection mode chooses and unchooses rather than opening the message, because
+         * opening one would leave the selection behind and the person would not know whether they
+         * were still choosing.
+         */
+        fun bindSelection(row: MessageRow, selectionMode: Boolean, selectedIds: Set<Long>) {
+            val message = (row as? MessageRow.Message)?.message ?: return
+            val chosen = selectionMode && message.id in selectedIds
+            binding.root.setBackgroundColor(
+                if (chosen) binding.root.context.getColor(R.color.surface_pressed) else 0
+            )
+            if (selectionMode) {
+                binding.root.setOnClickListener { onSelectionTap(message) }
+            } else {
+                binding.root.setOnClickListener(null)
+                binding.root.isClickable = false
+            }
+        }
 
         fun bind(message: MessageUi) {
             release()
@@ -171,6 +238,9 @@ class MessageAdapter(
         const val TYPE_DATE = 1
         const val TYPE_LOADING = 2
         const val TYPE_UNREAD = 3
+
+        /** Marks a redraw that only changes the highlight, not the message. */
+        const val SELECTION_PAYLOAD = "selection"
 
         val DIFF = object : DiffUtil.ItemCallback<MessageRow>() {
             override fun areItemsTheSame(oldItem: MessageRow, newItem: MessageRow): Boolean =

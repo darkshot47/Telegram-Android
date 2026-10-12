@@ -90,7 +90,11 @@ class ChatActivity : AppCompatActivity() {
             onOpenFile = ::openFile,
             onError = ::showError
         )
-        adapter = MessageAdapter(binder, onLongClick = ::showMessageActions)
+        adapter = MessageAdapter(
+            binder = binder,
+            onLongClick = ::showMessageActions,
+            onSelectionTap = ::toggleSelection
+        )
         layoutManager = LinearLayoutManager(this).apply { reverseLayout = true }
 
         binding.messageList.layoutManager = layoutManager
@@ -109,6 +113,9 @@ class ChatActivity : AppCompatActivity() {
         binding.toolbar.setOnMenuItemClickListener(::onMenuItemSelected)
         binding.headerContent.setOnClickListener { openProfile() }
         binding.sendButton.setOnClickListener { sendCurrentInput() }
+        binding.selectionClose.setOnClickListener { exitSelection() }
+        binding.selectionForward.setOnClickListener { forwardSelection() }
+        binding.selectionDelete.setOnClickListener { deleteSelection() }
         binding.attachButton.setOnClickListener { pickFile() }
         binding.formatButton.setOnClickListener {
             binding.formatBar.isVisible = !binding.formatBar.isVisible
@@ -369,6 +376,7 @@ class ChatActivity : AppCompatActivity() {
             options += R.string.chat_retry_send to { viewModel.retryMessage(message.id) }
         }
         options += R.string.chat_action_react to { showReactionPicker(message) }
+        options += R.string.chat_action_select to { enterSelection(message) }
         options += R.string.chat_action_forward to { showForwardPicker(message, sendCopy = false) }
         options += R.string.chat_action_forward_copy to { showForwardPicker(message, sendCopy = true) }
         options += R.string.chat_action_reply to { viewModel.replyTo(message) }
@@ -505,6 +513,94 @@ class ChatActivity : AppCompatActivity() {
         if (error is CancellationException) throw error
         null
     }
+
+    // region Choosing several messages
+
+    private var selectedIds: Set<Long> = emptySet()
+
+    /**
+     * Starts choosing, with the message that was held down already chosen.
+     *
+     * Choosing is a mode rather than a per-message switch, because forwarding and deleting several
+     * messages is one act and the screen should say so while it is being built.
+     */
+    private fun enterSelection(message: MessageUi) {
+        selectedIds = setOf(message.id)
+        adapter.selectionMode = true
+        renderSelection()
+    }
+
+    private fun exitSelection() {
+        adapter.selectionMode = false
+        selectedIds = emptySet()
+        renderSelection()
+    }
+
+    private fun toggleSelection(message: MessageUi) {
+        selectedIds = if (message.id in selectedIds) selectedIds - message.id else selectedIds + message.id
+        // Choosing the last one off ends the mode: a selection of nothing is not a state anybody
+        // wants to be left in.
+        if (selectedIds.isEmpty()) {
+            exitSelection()
+        } else {
+            adapter.selectedIds = selectedIds
+            renderSelection()
+        }
+    }
+
+    private fun renderSelection() {
+        val count = selectedIds.size
+        binding.selectionBar.isVisible = count > 0
+        if (count > 0) {
+            binding.selectionCount.text = resources.getQuantityString(
+                R.plurals.chat_selected_messages, count, count
+            )
+        }
+    }
+
+    private fun forwardSelection() {
+        val ids = selectedIds.toList()
+        if (ids.isEmpty()) return
+        val targets = appGraph.chats.visibleChats().filter { it.id != chatId }
+        if (targets.isEmpty()) {
+            binding.root.showSnackbar(getString(R.string.chat_forward_no_chats))
+            return
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.chat_forward_title)
+            .setItems(targets.map { it.title }.toTypedArray()) { _, index ->
+                lifecycleScope.launch {
+                    val outcome = viewModel.forward(ids, targets[index].id)
+                    binding.root.showSnackbar(forwardMessage(outcome, targets[index].title))
+                    exitSelection()
+                }
+            }
+            .show()
+    }
+
+    private fun deleteSelection() {
+        val ids = selectedIds.toList()
+        if (ids.isEmpty()) return
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.chat_delete_selected_title)
+            .setMessage(R.string.chat_delete_selected_message)
+            .setNegativeButton(R.string.dialog_cancel, null)
+            .setPositiveButton(R.string.chat_delete_for_everyone) { _, _ ->
+                lifecycleScope.launch {
+                    ids.forEach { viewModel.deleteMessage(it, DeletionScope.EVERYONE) }
+                    exitSelection()
+                }
+            }
+            .setNeutralButton(R.string.chat_delete_for_me) { _, _ ->
+                lifecycleScope.launch {
+                    ids.forEach { viewModel.deleteMessage(it, DeletionScope.ONLY_ME) }
+                    exitSelection()
+                }
+            }
+            .show()
+    }
+
+    // endregion
 
     /**
      * The chats a message can be forwarded to.

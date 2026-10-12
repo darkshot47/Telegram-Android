@@ -266,6 +266,25 @@ box, because a reaction that reads wrong is worse than one that is not there.
 
 ---
 
+## ✅ Choose several messages
+
+Hold a message down and choose **Choose messages**, and taps stop opening messages and start
+choosing them. A bar at the top counts what is chosen and offers **Forward** and **Delete** for
+the lot at once.
+
+Choosing is a mode rather than a switch on each message, because forwarding or deleting several
+messages is one act and the screen should say so while it is being built. Choosing the last one
+off ends the mode: a selection of nothing is not a state anybody wants to be left in.
+
+A tap in this mode chooses and unchooses rather than opening the message, because opening one
+would leave the selection behind and the person would not know whether they were still choosing.
+
+Deleting several asks the same question as deleting one, and for the same reason - "delete for
+everyone" and "delete only for me" are different acts, and with several messages the difference is
+bigger rather than smaller.
+
+---
+
 ## 🗑️ Delete, and how far it reaches
 
 Deleting asks a question first, because the two answers are different acts. **Delete for

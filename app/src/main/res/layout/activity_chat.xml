@@ -94,6 +94,57 @@
         android:layout_weight="1">
 
         <LinearLayout
+            android:id="@+id/selectionBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/surface_variant"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingStart="@dimen/screen_padding"
+            android:paddingTop="@dimen/spacing_small"
+            android:paddingEnd="@dimen/spacing_small"
+            android:paddingBottom="@dimen/spacing_small"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/selectionCount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:textAppearance="@style/TextAppearance.Telefarm.ItemTitle" />
+
+            <ImageView
+                android:id="@+id/selectionForward"
+                android:layout_width="@dimen/touch_target"
+                android:layout_height="@dimen/touch_target"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/chat_action_forward"
+                android:padding="@dimen/spacing_medium"
+                android:src="@drawable/ic_forward"
+                app:tint="@color/icon_tint" />
+
+            <ImageView
+                android:id="@+id/selectionDelete"
+                android:layout_width="@dimen/touch_target"
+                android:layout_height="@dimen/touch_target"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/chat_delete_message"
+                android:padding="@dimen/spacing_medium"
+                android:src="@drawable/ic_delete"
+                app:tint="@color/icon_tint" />
+
+            <ImageView
+                android:id="@+id/selectionClose"
+                android:layout_width="@dimen/touch_target"
+                android:layout_height="@dimen/touch_target"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/chat_selection_cancel"
+                android:padding="@dimen/spacing_medium"
+                android:src="@drawable/ic_close"
+                app:tint="@color/icon_tint" />
+        </LinearLayout>
+
+        <LinearLayout
             android:id="@+id/pinnedBar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

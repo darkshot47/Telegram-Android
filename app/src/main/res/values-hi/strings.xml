@@ -574,4 +574,12 @@
     <string name="chat_delete_for_me">सिर्फ़ मेरे लिए हटाएँ</string>
     <string name="chat_delete_not_allowed">यह संदेश हटाया नहीं जा सकता</string>
     <string name="chat_action_forward_copy">भेजने वाले का नाम हटाकर आगे भेजें</string>
+    <string name="chat_action_select">संदेश चुनें</string>
+    <string name="chat_selection_cancel">चुनना बंद करें</string>
+    <string name="chat_delete_selected_title">चुने गए संदेश हटाएँ</string>
+    <string name="chat_delete_selected_message">सबके लिए हटाने से वे हर उस व्यक्ति से चले जाएँगे जो उन्हें देख सकता था। सिर्फ़ अपने लिए हटाने से बाकी सबकी कॉपी वैसी ही रहेगी।</string>
+    <plurals name="chat_selected_messages">
+        <item quantity="one">%d संदेश चुना गया</item>
+        <item quantity="other">%d संदेश चुने गए</item>
+    </plurals>
 </resources>
