@@ -215,7 +215,10 @@ class SessionsActivity : AppCompatActivity() {
 
             private companion object {
                 const val MILLIS_PER_SECOND = 1_000L
-                const val MILLIS_PER_MINUTE = 60_000L
+                // An Int, not a Long: it divides a millisecond offset that Calendar gives as an
+                // Int, and dividing an Int by a Long would answer in a Long the day count cannot
+                // take.
+                const val MILLIS_PER_MINUTE = 60_000
             }
         }
 
