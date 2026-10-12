@@ -573,4 +573,5 @@
     <string name="chat_delete_for_everyone">सबके लिए हटाएँ</string>
     <string name="chat_delete_for_me">सिर्फ़ मेरे लिए हटाएँ</string>
     <string name="chat_delete_not_allowed">यह संदेश हटाया नहीं जा सकता</string>
+    <string name="chat_action_forward_copy">भेजने वाले का नाम हटाकर आगे भेजें</string>
 </resources>

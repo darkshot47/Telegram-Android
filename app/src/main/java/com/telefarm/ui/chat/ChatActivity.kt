@@ -369,7 +369,8 @@ class ChatActivity : AppCompatActivity() {
             options += R.string.chat_retry_send to { viewModel.retryMessage(message.id) }
         }
         options += R.string.chat_action_react to { showReactionPicker(message) }
-        options += R.string.chat_action_forward to { showForwardPicker(message) }
+        options += R.string.chat_action_forward to { showForwardPicker(message, sendCopy = false) }
+        options += R.string.chat_action_forward_copy to { showForwardPicker(message, sendCopy = true) }
         options += R.string.chat_action_reply to { viewModel.replyTo(message) }
         options += R.string.chat_action_pin_message to { pinMessage(message) }
         if (message.isOutgoing && !text.isNullOrEmpty()) {
@@ -512,7 +513,7 @@ class ChatActivity : AppCompatActivity() {
      * from is not something anybody means to do, and offering it is offering a way to make a
      * mistake.
      */
-    private fun showForwardPicker(message: MessageUi) {
+    private fun showForwardPicker(message: MessageUi, sendCopy: Boolean) {
         val targets = appGraph.chats.visibleChats().filter { it.id != chatId }
         if (targets.isEmpty()) {
             binding.root.showSnackbar(getString(R.string.chat_forward_no_chats))
@@ -521,14 +522,14 @@ class ChatActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.chat_forward_title)
             .setItems(targets.map { it.title }.toTypedArray()) { _, index ->
-                applyForward(message, targets[index])
+                applyForward(message, targets[index], sendCopy)
             }
             .show()
     }
 
-    private fun applyForward(message: MessageUi, target: ChatUi) {
+    private fun applyForward(message: MessageUi, target: ChatUi, sendCopy: Boolean) {
         lifecycleScope.launch {
-            val outcome = viewModel.forward(listOf(message.id), target.id)
+            val outcome = viewModel.forward(listOf(message.id), target.id, sendCopy)
             binding.root.showSnackbar(forwardMessage(outcome, target.title))
         }
     }

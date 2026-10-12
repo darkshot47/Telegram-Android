@@ -604,4 +604,5 @@
     <string name="chat_delete_for_everyone">Delete for everyone</string>
     <string name="chat_delete_for_me">Delete only for me</string>
     <string name="chat_delete_not_allowed">This message cannot be deleted</string>
+    <string name="chat_action_forward_copy">Forward without the sender's name</string>
 </resources>

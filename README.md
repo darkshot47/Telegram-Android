@@ -230,8 +230,9 @@ Long-press a message, choose **Forward**, and pick the chat. The chat the messag
 is not on the list: forwarding a message to the chat it came from is not something anybody means
 to do.
 
-A forward says where it came from. Copying the text instead would hide that, which is a different
-act, so it is not offered under this name.
+A forward says where it came from. Copying hides the sender, which is a different act, so it is
+offered by name rather than done by default: **Forward** keeps the original sender attached, and
+**Forward without the sender's name** sends the same message with nothing pointing back.
 
 Telegram imposes three rules on a forward, and breaking any of them loses the whole request
 rather than part of it, so all three are applied before anything is sent:

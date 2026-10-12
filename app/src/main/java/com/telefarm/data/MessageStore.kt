@@ -857,7 +857,11 @@ class MessageStore(
      * Messages that cannot be forwarded are left out and counted, so the person is told rather
      * than left wondering where a message went.
      */
-    suspend fun forwardTo(targetChatId: Long, ids: Collection<Long>): ForwardOutcome {
+    suspend fun forwardTo(
+        targetChatId: Long,
+        ids: Collection<Long>,
+        sendCopy: Boolean = false
+    ): ForwardOutcome {
         val selection = Forwarding.ordered(ids)
         if (selection.isEmpty()) return ForwardOutcome.NothingSelected
 
@@ -875,9 +879,9 @@ class MessageStore(
                         topicId = null
                         fromChatId = this@MessageStore.chatId
                         messageIds = batch.toLongArray()
-                        // A forward says where it came from. Copying instead would hide that,
-                        // which is a different act and not what "forward" means.
-                        sendCopy = false
+                        // A forward says where it came from. Copying hides the sender, which is
+                        // a different act, so it is asked for by name rather than done by default.
+                        this.sendCopy = sendCopy
                         removeCaption = false
                     }
                 )

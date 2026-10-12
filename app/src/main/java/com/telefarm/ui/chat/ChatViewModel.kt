@@ -182,8 +182,11 @@ class ChatViewModel(
     }
 
     /** Forwards messages to another chat. */
-    suspend fun forward(ids: Collection<Long>, targetChatId: Long): ForwardOutcome =
-        store.forwardTo(targetChatId, ids)
+    suspend fun forward(
+        ids: Collection<Long>,
+        targetChatId: Long,
+        sendCopy: Boolean = false
+    ): ForwardOutcome = store.forwardTo(targetChatId, ids, sendCopy)
 
     /** Reacts to a message, or takes this account's reaction away. */
     suspend fun react(messageId: Long, emoji: String): Boolean = store.setReaction(messageId, emoji)
