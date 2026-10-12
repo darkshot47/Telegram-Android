@@ -123,8 +123,11 @@
     </style>
 
 
-    <!-- One formatting button in the bar above the composer. -->
-    <style name="Widget.Telefarm.FormatButton">
+    <!-- One formatting button in the bar above the composer.
+         The empty parent is not decorative: a dotted style name takes the part before the last
+         dot as its parent, so without it this style inherits from Widget.Telefarm, which does
+         not exist, and the resource linker fails the build over it. -->
+    <style name="Widget.Telefarm.FormatButton" parent="">
         <item name="android:layout_width">@dimen/touch_target</item>
         <item name="android:layout_height">@dimen/touch_target</item>
         <item name="android:gravity">center</item>
