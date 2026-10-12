@@ -604,11 +604,11 @@
     <string name="chat_delete_for_everyone">Delete for everyone</string>
     <string name="chat_delete_for_me">Delete only for me</string>
     <string name="chat_delete_not_allowed">This message cannot be deleted</string>
-    <string name="chat_action_forward_copy">Forward without the sender's name</string>
+    <string name="chat_action_forward_copy">Forward without the sender\'s name</string>
     <string name="chat_action_select">Choose messages</string>
     <string name="chat_selection_cancel">Stop choosing</string>
     <string name="chat_delete_selected_title">Delete the chosen messages</string>
-    <string name="chat_delete_selected_message">Deleting for everyone takes them away from everybody who could see them. Deleting only for you leaves everybody else's copies as they are.</string>
+    <string name="chat_delete_selected_message">Deleting for everyone takes them away from everybody who could see them. Deleting only for you leaves everybody else\'s copies as they are.</string>
     <plurals name="chat_selected_messages">
         <item quantity="one">%d message chosen</item>
         <item quantity="other">%d messages chosen</item>
