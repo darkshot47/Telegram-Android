@@ -464,4 +464,28 @@
     <string name="chat_edit_save">सहेजें</string>
     <string name="chat_message_edited">संदेश बदल दिया गया</string>
     <string name="chat_edit_failed">संदेश बदला नहीं जा सका</string>
+    <string name="sessions_title">सक्रिय सत्र</string>
+    <string name="sessions_summary">इस खाते में साइन इन डिवाइस</string>
+    <string name="sessions_loading">Telegram से डिवाइसों की सूची माँगी जा रही है</string>
+    <string name="sessions_empty">दिखाने के लिए कोई सत्र नहीं</string>
+    <string name="sessions_error">डिवाइसों की सूची लोड नहीं हो पाई</string>
+    <string name="sessions_current">यह डिवाइस</string>
+    <string name="sessions_terminate">इस डिवाइस को साइन आउट करें</string>
+    <string name="sessions_terminated">डिवाइस साइन आउट हो गया</string>
+    <string name="sessions_terminate_failed">डिवाइस साइन आउट नहीं हो सका</string>
+    <string name="sessions_cannot_terminate_self">यह डिवाइस खुद को सेटिंग से साइन आउट करता है, यहाँ से नहीं।</string>
+    <string name="sessions_terminate_all">बाकी सब जगह साइन आउट करें</string>
+    <string name="sessions_terminate_all_confirm">साइन आउट करें</string>
+    <string name="sessions_terminate_all_message">इस खाते से बाकी हर डिवाइस साइन आउट करें? वापस आने के लिए हर एक को दोबारा वेरिफ़िकेशन कोड डालना होगा।</string>
+    <string name="sessions_terminate_all_stopped">%1$s पर रुक गया। दोबारा कोशिश करें।</string>
+    <string name="sessions_no_others">कोई दूसरा डिवाइस साइन इन नहीं है</string>
+    <string name="sessions_active_today">आज सक्रिय</string>
+    <string name="sessions_active_yesterday">कल सक्रिय</string>
+    <string name="sessions_active_this_week">इस सप्ताह सक्रिय</string>
+    <string name="sessions_active_this_month">इस महीने सक्रिय</string>
+    <string name="sessions_active_earlier">एक महीने से इस्तेमाल नहीं हुआ</string>
+    <plurals name="sessions_terminated_count">
+        <item quantity="one">%1$d डिवाइस साइन आउट हुआ</item>
+        <item quantity="other">%1$d डिवाइस साइन आउट हुए</item>
+    </plurals>
 </resources>

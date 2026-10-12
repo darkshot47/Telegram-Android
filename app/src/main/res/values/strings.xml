@@ -490,4 +490,28 @@
     <string name="chat_edit_save">Save</string>
     <string name="chat_message_edited">Message edited</string>
     <string name="chat_edit_failed">The message could not be edited</string>
+    <string name="sessions_title">Active sessions</string>
+    <string name="sessions_summary">Devices signed in to this account</string>
+    <string name="sessions_loading">Asking Telegram for the list of devices</string>
+    <string name="sessions_empty">No sessions to show</string>
+    <string name="sessions_error">The list of devices could not be loaded</string>
+    <string name="sessions_current">this device</string>
+    <string name="sessions_terminate">Sign this device out</string>
+    <string name="sessions_terminated">The device was signed out</string>
+    <string name="sessions_terminate_failed">The device could not be signed out</string>
+    <string name="sessions_cannot_terminate_self">This device signs itself out from Settings, not from here.</string>
+    <string name="sessions_terminate_all">Sign out everywhere else</string>
+    <string name="sessions_terminate_all_confirm">Sign out</string>
+    <string name="sessions_terminate_all_message">Sign every other device out of this account? Each of them has to enter the verification code again to come back.</string>
+    <string name="sessions_terminate_all_stopped">It stopped at %1$s. Try again.</string>
+    <string name="sessions_no_others">There is no other device signed in</string>
+    <string name="sessions_active_today">Active today</string>
+    <string name="sessions_active_yesterday">Active yesterday</string>
+    <string name="sessions_active_this_week">Active this week</string>
+    <string name="sessions_active_this_month">Active this month</string>
+    <string name="sessions_active_earlier">Not used for over a month</string>
+    <plurals name="sessions_terminated_count">
+        <item quantity="one">%1$d device was signed out</item>
+        <item quantity="other">%1$d devices were signed out</item>
+    </plurals>
 </resources>

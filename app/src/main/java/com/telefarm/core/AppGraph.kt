@@ -16,6 +16,7 @@ import com.telefarm.data.FolderRepository
 import com.telefarm.data.MessageRepository
 import com.telefarm.data.PasscodeRepository
 import com.telefarm.data.SearchRepository
+import com.telefarm.data.SessionsRepository
 import com.telefarm.data.SettingsRepository
 import com.telefarm.data.TdSessionController
 import com.telefarm.data.UserRepository
@@ -126,6 +127,9 @@ class AppGraph(context: Context) {
     val search = SearchRepository(tdLibClient, chats, users, session, applicationScope)
 
     val settings = SettingsRepository(tdLibClient, preferences, session, users)
+
+    /** The devices signed in to this account, and the way to sign one of them out. */
+    val sessions = SessionsRepository(tdLibClient)
 
     val fileManager = FileManager(tdLibClient, applicationScope)
 

@@ -224,6 +224,27 @@ does not reach it.
 
 ---
 
+## 📱 Active sessions
+
+Settings → **Active sessions** lists every device signed in to the account: the application and
+its version, the device and its system, where Telegram last saw it from, and how long ago that
+was. A row can be signed out on its own, or **Sign out everywhere else** takes every device but
+this one in one go.
+
+Two rules are built in rather than left to the person reading the list:
+
+- **This device cannot be signed out from here.** Signing yourself out of the screen that lists
+  your sessions is a way to lose an account, not to protect it. The logout meant for this device
+  has its own door, with its own warning.
+- **Signing everything else out stops at the first failure** and says which device it could not
+  reach. A job that quietly leaves three devices signed in is worse than one that stops and tells
+  you.
+
+A session that is signed out cannot be signed back in from here - that device has to enter the
+verification code again - which is the whole point of the screen.
+
+---
+
 ## 📤 Export a chat
 
 The overflow menu of a conversation writes it out as a document - a page for a browser, or plain
@@ -524,6 +545,7 @@ need no device:
 - Quiet hours: what the range means when it crosses midnight, and which messages come through it
 - Writing a conversation out as a document, the escaping that keeps it a document, and the
   calendar arithmetic behind the dates in it
+- The order and wording of the active session list, and which sessions it is allowed to sign out
 - The login token of a `tg://login` link
 - The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
 
