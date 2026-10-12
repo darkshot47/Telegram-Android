@@ -47,15 +47,38 @@ jobs:
 
       # `set -o pipefail` keeps Gradle's exit code visible through `tee`. Without it a failed
       # Gradle build still reports a successful step, which is how a green run can produce no APK.
+      #
+      # A failure is also copied into the job summary. Gradle's own output goes to the raw log and
+      # to the uploaded artifact, and neither is readable without the results host; the summary is
+      # reachable through the ordinary API, so the compiler's complaint about a failing build is
+      # visible where the build is.
       - name: Run unit tests
         run: |
           set -o pipefail
-          ./gradlew test --stacktrace 2>&1 | tee ci-logs/test.log
+          ./gradlew test --stacktrace 2>&1 | tee ci-logs/test.log || {
+            {
+              echo '### Unit tests failed'
+              echo
+              echo '```'
+              grep -E '^e: |error:|FAILED|Execution failed|Caused by' ci-logs/test.log | head -60
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
 
       - name: Build debug APK
         run: |
           set -o pipefail
-          ./gradlew assembleDebug --stacktrace 2>&1 | tee ci-logs/assembleDebug.log
+          ./gradlew assembleDebug --stacktrace 2>&1 | tee ci-logs/assembleDebug.log || {
+            {
+              echo '### Build debug APK failed'
+              echo
+              echo '```'
+              grep -E '^e: |error:|FAILED|Execution failed|Caused by' ci-logs/assembleDebug.log | head -60
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
 
       # The upload below can only pass when a real APK is on disk, so the workflow can never
       # report success without a downloadable artifact.
@@ -76,7 +99,16 @@ jobs:
       - name: Build release APK
         run: |
           set -o pipefail
-          ./gradlew assembleRelease --stacktrace 2>&1 | tee ci-logs/assembleRelease.log
+          ./gradlew assembleRelease --stacktrace 2>&1 | tee ci-logs/assembleRelease.log || {
+            {
+              echo '### Build release APK failed'
+              echo
+              echo '```'
+              grep -E '^e: |error:|FAILED|Execution failed|Caused by' ci-logs/assembleRelease.log | head -60
+              echo '```'
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 1
+          }
 
       - name: Verify release APK
         run: |
