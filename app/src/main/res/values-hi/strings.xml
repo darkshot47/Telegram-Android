@@ -488,4 +488,20 @@
         <item quantity="one">%1$d डिवाइस साइन आउट हुआ</item>
         <item quantity="other">%1$d डिवाइस साइन आउट हुए</item>
     </plurals>
+    <string name="privacy_title">निजता</string>
+    <string name="privacy_summary">दूसरे लोग क्या देखते हैं</string>
+    <string name="privacy_note">ये आपके Telegram खाते की सेटिंग हैं। इन्हें बदलने से हर Telegram क्लाइंट में दूसरों को दिखने वाली चीज़ बदलती है, सिर्फ़ Telefarm में नहीं।</string>
+    <string name="privacy_loading">Telegram से आपकी निजता सेटिंग माँगी जा रही है</string>
+    <string name="privacy_last_seen">अंतिम दर्शन और ऑनलाइन</string>
+    <string name="privacy_phone_number">फ़ोन नंबर</string>
+    <string name="privacy_profile_photo">प्रोफ़ाइल फ़ोटो</string>
+    <string name="privacy_calls">कॉल</string>
+    <string name="privacy_group_invites">ग्रुप और चैनल</string>
+    <string name="privacy_audience_everyone">हर कोई</string>
+    <string name="privacy_audience_contacts">मेरे संपर्क</string>
+    <string name="privacy_audience_nobody">कोई नहीं</string>
+    <string name="privacy_custom">अपनी मर्ज़ी की</string>
+    <string name="privacy_unknown">लोड नहीं हुई</string>
+    <string name="privacy_saved">सहेजा गया</string>
+    <string name="privacy_save_failed">सेटिंग बदली नहीं जा सकी</string>
 </resources>

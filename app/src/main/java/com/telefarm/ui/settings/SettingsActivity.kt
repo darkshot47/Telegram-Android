@@ -69,6 +69,7 @@ class SettingsActivity : AppCompatActivity() {
         binding.accountRow.setOnClickListener { openEditProfile() }
         binding.themeRow.setOnClickListener { showThemeDialog() }
         binding.passcodeRow.setOnClickListener { showPasscodeDialog() }
+        binding.privacyRow.setOnClickListener { startActivity(Intent(this, PrivacyActivity::class.java)) }
         binding.sessionsRow.setOnClickListener { startActivity(Intent(this, SessionsActivity::class.java)) }
         binding.quietHoursSwitch.setOnCheckedChangeListener { _, checked ->
             appGraph.preferences.quietHours = appGraph.preferences.quietHours.copy(enabled = checked)

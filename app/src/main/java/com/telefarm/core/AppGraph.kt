@@ -15,6 +15,7 @@ import com.telefarm.data.ChatListRepository
 import com.telefarm.data.FolderRepository
 import com.telefarm.data.MessageRepository
 import com.telefarm.data.PasscodeRepository
+import com.telefarm.data.PrivacyRepository
 import com.telefarm.data.SearchRepository
 import com.telefarm.data.SessionsRepository
 import com.telefarm.data.SettingsRepository
@@ -130,6 +131,9 @@ class AppGraph(context: Context) {
 
     /** The devices signed in to this account, and the way to sign one of them out. */
     val sessions = SessionsRepository(tdLibClient)
+
+    /** The account's own privacy settings, which live on Telegram rather than on this device. */
+    val privacy = PrivacyRepository(tdLibClient)
 
     val fileManager = FileManager(tdLibClient, applicationScope)
 

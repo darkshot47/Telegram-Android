@@ -514,4 +514,20 @@
         <item quantity="one">%1$d device was signed out</item>
         <item quantity="other">%1$d devices were signed out</item>
     </plurals>
+    <string name="privacy_title">Privacy</string>
+    <string name="privacy_summary">What other people see</string>
+    <string name="privacy_note">These are your Telegram account settings. Changing one changes what other people see in every Telegram client, not only in Telefarm.</string>
+    <string name="privacy_loading">Asking Telegram for your privacy settings</string>
+    <string name="privacy_last_seen">Last seen and online</string>
+    <string name="privacy_phone_number">Phone number</string>
+    <string name="privacy_profile_photo">Profile photo</string>
+    <string name="privacy_calls">Calls</string>
+    <string name="privacy_group_invites">Groups and channels</string>
+    <string name="privacy_audience_everyone">Everybody</string>
+    <string name="privacy_audience_contacts">My contacts</string>
+    <string name="privacy_audience_nobody">Nobody</string>
+    <string name="privacy_custom">Custom</string>
+    <string name="privacy_unknown">Not loaded</string>
+    <string name="privacy_saved">Saved</string>
+    <string name="privacy_save_failed">The setting could not be changed</string>
 </resources>

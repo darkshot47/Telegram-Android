@@ -224,6 +224,31 @@ does not reach it.
 
 ---
 
+## 🛡️ Account privacy
+
+Settings → **Privacy** shows and changes the account's own privacy settings: last seen and online,
+phone number, profile photo, calls, and who can add you to groups and channels.
+
+These live on Telegram, not on the device, so the screen shows what Telegram answered rather than
+what was last tapped, and says at the top that a change reaches every client.
+
+Each setting is offered as three choices - **Everybody**, **My contacts**, **Nobody** - because
+that is the choice being made. Telegram stores an ordered list of rules and applies the last one
+that matches, which is more than three radio buttons can show, so the two are translated:
+
+| Choice | Rules written |
+| --- | --- |
+| Everybody | allow all |
+| My contacts | allow contacts, then refuse everybody else |
+| Nobody | refuse everybody |
+
+Those are the lists Telegram itself writes, so a setting changed here reads the same in another
+client. Anything that does not reduce to one of the three - named exceptions, an unusual order, a
+rule this client has not heard of - is shown as **Custom** and left alone until it is changed.
+Rounding somebody's rules to the nearest choice would quietly change who can reach them.
+
+---
+
 ## 📱 Active sessions
 
 Settings → **Active sessions** lists every device signed in to the account: the application and
@@ -546,6 +571,7 @@ need no device:
 - Writing a conversation out as a document, the escaping that keeps it a document, and the
   calendar arithmetic behind the dates in it
 - The order and wording of the active session list, and which sessions it is allowed to sign out
+- Reading Telegram's privacy rules as three choices, and writing the same three back
 - The login token of a `tg://login` link
 - The MTProto primitives: AES-IGE, the TL codec, message ids and the message key
 
