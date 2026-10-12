@@ -1,5 +1,6 @@
 package com.telefarm.data
 
+import com.telefarm.core.notifications.MuteDurations
 import com.telefarm.R
 import com.telefarm.core.td.TdLibClient
 import com.telefarm.core.td.TdLibException
@@ -418,10 +419,19 @@ class ChatListRepository(
         )
     }
 
-    suspend fun setMuted(chatId: Long, muted: Boolean) = runAction(R.string.error_generic) {
+    /**
+     * Mutes a chat for a while, or unmutes it.
+     *
+     * @param muteForSeconds how long the mute lasts, or [MuteDurations.OFF] to hear the chat
+     *   again. Telegram holds the mute as a count of seconds left, so there is no separate
+     *   unmute: a mute of zero seconds is an unmute.
+     */
+    suspend fun setMuted(chatId: Long, muteForSeconds: Int) = runAction(R.string.error_generic) {
         val chat = chatOrFetch(chatId)
         val settings = chat?.notificationSettings ?: TdApi.ChatNotificationSettings()
-        settings.muteFor = if (muted) MUTE_FOREVER else 0
+        settings.muteFor = muteForSeconds
+        // The default is whatever the type of chat says, which would quietly override a mute
+        // chosen here, so the choice has to be marked as this chat's own.
         settings.useDefaultMuteFor = false
         td.send(
             TdApi.SetChatNotificationSettings().apply {

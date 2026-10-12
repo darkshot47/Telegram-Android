@@ -179,6 +179,7 @@ class FolderMatcherTest {
         isMarkedAsUnread = markedAsUnread,
         isPinned = isPinned,
         isMuted = isMuted,
+        muteForSeconds = 0,
         canSendMessages = true,
         draftText = null,
         order = 0L

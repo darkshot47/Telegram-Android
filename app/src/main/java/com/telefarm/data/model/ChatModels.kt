@@ -42,6 +42,15 @@ data class ChatUi(
     val isMarkedAsUnread: Boolean,
     val isPinned: Boolean,
     val isMuted: Boolean,
+
+    /**
+     * Seconds left on the mute, 0 when the chat is not muted.
+     *
+     * Telegram holds a mute as a countdown rather than as the choice that was made, so what is
+     * read back is how much is left. A mute with no number behind it can only be shown as "muted",
+     * which does not tell anybody when the chat will be heard from again.
+     */
+    val muteForSeconds: Int,
     val canSendMessages: Boolean,
     val draftText: String?,
     val order: Long,

@@ -79,6 +79,7 @@ object TdMappers {
             isMarkedAsUnread = chat.isMarkedAsUnread,
             isPinned = mainPosition?.isPinned == true,
             isMuted = (chat.notificationSettings?.muteFor ?: 0) > 0,
+            muteForSeconds = chat.notificationSettings?.muteFor ?: 0,
             canSendMessages = canSendMessages(chat, kind),
             draftText = draftText(chat),
             order = mainPosition?.order ?: Long.MIN_VALUE

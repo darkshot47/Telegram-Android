@@ -191,8 +191,9 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
         graph.chats.setPinned(chatId, pinned)
     }
 
-    fun setMuted(chatId: Long, muted: Boolean) = viewModelScope.launch {
-        graph.chats.setMuted(chatId, muted)
+    /** Mutes a chat for [muteForSeconds], or unmutes it when that is zero. */
+    fun setMuted(chatId: Long, muteForSeconds: Int) = viewModelScope.launch {
+        graph.chats.setMuted(chatId, muteForSeconds)
     }
 
     fun setMarkedAsUnread(chatId: Long, unread: Boolean) = viewModelScope.launch {

@@ -567,4 +567,13 @@
     <string name="chat_forward_partial">%1$d forwarded to %3$s. %2$d could not leave this chat.</string>
     <string name="chat_forward_refused_all">This chat does not let its messages be forwarded</string>
     <string name="chat_forward_stopped">The forward stopped after %1$d. The rest were not sent.</string>
+    <string name="chat_mute_title">Mute %1$s for</string>
+    <string name="chat_mute_one_hour">1 hour</string>
+    <string name="chat_mute_eight_hours">8 hours</string>
+    <string name="chat_mute_two_days">2 days</string>
+    <string name="chat_mute_forever">Until I unmute it</string>
+    <string name="chat_muted_for_minutes">Muted for %1$d minute(s)</string>
+    <string name="chat_muted_for_hours">Muted for %1$d hour(s)</string>
+    <string name="chat_muted_for_days">Muted for %1$d day(s)</string>
+    <string name="chat_muted_forever">Muted</string>
 </resources>

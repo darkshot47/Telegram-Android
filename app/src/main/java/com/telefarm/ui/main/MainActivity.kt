@@ -1,5 +1,8 @@
 package com.telefarm.ui.main
 
+import com.telefarm.core.notifications.MuteDurations
+import com.telefarm.core.notifications.MuteRemaining
+import com.telefarm.core.notifications.MuteDuration
 import android.Manifest
 import android.content.Intent
 import android.os.Build
@@ -306,34 +309,76 @@ class MainActivity : AppCompatActivity() {
     }
 
     /** Context actions of a chat; only features that are implemented are offered. */
+    /**
+     * How long to mute a chat for.
+     *
+     * A mute that can only be "on" is a mute nobody turns off, because the only way to hear the
+     * chat again is to unmute it by hand and remember to. An hour, an evening, a weekend and
+     * forever cover the reasons people mute: a conversation that is loud right now, one that is
+     * loud today, one that is loud this week, and one they never want to hear from.
+     */
+    private fun showMuteDurations(chat: ChatUi) {
+        val choices = MuteDurations.CHOICES
+        val labels = choices.map { getString(labelFor(it)) }.toTypedArray()
+        MaterialAlertDialogBuilder(this)
+            .setTitle(getString(R.string.chat_mute_title, chat.title))
+            .setItems(labels) { _, index -> viewModel.setMuted(chat.id, choices[index].seconds) }
+            .show()
+    }
+
+    /**
+     * What the unmute action is called.
+     *
+     * A string resource cannot carry the count, so the four readings are separate resources and
+     * the count goes in as an argument.
+     */
+    private fun muteLabel(chat: ChatUi): String = when (val left = MuteDurations.remaining(chat.muteForSeconds)) {
+        is MuteRemaining.Minutes -> getString(R.string.chat_muted_for_minutes, left.count)
+        is MuteRemaining.Hours -> getString(R.string.chat_muted_for_hours, left.count)
+        is MuteRemaining.Days -> getString(R.string.chat_muted_for_days, left.count)
+        is MuteRemaining.Forever -> getString(R.string.chat_muted_forever)
+        is MuteRemaining.NotMuted -> getString(R.string.chat_action_unmute)
+    }
+
+    private fun labelFor(duration: MuteDuration): Int = when (duration) {
+        MuteDuration.ONE_HOUR -> R.string.chat_mute_one_hour
+        MuteDuration.EIGHT_HOURS -> R.string.chat_mute_eight_hours
+        MuteDuration.TWO_DAYS -> R.string.chat_mute_two_days
+        MuteDuration.FOREVER -> R.string.chat_mute_forever
+    }
+
     private fun showChatActions(chat: ChatUi) {
-        val actions = mutableListOf<Pair<Int, () -> Unit>>()
+        val actions = mutableListOf<Pair<CharSequence, () -> Unit>>()
+        // Labels are text rather than resource ids, because one of them carries a count and a
+        // resource id cannot.
         actions += if (chat.isPinned) {
-            R.string.chat_action_unpin to { viewModel.setPinned(chat.id, false) }
+            getString(R.string.chat_action_unpin) to { viewModel.setPinned(chat.id, false) }
         } else {
-            R.string.chat_action_pin to { viewModel.setPinned(chat.id, true) }
+            getString(R.string.chat_action_pin) to { viewModel.setPinned(chat.id, true) }
         }
         actions += if (chat.isMuted) {
-            R.string.chat_action_unmute to { viewModel.setMuted(chat.id, false) }
+            // The label says when the chat will be heard from again, because a mute with no
+            // number on it leaves the person guessing whether it ends tonight or never.
+            muteLabel(chat) to { viewModel.setMuted(chat.id, MuteDurations.OFF) }
         } else {
-            R.string.chat_action_mute to { viewModel.setMuted(chat.id, true) }
+            getString(R.string.chat_action_mute) to { showMuteDurations(chat) }
         }
         actions += if (chat.hasUnread) {
-            R.string.chat_action_mark_read to { viewModel.markAsRead(chat.id) }
+            getString(R.string.chat_action_mark_read) to { viewModel.markAsRead(chat.id) }
         } else {
-            R.string.chat_action_mark_unread to { viewModel.setMarkedAsUnread(chat.id, true) }
+            getString(R.string.chat_action_mark_unread) to { viewModel.setMarkedAsUnread(chat.id, true) }
         }
         val addable = viewModel.foldersWithout(chat.id)
         if (addable.isNotEmpty()) {
-            actions += R.string.folder_add_chat to { pickFolder(addable) { id -> viewModel.addChatToFolder(id, chat.id) } }
+            actions += getString(R.string.folder_add_chat) to { pickFolder(addable) { id -> viewModel.addChatToFolder(id, chat.id) } }
         }
         val removable = viewModel.foldersWith(chat.id)
         if (removable.isNotEmpty()) {
-            actions += R.string.folder_remove_chat to { pickFolder(removable) { id -> viewModel.removeChatFromFolder(id, chat.id) } }
+            actions += getString(R.string.folder_remove_chat) to { pickFolder(removable) { id -> viewModel.removeChatFromFolder(id, chat.id) } }
         }
-        actions += R.string.chat_action_delete_chat to { confirmDeleteChat(chat) }
+        actions += getString(R.string.chat_action_delete_chat) to { confirmDeleteChat(chat) }
 
-        val labels = actions.map { getString(it.first) }.toTypedArray()
+        val labels = actions.map { it.first }.toTypedArray()
         MaterialAlertDialogBuilder(this)
             .setTitle(chat.title)
             .setItems(labels) { _, index -> actions[index].second() }
