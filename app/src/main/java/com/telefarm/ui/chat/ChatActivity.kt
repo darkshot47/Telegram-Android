@@ -1,5 +1,11 @@
 package com.telefarm.ui.chat
 
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Dispatchers
+import android.provider.OpenableColumns
+import com.telefarm.core.media.MediaKind
+import com.telefarm.core.media.MediaFiles
+import androidx.activity.result.contract.ActivityResultContracts
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -102,6 +108,7 @@ class ChatActivity : AppCompatActivity() {
         binding.toolbar.setOnMenuItemClickListener(::onMenuItemSelected)
         binding.headerContent.setOnClickListener { openProfile() }
         binding.sendButton.setOnClickListener { sendCurrentInput() }
+        binding.attachButton.setOnClickListener { pickFile() }
         binding.formatButton.setOnClickListener {
             binding.formatBar.isVisible = !binding.formatBar.isVisible
         }
@@ -419,6 +426,81 @@ class ChatActivity : AppCompatActivity() {
         val directory = File(cacheDir, EXPORT_DIRECTORY).apply { mkdirs() }
         File(directory, viewModel.exportFileName(format)).apply { writeText(document, Charsets.UTF_8) }
     } catch (error: Throwable) {
+        null
+    }
+
+    /**
+     * Picks a file to send.
+     *
+     * The system picker is used rather than a list of the device's pictures, because it needs no
+     * storage permission: the picker hands back permission for the one file chosen and nothing
+     * else.
+     */
+    private fun pickFile() {
+        // Every type rather than a list of them: what can be sent is decided from what is picked,
+        // and a picker that only offers pictures cannot send a document. The contract builds the
+        // intent itself, so the only thing to say is what may be chosen.
+        filePicker.launch(arrayOf("*/*"))
+    }
+
+    private val filePicker = registerForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri -> if (uri != null) sendPickedFile(uri) }
+
+    /**
+     * Copies a picked file into the app's own storage and sends it.
+     *
+     * The copy is the part that matters: Telegram reads a path on the file system, and a picker
+     * hands back a content URI that is only readable through the resolver. The copy is named from
+     * what was picked, with the name taken apart first - a picked file is named by whatever saved
+     * it, and `../` in a file name is a way out of the directory rather than a typo.
+     */
+    private fun sendPickedFile(uri: Uri) {
+        lifecycleScope.launch {
+            val picked = withContext(Dispatchers.IO) { copyToCache(uri) }
+            if (picked == null) {
+                binding.root.showSnackbar(getString(R.string.chat_attach_failed))
+                return@launch
+            }
+            val sent = viewModel.sendMedia(
+                path = picked.path,
+                kind = picked.kind,
+                sizeBytes = picked.sizeBytes,
+                caption = binding.messageInput.text?.toString().orEmpty()
+            )
+            if (sent) binding.messageInput.setText("")
+        }
+    }
+
+    /** A file picked from the system picker, copied somewhere Telegram can read it. */
+    private data class PickedFile(val path: String, val kind: MediaKind, val sizeBytes: Long)
+
+    private fun copyToCache(uri: Uri): PickedFile? = try {
+        var name: String? = null
+        var type: String? = null
+        var size = 0L
+        contentResolver.query(uri, null, null, null, null)?.use { cursor ->
+            if (cursor.moveToFirst()) {
+                val nameColumn = cursor.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                if (nameColumn >= 0) name = cursor.getString(nameColumn)
+                val sizeColumn = cursor.getColumnIndex(OpenableColumns.SIZE)
+                if (sizeColumn >= 0 && !cursor.isNull(sizeColumn)) size = cursor.getLong(sizeColumn)
+            }
+        }
+        type = contentResolver.getType(uri)
+
+        val target = File(cacheDir, MediaFiles.cacheFileName(name, type, System.currentTimeMillis()))
+        contentResolver.openInputStream(uri)?.use { input ->
+            target.outputStream().use { output -> input.copyTo(output) }
+        } ?: return null
+
+        PickedFile(
+            path = target.absolutePath,
+            kind = MediaFiles.of(type, name),
+            sizeBytes = if (size > 0) size else target.length()
+        )
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
         null
     }
 

@@ -265,6 +265,31 @@ box, because a reaction that reads wrong is worse than one that is not there.
 
 ---
 
+## 📎 Send a file
+
+A picture, an animation, a video, a recording or any other file, from the system picker. Each is
+sent as what it is, so a photo arrives as a picture, a GIF still moves, and a PDF still says it is
+a PDF.
+
+The type the picker reports is believed before the extension on the name, because the type is what
+the sending side acts on - but neither is trusted alone. A picker will report nothing, and a file
+will be named `notes.txt` and be a photograph.
+
+Three things are worth saying about how it works:
+
+- **A picture too big to be a picture goes as a file.** A photo is capped at ten megabytes; past
+  that, sending it as a photo simply fails, and a photograph that arrives as a file is a smaller
+  disappointment than one that does not arrive.
+- **The copy is named from the file, with the name taken apart first.** A picked file is named by
+  whatever saved it, and `../` in a file name is a way out of the directory rather than a typo.
+  Two files with the same name are told apart, and Hindi names survive whole - the `ि` in
+  `रिपोर्ट` is not a letter, and dropping it would turn a name a person recognises into one they
+  do not.
+- **Nothing outside the chosen file is read.** The system picker grants permission for the one file
+  picked, so there is no storage permission to ask for and no browsing of the device.
+
+---
+
 ## 📍 Where you left off
 
 A conversation opens at the newest message. When there are messages that have not been read, a

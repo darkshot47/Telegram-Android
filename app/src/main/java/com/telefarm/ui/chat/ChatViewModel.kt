@@ -1,5 +1,6 @@
 package com.telefarm.ui.chat
 
+import com.telefarm.core.media.MediaKind
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.telefarm.core.export.ChatExport
@@ -153,6 +154,30 @@ class ChatViewModel(
 
     fun retryMessage(messageId: Long) {
         viewModelScope.launch { store.retry(messageId) }
+    }
+
+    /** Sends a file that is already on this device. */
+    suspend fun sendMedia(path: String, kind: MediaKind, sizeBytes: Long, caption: String): Boolean {
+        if (path.isBlank()) return false
+        _isSending.value = true
+        return try {
+            val sent = store.sendMedia(
+                path = path,
+                kind = kind,
+                sizeBytes = sizeBytes,
+                caption = caption,
+                replyToMessageId = _replyTarget.value?.id
+            )
+            if (sent) _replyTarget.value = null
+            if (!sent) _event.value = ChatEvent.Error(message = UiMessage.Res(R.string.chat_send_failed))
+            sent
+        } catch (error: Throwable) {
+            if (error is CancellationException) throw error
+            _event.value = ChatEvent.Error(message = UiMessage.Res(R.string.chat_send_failed))
+            false
+        } finally {
+            _isSending.value = false
+        }
     }
 
     /** Forwards messages to another chat. */

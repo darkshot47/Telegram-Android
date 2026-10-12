@@ -4,6 +4,8 @@ import com.telefarm.R
 import com.telefarm.core.forward.Forwarding
 import com.telefarm.data.model.ForwardOutcome
 import com.telefarm.core.format.Markdown
+import com.telefarm.core.media.MediaFiles
+import com.telefarm.core.media.MediaKind
 import com.telefarm.core.list.UnreadDivider
 import com.telefarm.core.reactions.Reactions
 import com.telefarm.core.format.TextKind
@@ -241,7 +243,6 @@ class MessageStore(
                             messageId = id
                         }
                     }
-                    options = null
                     replyMarkup = null
                     inputMessageContent = TdApi.InputMessageText().apply {
                         // `this` is required: the enclosing function also has a `text` parameter.
@@ -638,6 +639,139 @@ class MessageStore(
 
         _rows.value = rows
     }
+
+    // region Sending media
+
+    /**
+     * Sends a file that is already on this device, as the kind of message it is.
+     *
+     * @param path the file, on the local file system - Telegram reads a path, not a content URI.
+     * @param kind what it was recognised as.
+     * @param sizeBytes how big it is, which decides whether a picture travels as one or as a file.
+     * @param caption words to go with it, read as markup the way a plain message is.
+     */
+    suspend fun sendMedia(
+        path: String,
+        kind: MediaKind,
+        sizeBytes: Long,
+        caption: String,
+        replyToMessageId: Long? = null
+    ): Boolean = try {
+        td.send(
+            TdApi.SendMessage().apply {
+                chatId = this@MessageStore.chatId
+                topicId = null
+                replyTo = replyToMessageId?.let { id ->
+                    TdApi.MessageReplyToMessage().apply {
+                        chatId = this@MessageStore.chatId
+                        messageId = id
+                    }
+                }
+                replyMarkup = null
+                inputMessageContent = mediaContent(MediaFiles.sendAs(kind, sizeBytes), path, caption)
+            }
+        )
+        true
+    } catch (error: Throwable) {
+        if (error is CancellationException) throw error
+        _error.value = UiMessage.Res(R.string.chat_send_failed)
+        false
+    }
+
+    /**
+     * The message content for a file, in the shape Telegram wants for that kind of file.
+     *
+     * Widths, heights and durations are left at zero, which is how "work it out" is said: the
+     * server replaces them. Naming them here would mean reading the file twice and could only be
+     * wrong.
+     */
+    private fun mediaContent(kind: MediaKind, path: String, caption: String): TdApi.InputMessageContent {
+        val file = TdApi.InputFileLocal().apply { this.path = path }
+        val words = formattedOrNull(caption)
+        return when (kind) {
+            MediaKind.PHOTO -> TdApi.InputMessagePhoto().apply {
+                photo = TdApi.InputPhoto().apply {
+                    photo = file
+                    thumbnail = null
+                    video = null
+                    addedStickerFileIds = intArrayOf()
+                    width = 0
+                    height = 0
+                }
+                this.caption = words
+                showCaptionAboveMedia = false
+                selfDestructType = null
+                hasSpoiler = false
+            }
+
+            MediaKind.ANIMATION -> TdApi.InputMessageAnimation().apply {
+                animation = TdApi.InputAnimation().apply {
+                    animation = file
+                    thumbnail = null
+                    addedStickerFileIds = intArrayOf()
+                    duration = 0
+                    width = 0
+                    height = 0
+                }
+                this.caption = words
+                showCaptionAboveMedia = false
+                hasSpoiler = false
+            }
+
+            MediaKind.VIDEO -> TdApi.InputMessageVideo().apply {
+                video = TdApi.InputVideo().apply {
+                    video = file
+                    thumbnail = null
+                    cover = null
+                    startTimestamp = 0
+                    addedStickerFileIds = intArrayOf()
+                    duration = 0
+                    width = 0
+                    height = 0
+                    supportsStreaming = true
+                }
+                this.caption = words
+                showCaptionAboveMedia = false
+                selfDestructType = null
+                hasSpoiler = false
+            }
+
+            MediaKind.AUDIO -> TdApi.InputMessageAudio().apply {
+                audio = TdApi.InputAudio().apply {
+                    audio = file
+                    albumCoverThumbnail = null
+                    duration = 0
+                    title = ""
+                    performer = ""
+                }
+                this.caption = words
+            }
+
+            // A file that is not a picture, a video or a sound. Content type detection is left on,
+            // so a PDF sent as a file is still shown as a PDF.
+            MediaKind.DOCUMENT -> TdApi.InputMessageDocument().apply {
+                document = TdApi.InputDocument().apply {
+                    document = file
+                    thumbnail = null
+                    disableContentTypeDetection = false
+                }
+                this.caption = words
+            }
+        }
+    }
+
+    /** Words for a caption, or nothing at all when there are none. */
+    private fun formattedOrNull(caption: String): TdApi.FormattedText? {
+        val trimmed = caption.trim()
+        if (trimmed.isEmpty()) return null
+        val formatted = Markdown.parse(trimmed)
+        return TdApi.FormattedText().apply {
+            text = formatted.text
+            entities = formatted.spans.map { it.toEntity() }.toTypedArray()
+        }
+    }
+
+    // endregion
 
     // region Reactions
 

@@ -549,4 +549,6 @@
         <item quantity="one">%d अपठित संदेश</item>
         <item quantity="other">%d अपठित संदेश</item>
     </plurals>
+    <string name="chat_attach_file">फ़ाइल भेजें</string>
+    <string name="chat_attach_failed">वह फ़ाइल पढ़ी नहीं जा सकी</string>
 </resources>

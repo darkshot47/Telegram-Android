@@ -356,6 +356,16 @@
         android:paddingBottom="@dimen/spacing_small">
 
         <ImageView
+            android:id="@+id/attachButton"
+            android:layout_width="@dimen/touch_target"
+            android:layout_height="@dimen/touch_target"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/chat_attach_file"
+            android:padding="@dimen/spacing_medium"
+            android:src="@drawable/ic_file"
+            app:tint="@color/icon_tint" />
+
+        <ImageView
             android:id="@+id/formatButton"
             android:layout_width="@dimen/touch_target"
             android:layout_height="@dimen/touch_target"

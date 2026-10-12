@@ -580,4 +580,6 @@
         <item quantity="one">%d unread message</item>
         <item quantity="other">%d unread messages</item>
     </plurals>
+    <string name="chat_attach_file">Send a file</string>
+    <string name="chat_attach_failed">That file could not be read</string>
 </resources>
