@@ -1038,6 +1038,9 @@ class ChatActivity : AppCompatActivity() {
         private const val EXTRA_CHAT_ID = "com.telefarm.extra.CHAT_ID"
         private const val PREFETCH_DISTANCE = 4
 
+        /** Where a transcript is written before it is handed to another application. */
+        private const val EXPORT_DIRECTORY = "exports"
+
         /** How often the recording clock is redrawn. */
         private const val TICK_INTERVAL_MS = 250L
 

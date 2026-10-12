@@ -45,6 +45,22 @@ jobs:
           chmod +x gradlew
           mkdir -p ci-logs
 
+      # The TDLib binding is not something this project can read from source, and the names it
+      # gives a field are the only authority on what a call may pass. When a call is rejected the
+      # signature is dumped here rather than guessed at, because guessing costs a build each time.
+      - name: Dump the TDLib signatures a failing call needs
+        if: always()
+        run: |
+          jar=$(find "$HOME/.gradle/caches/modules-2/files-2.1" -name '*.jar' -path '*tdlib*' 2>/dev/null | head -1)
+          echo "tdlib jar: ${jar:-none found}"
+          if [ -n "$jar" ]; then
+            for cls in 'TdApi$UserPrivacySettingRuleAllowUsers' 'TdApi$UserPrivacySettingRuleRestrictUsers' 'TdApi$InputMessageReplyToMessage' 'TdApi$MessageReplyToMessage' 'TdApi$SendMessage'; do
+              javap -classpath "$jar" "org.drinkless.tdlib.$cls" 2>/dev/null \
+                | grep -E 'public (long|java|int|boolean|org)' \
+                | sed "s|^|::notice title=TDLib ${cls}::|"
+            done
+          fi
+
       # A failing step is unreadable through the raw log, which lives on a host outside the
       # ordinary API. Annotations are reachable through it, so the compiler's own complaint is
       # re-published there: one annotation per line, which is where the build actually failed.
@@ -56,7 +72,7 @@ jobs:
           log="$1"
           title="$2"
           grep -E '^e: |error:|FAILED|Execution failed|Caused by|What went wrong' "$log" \
-            | head -25 \
+            | head -150 \
             | sed 's/%/%25/g; s/\r/%0D/g; s/\n/%0A/g' \
             | while IFS= read -r line; do
                 echo "::error title=${title}::${line}"

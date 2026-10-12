@@ -240,8 +240,11 @@ class MessageStore(
                     // A reply carries the chat it is in as well as the message, because in a
                     // forum topic or a linked channel the two can be in different chats.
                     replyTo = replyToMessageId?.let { id ->
-                        TdApi.MessageReplyToMessage().apply {
-                            chatId = this@MessageStore.chatId
+                        // The write side of a reply names the message and nothing else: the chat
+                        // it belongs to is the chat being sent to, which the request already
+                        // carries. Only a reply to a message in a different chat names its chat,
+                        // and that is a different type.
+                        TdApi.InputMessageReplyToMessage().apply {
                             messageId = id
                         }
                     }
@@ -697,8 +700,7 @@ class MessageStore(
                 chatId = this@MessageStore.chatId
                 topicId = null
                 replyTo = replyToMessageId?.let { id ->
-                    TdApi.MessageReplyToMessage().apply {
-                        chatId = this@MessageStore.chatId
+                    TdApi.InputMessageReplyToMessage().apply {
                         messageId = id
                     }
                 }
