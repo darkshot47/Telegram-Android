@@ -49,11 +49,10 @@ object CrashJournal {
             }
         )
         // Oldest first, so the ones dropped are the least recent.
-        directory.listFiles()
-            ?.sortedBy { it.name }
-            ?.takeIf { it.size > KEPT }
-            ?.take(it.size - KEPT)
-            ?.forEach { it.delete() }
+        val recorded = directory.listFiles()?.sortedBy { it.name }.orEmpty()
+        if (recorded.size > KEPT) {
+            recorded.take(recorded.size - KEPT).forEach { it.delete() }
+        }
         TelefarmLog.e(TAG, "recorded a crash", error)
     }
 

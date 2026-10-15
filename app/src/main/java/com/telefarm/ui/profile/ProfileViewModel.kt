@@ -81,7 +81,7 @@ class ProfileViewModel(
             val targetChatId = if (chatId != 0L) chatId else graph.chats.openPrivateChat(userId)
             if (targetChatId == null) {
                 _event.value = ProfileEvent.Error(UiMessage.Res(R.string.error_generic))
-                return@launch
+                return@launchGuarded
             }
             _event.value = ProfileEvent.OpenChat(targetChatId)
         }
