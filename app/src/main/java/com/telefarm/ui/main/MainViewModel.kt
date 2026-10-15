@@ -1,5 +1,6 @@
 package com.telefarm.ui.main
 
+import com.telefarm.ui.common.launchGuarded
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.telefarm.R
@@ -105,22 +106,22 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), MainState())
 
     init {
-        viewModelScope.launch { graph.chats.loadInitial() }
-        viewModelScope.launch {
+        launchGuarded { graph.chats.loadInitial() }
+        launchGuarded {
             graph.chats.lastError.collect { error -> _transientError.value = error }
         }
     }
 
     fun refresh() {
-        viewModelScope.launch { graph.chats.refresh() }
+        launchGuarded { graph.chats.refresh() }
     }
 
     fun loadMore() {
-        viewModelScope.launch { graph.chats.loadMore() }
+        launchGuarded { graph.chats.loadMore() }
     }
 
     fun retry() {
-        viewModelScope.launch { graph.chats.loadInitial() }
+        launchGuarded { graph.chats.loadInitial() }
     }
 
     fun clearError() {
@@ -187,35 +188,35 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
 
     // region Chat actions
 
-    fun setPinned(chatId: Long, pinned: Boolean) = viewModelScope.launch {
+    fun setPinned(chatId: Long, pinned: Boolean) = launchGuarded {
         graph.chats.setPinned(chatId, pinned)
     }
 
     /** Puts a chat away, or brings it back. */
-    fun setArchived(chatId: Long, archived: Boolean) = viewModelScope.launch {
+    fun setArchived(chatId: Long, archived: Boolean) = launchGuarded {
         graph.chats.setArchived(chatId, archived)
     }
 
     /** Mutes a chat for [muteForSeconds], or unmutes it when that is zero. */
-    fun setMuted(chatId: Long, muteForSeconds: Int) = viewModelScope.launch {
+    fun setMuted(chatId: Long, muteForSeconds: Int) = launchGuarded {
         graph.chats.setMuted(chatId, muteForSeconds)
     }
 
-    fun setMarkedAsUnread(chatId: Long, unread: Boolean) = viewModelScope.launch {
+    fun setMarkedAsUnread(chatId: Long, unread: Boolean) = launchGuarded {
         graph.chats.setMarkedAsUnread(chatId, unread)
     }
 
-    fun markAsRead(chatId: Long) = viewModelScope.launch {
+    fun markAsRead(chatId: Long) = launchGuarded {
         graph.chats.markAsRead(chatId)
     }
 
-    fun deleteChat(chatId: Long) = viewModelScope.launch {
+    fun deleteChat(chatId: Long) = launchGuarded {
         graph.chats.deleteChat(chatId)
     }
 
     /** Resolves Saved Messages, whose chat id is the id of the signed in user. */
     fun openSavedMessages(onResolved: (Long?) -> Unit) {
-        viewModelScope.launch {
+        launchGuarded {
             val selfUserId = graph.session.selfUserId.value
             onResolved(if (selfUserId > 0) graph.chats.openPrivateChat(selfUserId) else null)
         }
@@ -223,7 +224,7 @@ class MainViewModel(private val graph: AppGraph) : ViewModel() {
 
     /** Signs out and clears everything held in memory. */
     fun logOut() {
-        viewModelScope.launch {
+        launchGuarded {
             graph.notifications.dismissAll()
             graph.messages.releaseAll()
             graph.settings.logOut()

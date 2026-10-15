@@ -80,8 +80,21 @@ class TdSessionController(
             client.updates.collect(::handleUpdate)
         }
         scope.launch {
-            // The client answers with its current state, which also covers a restored session.
-            runCatching { client.send(TdApi.GetAuthorizationState()) }
+            // The answer to this request IS the current authorization state, so it is handled
+            // here rather than left to the update stream.
+            //
+            // That is not a matter of taste. The native client is created before this collector
+            // is attached, and the updates flow replays nothing, so the first update TDLib emits
+            // - the one saying which parameters it is waiting for - goes out to nobody and is
+            // gone. Reading the state back by asking for it does not depend on that timing, and
+            // without it the sign in screen waits forever for a state that already happened.
+            val state = runCatching { client.send(TdApi.GetAuthorizationState()) }
+                .onFailure { error ->
+                    if (error is kotlinx.coroutines.CancellationException) throw error
+                    TelefarmLog.w(TAG, "authorization state could not be read")
+                }
+                .getOrNull() ?: return@launch
+            onAuthorizationState(state)
         }
     }
 

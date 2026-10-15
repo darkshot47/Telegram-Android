@@ -1,5 +1,6 @@
 package com.telefarm.ui.auth
 
+import com.telefarm.ui.common.launchGuarded
 import androidx.annotation.StringRes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -117,10 +118,10 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
     private var sessionApproving = false
 
     init {
-        viewModelScope.launch {
+        launchGuarded {
             graph.session.authState.collect { authState -> render(authState) }
         }
-        viewModelScope.launch {
+        launchGuarded {
             // The identity can change while this screen is open, and the caption says which one
             // is talking to Telegram.
             graph.credentials.collect { credentials ->
@@ -285,7 +286,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
     private fun perform(block: suspend () -> Result<Unit>) {
         if (_state.value.isBusy) return
         _state.value = _state.value.copy(isBusy = true, error = null)
-        viewModelScope.launch {
+        launchGuarded {
             val result = block()
             result.exceptionOrNull()?.let { error ->
                 _state.value = _state.value.copy(error = authMessage(error))
@@ -429,7 +430,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
      */
     private fun approveSession(session: ImportedSession, link: String) {
         sessionApproving = true
-        viewModelScope.launch {
+        launchGuarded {
             val result = graph.session.acceptLoginToken(session, link)
             val error = result.exceptionOrNull()
             sessionApproving = false
@@ -462,7 +463,7 @@ class AuthViewModel(private val graph: AppGraph) : ViewModel() {
             _state.value = _state.value.copy(resendInSeconds = 0)
             return
         }
-        resendJob = viewModelScope.launch {
+        resendJob = launchGuarded {
             var remaining = seconds
             while (remaining > 0) {
                 _state.value = _state.value.copy(resendInSeconds = remaining)

@@ -1,5 +1,6 @@
 package com.telefarm.ui.settings
 
+import com.telefarm.core.td.CrashJournal
 import com.telefarm.core.notifications.NotificationPreview
 import android.Manifest
 import android.content.Context
@@ -496,6 +497,24 @@ class SettingsActivity : AppCompatActivity() {
         MaterialAlertDialogBuilder(this)
             .setTitle(R.string.about_title)
             .setMessage(message)
+            // A crash that leaves nothing behind cannot be described, so the traces recorded on
+            // this device are readable here and can be copied to whoever is fixing it.
+            .setNeutralButton(R.string.about_recent_problems) { _, _ -> showCrashJournal() }
+            .setPositiveButton(R.string.about_close, null)
+            .show()
+    }
+
+    /** What the application wrote down the last few times it died. */
+    private fun showCrashJournal() {
+        val recorded = CrashJournal.read(this)
+        val message = if (recorded.isEmpty()) {
+            getString(R.string.about_no_problems)
+        } else {
+            recorded.take(1).joinToString("\n\n") { (name, trace) -> "$name\n\n$trace" }
+        }
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.about_recent_problems)
+            .setMessage(message.take(MAX_JOURNAL_CHARS))
             .setPositiveButton(R.string.about_close, null)
             .show()
     }
@@ -507,6 +526,9 @@ class SettingsActivity : AppCompatActivity() {
     }
 
     companion object {
+
+        /** A trace is long; a dialog is not. The top of it is the part that says what failed. */
+        private const val MAX_JOURNAL_CHARS = 6_000
 
         /** Minutes in an hour, for turning a minute of the day into a clock reading. */
         private const val MINUTES_PER_HOUR = 60

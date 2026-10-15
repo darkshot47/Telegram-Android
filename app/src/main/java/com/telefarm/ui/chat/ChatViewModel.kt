@@ -1,5 +1,6 @@
 package com.telefarm.ui.chat
 
+import com.telefarm.ui.common.launchGuarded
 import com.telefarm.core.delete.DeletionScope
 import com.telefarm.core.media.MediaKind
 import androidx.lifecycle.ViewModel
@@ -138,23 +139,23 @@ class ChatViewModel(
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(STOP_TIMEOUT_MS), ChatUiState.Loading)
 
     init {
-        viewModelScope.launch { store.loadInitial() }
-        viewModelScope.launch { resolveProfileTarget() }
+        launchGuarded { store.loadInitial() }
+        launchGuarded { resolveProfileTarget() }
         graph.notifications.onChatOpened(chatId)
     }
 
     // region History
 
     fun loadOlder() {
-        viewModelScope.launch { store.loadOlder() }
+        launchGuarded { store.loadOlder() }
     }
 
     fun retryLoad() {
-        viewModelScope.launch { store.loadInitial() }
+        launchGuarded { store.loadInitial() }
     }
 
     fun retryMessage(messageId: Long) {
-        viewModelScope.launch { store.retry(messageId) }
+        launchGuarded { store.retry(messageId) }
     }
 
     /** Sends a file that is already on this device. */
@@ -199,7 +200,7 @@ class ChatViewModel(
 
     /** Replaces the text of a message this account sent. */
     fun editMessage(messageId: Long, text: String) {
-        viewModelScope.launch {
+        launchGuarded {
             if (store.editMessage(messageId, text)) {
                 _event.value = ChatEvent.Message(R.string.chat_message_edited)
             }
@@ -210,14 +211,14 @@ class ChatViewModel(
     suspend fun deletionChoices(messageId: Long): List<DeletionScope> = store.deletionChoices(messageId)
 
     fun deleteMessage(messageId: Long, scope: DeletionScope) {
-        viewModelScope.launch {
+        launchGuarded {
             store.deleteMessage(messageId, scope)
             _event.value = ChatEvent.Message(R.string.chat_message_deleted)
         }
     }
 
     fun clearHistory() {
-        viewModelScope.launch {
+        launchGuarded {
             try {
                 graph.chats.clearHistory(chatId)
                 _event.value = ChatEvent.Message(R.string.chat_history_cleared)
@@ -263,7 +264,7 @@ class ChatViewModel(
     fun draft(): String? = store.currentDraft()
 
     fun markRead() {
-        viewModelScope.launch { store.markRead() }
+        launchGuarded { store.markRead() }
     }
 
     fun clearEvent() {

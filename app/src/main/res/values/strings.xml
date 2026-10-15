@@ -623,4 +623,6 @@
     <string name="chat_recording_denied">The microphone is needed to record a voice message</string>
     <string name="chat_recording_failed">Recording could not be started</string>
     <string name="chat_recording_too_short">That was too short to send</string>
+    <string name="about_recent_problems">Recent problems</string>
+    <string name="about_no_problems">Nothing has been recorded. The application has not died on this device, or it died before this was keeping notes.</string>
 </resources>

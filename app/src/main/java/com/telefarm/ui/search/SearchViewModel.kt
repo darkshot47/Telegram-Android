@@ -1,5 +1,6 @@
 package com.telefarm.ui.search
 
+import com.telefarm.ui.common.launchGuarded
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.telefarm.R
@@ -55,7 +56,7 @@ class SearchViewModel(
             return
         }
         graph.search.prefetch(trimmed)
-        searchJob = viewModelScope.launch {
+        searchJob = launchGuarded {
             delay(DEBOUNCE_MS)
             _state.value = _state.value.copy(isLoading = true)
             runSearch(trimmed)

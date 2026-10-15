@@ -3,6 +3,7 @@ package com.telefarm
 import android.app.Application
 import android.content.Context
 import com.telefarm.core.AppGraph
+import com.telefarm.core.td.CrashJournal
 import com.telefarm.core.td.TelefarmLog
 
 /**
@@ -21,6 +22,8 @@ class TelefarmApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        // Installed before anything else can fail, so the first crash is as recorded as the last.
+        CrashJournal.install(this)
         graph = AppGraph(this)
         graph.start()
         TelefarmLog.d(TAG, "Application started")

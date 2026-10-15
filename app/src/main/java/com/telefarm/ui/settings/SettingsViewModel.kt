@@ -1,5 +1,6 @@
 package com.telefarm.ui.settings
 
+import com.telefarm.ui.common.launchGuarded
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.telefarm.R
@@ -40,7 +41,7 @@ class SettingsViewModel(private val graph: AppGraph) : ViewModel() {
     val events: StateFlow<UiMessage?> = _events.asStateFlow()
 
     init {
-        viewModelScope.launch {
+        launchGuarded {
             graph.settings.settings.collect { settings ->
                 _state.value = _state.value.copy(settings = settings)
             }
@@ -51,7 +52,7 @@ class SettingsViewModel(private val graph: AppGraph) : ViewModel() {
 
     /** Profile of the signed in user, shown at the top of the screen. */
     fun loadAccount() {
-        viewModelScope.launch {
+        launchGuarded {
             _state.value = _state.value.copy(account = graph.settings.account())
         }
     }
@@ -59,7 +60,7 @@ class SettingsViewModel(private val graph: AppGraph) : ViewModel() {
     /** Storage usage reported by TDLib. */
     fun loadStorage() {
         _state.value = _state.value.copy(isCalculatingStorage = true)
-        viewModelScope.launch {
+        launchGuarded {
             val usage = graph.settings.storageUsage()
             _state.value = _state.value.copy(storage = usage, isCalculatingStorage = false)
         }
@@ -93,7 +94,7 @@ class SettingsViewModel(private val graph: AppGraph) : ViewModel() {
     fun clearCache() {
         if (_state.value.isClearingCache) return
         _state.value = _state.value.copy(isClearingCache = true)
-        viewModelScope.launch {
+        launchGuarded {
             val cleared = try {
                 graph.settings.clearCache()
             } catch (error: Throwable) {
@@ -110,7 +111,7 @@ class SettingsViewModel(private val graph: AppGraph) : ViewModel() {
 
     /** Signs out and returns to the sign in screen. */
     fun logOut() {
-        viewModelScope.launch {
+        launchGuarded {
             graph.notifications.dismissAll()
             graph.messages.releaseAll()
             graph.settings.logOut()

@@ -592,4 +592,6 @@
     <string name="chat_recording_denied">वॉइस संदेश रिकॉर्ड करने के लिए माइक्रोफ़ोन चाहिए</string>
     <string name="chat_recording_failed">रिकॉर्डिंग शुरू नहीं हो सकी</string>
     <string name="chat_recording_too_short">यह भेजने लायक नहीं, बहुत छोटा था</string>
+    <string name="about_recent_problems">हाल की समस्याएँ</string>
+    <string name="about_no_problems">कुछ दर्ज नहीं हुआ। इस डिवाइस पर ऐप बंद नहीं हुआ, या नोट रखना शुरू होने से पहले हुआ था।</string>
 </resources>

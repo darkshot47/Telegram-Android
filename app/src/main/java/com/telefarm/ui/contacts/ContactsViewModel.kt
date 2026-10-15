@@ -1,5 +1,6 @@
 package com.telefarm.ui.contacts
 
+import com.telefarm.ui.common.launchGuarded
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.telefarm.R
@@ -51,7 +52,7 @@ class ContactsViewModel(private val graph: AppGraph) : ViewModel() {
     /** Reloads the contact list from Telegram. */
     fun load() {
         _state.value = _state.value.copy(isLoading = true, error = null)
-        viewModelScope.launch {
+        launchGuarded {
             try {
                 val contacts = graph.users.contacts()
                 _state.value = _state.value.copy(isLoading = false, contacts = contacts, error = null)

@@ -1,5 +1,6 @@
 package com.telefarm.ui.profile
 
+import com.telefarm.ui.common.launchGuarded
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.telefarm.R
@@ -48,7 +49,7 @@ class ProfileViewModel(
 
     fun load() {
         _state.value = _state.value.copy(isLoading = true, error = null)
-        viewModelScope.launch {
+        launchGuarded {
             val profile = if (userId != 0L) loadUser() else loadChat()
             _state.value = if (profile == null) {
                 ProfileScreenState(isLoading = false, error = UiMessage.Res(R.string.profile_error))
@@ -76,7 +77,7 @@ class ProfileViewModel(
 
     /** Opens the conversation of this profile, creating it for a user when needed. */
     fun openConversation() {
-        viewModelScope.launch {
+        launchGuarded {
             val targetChatId = if (chatId != 0L) chatId else graph.chats.openPrivateChat(userId)
             if (targetChatId == null) {
                 _event.value = ProfileEvent.Error(UiMessage.Res(R.string.error_generic))
@@ -96,7 +97,7 @@ class ProfileViewModel(
     fun toggleBlock() {
         val profile = _state.value.profile ?: return
         if (!profile.isUser) return
-        viewModelScope.launch {
+        launchGuarded {
             val done = graph.users.setBlocked(profile.id, blocked = !profile.isBlocked)
             if (done) {
                 _state.value = _state.value.copy(profile = graph.users.profile(profile.id))
@@ -109,7 +110,7 @@ class ProfileViewModel(
     fun leave() {
         val profile = _state.value.profile ?: return
         if (profile.isUser) return
-        viewModelScope.launch {
+        launchGuarded {
             graph.chats.leaveChat(profile.id)
             val error = graph.chats.lastError.value
             _event.value = if (error == null) {
